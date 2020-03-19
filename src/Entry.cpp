@@ -1,3 +1,4 @@
+#include "Entry.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
@@ -12,14 +13,15 @@
 #include "ResourceManager.h"
 #include "EntityManager.h"
 #include "Entity.h"
+#include "Movable.h"
 #include "Player.h"
 #include "EKey.h"
 #include "EModifier.h"
 
-static int DISPLAY_WIDTH;
-static int DISPLAY_HEIGHT;
+int DISPLAY_WIDTH;
+int DISPLAY_HEIGHT;
 
-const float RENDER_FPS = 30;
+const float RENDER_FPS = 60;
 const float SIMULATION_FPS = 30;
 int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer, ALLEGRO_TIMER*& simulation_timer, ALLEGRO_FONT*& font)
 {
@@ -108,6 +110,9 @@ int main()
 			}
 		});
 	entity_manager.push_back(std::make_shared<x39::goingfactory::entity::Player>());
+	auto movable = std::make_shared<x39::goingfactory::entity::Movable>();
+	movable->pos({ DISPLAY_WIDTH / 2.0f, DISPLAY_HEIGHT / 2.0f });
+	entity_manager.push_back(movable);
 
 	auto old_time = al_get_time();
 	bool redraw = false;

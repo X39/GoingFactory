@@ -30,7 +30,7 @@ namespace x39::goingfactory
 	class RenderComponent : public Component
 	{
 	public:
-		virtual void render_init(ResourceManager&) = 0;
+		virtual void render_init(ResourceManager&) {}
 		virtual void render(ResourceManager&) = 0;
 		static EComponent type() { return EComponent::Render; }
 	};

@@ -1,4 +1,5 @@
 #pragma once
+#include <cmath>
 
 namespace x39::goingfactory
 {
@@ -21,6 +22,7 @@ namespace x39::goingfactory
 			y -= rvalue.y;
 			return *this;
 		}
+		float angle() const { return std::atan2(y, x); }
 	};
 	typedef vec2 position;
 }

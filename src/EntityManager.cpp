@@ -13,7 +13,8 @@ size_t x39::goingfactory::EntityManager::push_back(std::shared_ptr<x39::goingfac
 	{
 		if (res->size() == res->capacity())
 		{
-			auto duplicate = new std::vector<std::shared_ptr<entity::Entity>>(res->capacity() * 2);
+			auto duplicate = new std::vector<std::shared_ptr<entity::Entity>>();
+			duplicate->reserve(res->capacity() == 0 ? 1 : res->capacity() * 2);
 			for (auto it : *res)
 			{
 				duplicate->push_back(it);

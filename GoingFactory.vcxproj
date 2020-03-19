@@ -187,6 +187,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Component.cpp" />
+    <ClCompile Include="src\Movable.cpp" />
     <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\EntityManager.cpp" />
@@ -198,6 +199,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Component.h" />
+    <ClInclude Include="src\Entry.h" />
+    <ClInclude Include="src\Movable.h" />
     <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\EKey.h" />
     <ClInclude Include="src\EModifier.h" />

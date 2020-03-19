@@ -42,6 +42,9 @@
     <ClCompile Include="src\Player.cpp">
       <Filter>Source Files\entity</Filter>
     </ClCompile>
+    <ClCompile Include="src\Movable.cpp">
+      <Filter>Source Files\entity</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -73,6 +76,12 @@
     </ClInclude>
     <ClInclude Include="src\vec2.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Entry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Movable.h">
+      <Filter>Header Files\entity</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
