@@ -1,7 +1,7 @@
 #include "Entity.h"
 
-std::unordered_map<std::string, std::function<std::shared_ptr<x39::goingfactory::Entity>()>>& x39::goingfactory::Entity::registry()
+std::unordered_map<std::string, std::function<std::shared_ptr<x39::goingfactory::entity::Entity>()>>& x39::goingfactory::entity::Entity::registry()
 {
-	static std::unordered_map<std::string, std::function<std::shared_ptr<x39::goingfactory::Entity>()>> instance;
+	static std::unordered_map<std::string, std::function<std::shared_ptr<x39::goingfactory::entity::Entity>()>> instance;
 	return instance;
 }

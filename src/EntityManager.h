@@ -8,7 +8,10 @@
 
 namespace x39::goingfactory
 {
-	class Entity;
+	namespace entity
+	{
+		class Entity;
+	}
 	class EntityManager
 	{
 	public:
@@ -16,8 +19,8 @@ namespace x39::goingfactory
 		{
 		public:
 			typedef iterator self_type;
-			typedef std::shared_ptr<Entity> value_type;
-			typedef std::shared_ptr<Entity>* pointer;
+			typedef std::shared_ptr<entity::Entity> value_type;
+			typedef std::shared_ptr<entity::Entity>* pointer;
 			typedef std::forward_iterator_tag iterator_category;
 			typedef int difference_type;
 			self_type operator++() { self_type i = *this; m_index++; return i; }
@@ -36,24 +39,28 @@ namespace x39::goingfactory
 			size_t m_index;
 		};
 	private:
-		std::atomic<std::vector<std::shared_ptr<Entity>>*> m_atomic_vector_ptr;
+		std::atomic<std::vector<std::shared_ptr<entity::Entity>>*> m_atomic_vector_ptr;
 		std::mutex m_mutex;
 	public:
-		Event<std::function<void(std::shared_ptr<Entity>&)>> onEntityAdded;
-		EntityManager() : m_atomic_vector_ptr(new std::vector<std::shared_ptr<Entity>>) { }
+		struct EntityAddedEventArgs : public EventArgs { std::shared_ptr<entity::Entity> entity; EntityAddedEventArgs(std::shared_ptr<entity::Entity> entity) : entity(entity) {} };
+		Event<EntityManager, EntityAddedEventArgs> onEntityAdded;
+
+
+		EntityManager() : m_atomic_vector_ptr(new std::vector<std::shared_ptr<entity::Entity>>) { }
 		EntityManager(const EntityManager&) = delete;
 		~EntityManager()
 		{
 			auto res = m_atomic_vector_ptr.load();
+			m_atomic_vector_ptr.exchange(nullptr);
 			res->clear();
 			delete res;
 		}
-		std::shared_ptr<Entity> operator[](size_t index) const
+		std::shared_ptr<entity::Entity> operator[](size_t index) const
 		{
 			auto res = m_atomic_vector_ptr.load();
 			return res->at(index);
 		}
-		size_t push_back(std::shared_ptr<Entity> ptr);
+		size_t push_back(std::shared_ptr<entity::Entity> ptr);
 		iterator begin() { return { *this }; }
 		iterator end() { auto res = m_atomic_vector_ptr.load(); return { *this, res->size() }; }
 		size_t size() const { auto res = m_atomic_vector_ptr.load(); return res->size(); }

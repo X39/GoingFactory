@@ -186,7 +186,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Conveyor.cpp" />
+    <ClCompile Include="src\Component.cpp" />
+    <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\EntityManager.cpp" />
     <ClCompile Include="src\Entry.cpp" />
@@ -196,11 +197,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Conveyor.h" />
+    <ClInclude Include="src\Component.h" />
+    <ClInclude Include="src\Player.h" />
+    <ClInclude Include="src\EKey.h" />
+    <ClInclude Include="src\EModifier.h" />
     <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\EntityManager.h" />
     <ClInclude Include="src\Event.h" />
-    <ClInclude Include="src\position.h" />
+    <ClInclude Include="src\vec2.h" />
     <ClInclude Include="src\ResourceManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

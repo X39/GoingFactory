@@ -12,7 +12,9 @@
 #include "ResourceManager.h"
 #include "EntityManager.h"
 #include "Entity.h"
-#include "Conveyor.h"
+#include "Player.h"
+#include "EKey.h"
+#include "EModifier.h"
 
 static int DISPLAY_WIDTH;
 static int DISPLAY_HEIGHT;
@@ -31,6 +33,7 @@ int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_qu
 	al_init_ttf_addon();
 	al_init_image_addon();
 	al_install_mouse();
+	al_install_keyboard();
 	DISPLAY_WIDTH = 780;
 	DISPLAY_HEIGHT = 780;
 	display = al_create_display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
@@ -73,6 +76,7 @@ int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_qu
 	al_register_event_source(event_queue, al_get_timer_event_source(render_timer));
 	al_register_event_source(event_queue, al_get_timer_event_source(simulation_timer));
 	al_register_event_source(event_queue, al_get_mouse_event_source());
+	al_register_event_source(event_queue, al_get_keyboard_event_source());
 
 	al_start_timer(render_timer);
 	al_start_timer(simulation_timer);
@@ -96,10 +100,14 @@ int main()
 	x39::goingfactory::ResourceManager resources_manager;
 	x39::goingfactory::EntityManager entity_manager;
 	entity_manager.onEntityAdded.subscribe([&resources_manager](
-		std::shared_ptr<x39::goingfactory::Entity> entity) -> void {
-			entity->initialize(resources_manager);
+		x39::goingfactory::EntityManager& entity_manager, x39::goingfactory::EntityManager::EntityAddedEventArgs args) -> void {
+			if (args.entity->is_type(x39::goingfactory::EComponent::Render))
+			{
+				auto renderComponent = args.entity->get_component<x39::goingfactory::RenderComponent>();
+				renderComponent->render_init(resources_manager);
+			}
 		});
-	entity_manager.push_back(std::make_shared<x39::goingfactory::Conveyor>());
+	entity_manager.push_back(std::make_shared<x39::goingfactory::entity::Player>());
 
 	auto old_time = al_get_time();
 	bool redraw = false;
@@ -129,6 +137,32 @@ int main()
 		{
 			mouseDown = false;
 		}
+		else if (ev.type == ALLEGRO_EVENT_KEY_DOWN)
+		{
+			auto modifier = static_cast<x39::goingfactory::io::EModifier>(ev.keyboard.modifiers);
+			auto key = static_cast<x39::goingfactory::io::EKey>(ev.keyboard.keycode);
+			for (auto it : entity_manager)
+			{
+				if (it->is_type(x39::goingfactory::EComponent::Keyboard))
+				{
+					auto keyboardComponent = it->get_component<x39::goingfactory::KeyboardComponent>();
+					keyboardComponent->key_down(entity_manager, key, modifier);
+				}
+			}
+		}
+		else if (ev.type == ALLEGRO_EVENT_KEY_UP)
+		{
+			auto modifier = static_cast<x39::goingfactory::io::EModifier>(ev.keyboard.modifiers);
+			auto key = static_cast<x39::goingfactory::io::EKey>(ev.keyboard.keycode);
+			for (auto it : entity_manager)
+			{
+				if (it->is_type(x39::goingfactory::EComponent::Keyboard))
+				{
+					auto keyboardComponent = it->get_component<x39::goingfactory::KeyboardComponent>();
+					keyboardComponent->key_up(entity_manager, key, modifier);
+				}
+			}
+		}
 		else if (ev.type == ALLEGRO_EVENT_TIMER)
 		{
 			if (ev.timer.source == render_timer)
@@ -149,7 +183,11 @@ int main()
 
 			for (auto it : entity_manager)
 			{
-				it->render(resources_manager);
+				if (it->is_type(x39::goingfactory::EComponent::Render))
+				{
+					auto renderComponent = it->get_component<x39::goingfactory::RenderComponent>();
+					renderComponent->render(resources_manager);
+				}
 			}
 
 			al_flip_display();
@@ -160,7 +198,11 @@ int main()
 		{
 			for (auto it : entity_manager)
 			{
-				it->simulate(entity_manager);
+				if (it->is_type(x39::goingfactory::EComponent::Simulate))
+				{
+					auto simulateComponent = it->get_component<x39::goingfactory::SimulateComponent>();
+					simulateComponent->simulate(entity_manager);
+				}
 			}
 			simulate = false;
 		}

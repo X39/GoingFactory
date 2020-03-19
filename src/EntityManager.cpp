@@ -4,16 +4,16 @@
 #include <future>
 #include <algorithm>
 
-size_t x39::goingfactory::EntityManager::push_back(std::shared_ptr<Entity> ptr)
+size_t x39::goingfactory::EntityManager::push_back(std::shared_ptr<x39::goingfactory::entity::Entity> ptr)
 {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	auto res = m_atomic_vector_ptr.load();
-	auto free_spot = std::find_if(res->begin(), res->end(), [](const std::shared_ptr<Entity>& ptr) -> bool { return !ptr; });
+	auto free_spot = std::find_if(res->begin(), res->end(), [](const std::shared_ptr<entity::Entity>& ptr) -> bool { return !ptr; });
 	if (free_spot == res->end())
 	{
 		if (res->size() == res->capacity())
 		{
-			auto duplicate = new std::vector<std::shared_ptr<Entity>>(res->capacity() * 2);
+			auto duplicate = new std::vector<std::shared_ptr<entity::Entity>>(res->capacity() * 2);
 			for (auto it : *res)
 			{
 				duplicate->push_back(it);
@@ -31,7 +31,8 @@ size_t x39::goingfactory::EntityManager::push_back(std::shared_ptr<Entity> ptr)
 		size_t index = res->size();
 		res->push_back(ptr);
 		ptr->m_local_id = index;
-		onEntityAdded.raise(ptr);
+		EntityAddedEventArgs args(ptr);
+		onEntityAdded.raise(*this, args);
 		return index;
 	}
 	else
@@ -39,7 +40,8 @@ size_t x39::goingfactory::EntityManager::push_back(std::shared_ptr<Entity> ptr)
 		size_t index = free_spot - res->begin();
 		res->emplace(free_spot, ptr);
 		ptr->m_local_id = index;
-		onEntityAdded.raise(ptr);
+		EntityAddedEventArgs args(ptr);
+		onEntityAdded.raise(*this, args);
 		return index;
 	}
 }
