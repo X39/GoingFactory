@@ -6,7 +6,7 @@
 #include "ResourceManager.h"
 #include "World.h"
 #include "EntityManager.h"
-#include "Movable.h"
+#include "Laser.h"
 
 x39::goingfactory::entity::EntityRegister<x39::goingfactory::entity::Player> entityRegister("Player",
 	[]() -> std::shared_ptr<x39::goingfactory::entity::Entity> { return std::make_shared<x39::goingfactory::entity::Player>(); });
@@ -23,6 +23,20 @@ void x39::goingfactory::entity::Player::render(GameInstance& game, vec2 translat
 	if (m_textures.size() == m_texture_index)
 	{
 		m_texture_index = 0;
+	}
+
+
+	// HP Bar
+	auto hp = health();
+	auto left = pos.x - 8;
+	auto right = pos.x + 8;
+	auto right_reduction = (1 - hp) * (right - left);
+	al_draw_line(left - 1, pos.y + 9, right + 1, pos.y + 9, al_map_rgb(0x32, 0x32, 0x32), 3);
+	al_draw_line(left, pos.y + 9, right, pos.y + 9, al_map_rgb(127, 0, 0), 1);
+	al_draw_line(left, pos.y + 9, right - right_reduction, pos.y + 9, al_map_rgb(0xff, 0xac, 0x41), 1);
+	if (health() == 0)
+	{
+		exit(0);
 	}
 }
 
@@ -42,10 +56,16 @@ void x39::goingfactory::entity::Player::simulate(GameInstance& game)
 	else if (m_pos.x > game.world.level_width()) { m_pos.x = game.world.level_width(); }
 	if (m_pos.y < 0) { m_pos.y = 0; }
 	else if (m_pos.y > game.world.level_height()) { m_pos.y = game.world.level_height(); }
+
+
 }
 void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayerInteraction playerInteraction)
 {
-	const float move_coef = 0.4 * 5;
+	float move_coef = 1;
+	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_a) != x39::goingfactory::io::EPlayerInteraction::empty)
+	{ move_coef *= 2; }
+	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_b) != x39::goingfactory::io::EPlayerInteraction::empty)
+	{ move_coef *= 0.5; }
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::move_left) != x39::goingfactory::io::EPlayerInteraction::empty)
 	{ m_velocity.x += -move_coef; }
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::move_right) != x39::goingfactory::io::EPlayerInteraction::empty)
@@ -56,11 +76,16 @@ void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayer
 	{ m_velocity.y += move_coef; }
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::trigger_a) != x39::goingfactory::io::EPlayerInteraction::empty)
 	{
-		auto movable = std::make_shared<Movable>();
-		movable->pos(m_pos);
-		auto new_velocity = vec2::from_radians(m_prev_rad - /* 90° */ 1.5708) * 10;
-		movable->velocity(new_velocity);
-		movable->velocity_tick_modifier(1);
-		game.entity_manager.push_back(movable);
+		double d = al_get_time();
+		if (d - m_last_shot > 0.25)
+		{
+			m_last_shot = d;
+			auto movable = std::make_shared<Laser>();
+			movable->pos(m_pos);
+			movable->set_owner(this);
+			auto new_velocity = vec2::from_radians(m_prev_rad - /* 90° */ 1.5708) * 10;
+			movable->velocity(new_velocity);
+			game.entity_manager.push_back(movable);
+		}
 	}
 }

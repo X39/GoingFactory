@@ -14,13 +14,14 @@
 #include "ResourceManager.h"
 #include "EntityManager.h"
 #include "Entity.h"
-#include "Movable.h"
+#include "Asteroid.h"
 #include "Player.h"
 #include "EKey.h"
 #include "EModifier.h"
 #include "GameInstance.h"
 #include "World.h"
 #include "KeyboardTarget.h"
+#include <random>
 
 int DISPLAY_WIDTH;
 int DISPLAY_HEIGHT;
@@ -111,6 +112,8 @@ int main()
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_left, x39::goingfactory::io::EKey::A);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_down, x39::goingfactory::io::EKey::S);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_right, x39::goingfactory::io::EKey::D);
+	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_a, x39::goingfactory::io::EKey::LSHIFT);
+	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_b, x39::goingfactory::io::EKey::LCTRL);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::trigger_a, x39::goingfactory::io::EKey::SPACE);
 	x39::goingfactory::GameInstance game_instance(entity_manager, resources_manager, world);
 	entity_manager.onEntityAdded.subscribe([&game_instance](
@@ -125,7 +128,16 @@ int main()
 	world.set_player(player);
 	world.set_viewport(32, 32, DISPLAY_WIDTH - 64, DISPLAY_HEIGHT - 64);
 	world.set_level(5000, 5000);
+	player->pos({2500 + (rand() % 1000 - 500), 2500 + (rand() % 1000 - 500) });
 	entity_manager.push_back(player);
+
+	for (int i = 0; i < 500; i++)
+	{
+		auto asteroid = std::make_shared<x39::goingfactory::entity::Asteroid>();
+		asteroid->pos({ rand() % 5000, rand() % 5000 });
+		asteroid->velocity({ (rand() % 10) / 10.0f, (rand() % 10) / 10.0f });
+		entity_manager.push_back(asteroid);
+	}
 
 	auto old_frame_time = al_get_time();
 	auto old_sim_time = al_get_time();
@@ -145,6 +157,7 @@ int main()
 		{
 			DISPLAY_HEIGHT = ev.display.height;
 			DISPLAY_WIDTH = ev.display.width;
+			world.set_viewport(32, 32, DISPLAY_WIDTH - 64, DISPLAY_HEIGHT - 64);
 		}
 		else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
 		{
@@ -152,6 +165,7 @@ int main()
 		}
 		else if (ev.type == ALLEGRO_EVENT_MOUSE_AXES)
 		{
+
 		}
 		else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
 		{
@@ -163,6 +177,7 @@ int main()
 			auto key = static_cast<x39::goingfactory::io::EKey>(ev.keyboard.keycode);
 			for (auto it : entity_manager)
 			{
+				if (!it) { continue; }
 				if (it->is_type(x39::goingfactory::EComponent::Keyboard))
 				{
 					auto keyboardComponent = it->get_component<x39::goingfactory::KeyboardComponent>();
@@ -177,6 +192,7 @@ int main()
 			auto key = static_cast<x39::goingfactory::io::EKey>(ev.keyboard.keycode);
 			for (auto it : entity_manager)
 			{
+				if (!it) { continue; }
 				if (it->is_type(x39::goingfactory::EComponent::Keyboard))
 				{
 					auto keyboardComponent = it->get_component<x39::goingfactory::KeyboardComponent>();
@@ -200,6 +216,7 @@ int main()
 		{
 			for (auto it : entity_manager)
 			{
+				if (!it) { continue; }
 				if (it->is_type(x39::goingfactory::EComponent::Simulate))
 				{
 					auto simulateComponent = it->get_component<x39::goingfactory::SimulateComponent>();
@@ -229,7 +246,12 @@ int main()
 			al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 2, 0, sstream.str().c_str());
 			sstream.str("");
 
-			sstream << "Entity Count: " << entity_manager.size();
+			size_t count = 0;
+			for (auto it : entity_manager)
+			{
+				if (it) { count++; }
+			}
+			sstream << "Entity Count: " << count << " (cap: " << entity_manager.size() << ")";
 			al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 1, 0, sstream.str().c_str());
 			sstream.str("");
 

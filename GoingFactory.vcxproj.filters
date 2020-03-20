@@ -51,6 +51,12 @@
     <ClCompile Include="src\World.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Asteroid.cpp">
+      <Filter>Source Files\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Laser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -100,6 +106,12 @@
     </ClInclude>
     <ClInclude Include="src\World.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Asteroid.h">
+      <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Laser.h">
+      <Filter>Header Files\entity</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

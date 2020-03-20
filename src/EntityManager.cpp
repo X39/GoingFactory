@@ -46,3 +46,26 @@ size_t x39::goingfactory::EntityManager::push_back(std::shared_ptr<x39::goingfac
 		return index;
 	}
 }
+
+void x39::goingfactory::EntityManager::destroy(entity::Entity* ptr)
+{
+	for (auto it : *this)
+	{
+		if (it.get() == ptr)
+		{
+			destroy(it);
+			break;
+		}
+	}
+}
+
+void x39::goingfactory::EntityManager::destroy(std::shared_ptr<entity::Entity> ptr_in)
+{
+	std::lock_guard<std::mutex> lock(m_mutex);
+	auto res = m_atomic_vector_ptr.load();
+	auto find_res = std::find_if(res->begin(), res->end(), [&ptr_in](const std::shared_ptr<entity::Entity>& ptr) -> bool { return ptr_in == ptr; });
+	if (find_res != res->end())
+	{
+		find_res->reset();
+	}
+}

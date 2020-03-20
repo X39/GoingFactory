@@ -7,7 +7,8 @@ namespace x39::goingfactory::entity
 	class Player : public Entity,
 		public RenderComponent,
 		public PlayerInteractibleComponent,
-		public SimulateComponent
+		public SimulateComponent,
+		public HealthComponent
 	{
 		static EntityRegister<Player> entityRegister;
 		std::vector<size_t> m_textures;
@@ -18,6 +19,7 @@ namespace x39::goingfactory::entity
 		bool m_up_pressed = false;
 		bool m_right_pressed = false;
 		float m_prev_rad = 0;
+		double m_last_shot = 0;
 	public:
 		Player() : Entity(), m_textures(), m_texture_index(0), m_velocity(0, 0) { }
 		position velocity() const { return m_velocity; }
@@ -35,6 +37,7 @@ namespace x39::goingfactory::entity
 			case x39::goingfactory::EComponent::Render:
 			case x39::goingfactory::EComponent::Simulate:
 			case x39::goingfactory::EComponent::PlayerInteractible:
+			case x39::goingfactory::EComponent::Health:
 				return true;
 			default:
 				return false;

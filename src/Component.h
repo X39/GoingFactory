@@ -64,7 +64,7 @@ namespace x39::goingfactory
 		};
 		Event<HealthComponent, OnHealthChangedEventArgs> onHealthChanged;
 
-		HealthComponent() : m_health(0), m_allow_damage(true) {}
+		HealthComponent() : m_health(1), m_allow_damage(true) {}
 		float health() { return m_health; };
 		void health(float value)
 		{

@@ -186,8 +186,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Asteroid.cpp" />
     <ClCompile Include="src\Component.cpp" />
     <ClCompile Include="src\KeyboardTarget.cpp" />
+    <ClCompile Include="src\Laser.cpp" />
     <ClCompile Include="src\Movable.cpp" />
     <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\Entity.cpp" />
@@ -200,10 +202,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Asteroid.h" />
     <ClInclude Include="src\Component.h" />
     <ClInclude Include="src\Entry.h" />
     <ClInclude Include="src\GameInstance.h" />
     <ClInclude Include="src\KeyboardTarget.h" />
+    <ClInclude Include="src\Laser.h" />
     <ClInclude Include="src\Movable.h" />
     <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\EKey.h" />

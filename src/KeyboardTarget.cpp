@@ -35,6 +35,7 @@ void x39::goingfactory::io::KeyboardTarget::entity_interact(GameInstance& game)
 	{
 		for (auto it : game.entity_manager)
 		{
+			if (!it) { continue; }
 			if (it->is_type(EComponent::PlayerInteractible))
 			{
 				auto playerInteractible = it->get_component<PlayerInteractibleComponent>();

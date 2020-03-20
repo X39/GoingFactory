@@ -61,6 +61,8 @@ namespace x39::goingfactory
 			return res->at(index);
 		}
 		size_t push_back(std::shared_ptr<entity::Entity> ptr);
+		void destroy(entity::Entity* ptr);
+		void destroy(std::shared_ptr<entity::Entity> ptr);
 		iterator begin() { return { *this }; }
 		iterator end() { auto res = m_atomic_vector_ptr.load(); return { *this, res->size() }; }
 		size_t size() const { auto res = m_atomic_vector_ptr.load(); return res->size(); }

@@ -67,6 +67,7 @@ void x39::goingfactory::World::render(GameInstance& game)
 
 	for (auto it : game.entity_manager)
 	{
+		if (!it) { continue; }
 		auto entity_pos = it->pos() - player_pos_centered;
 		if (entity_pos.x > m_viewport_x && entity_pos.x < m_viewport_w + m_viewport_x &&
 			entity_pos.y > m_viewport_y && entity_pos.y < m_viewport_h + m_viewport_y &&
