@@ -187,6 +187,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Component.cpp" />
+    <ClCompile Include="src\KeyboardTarget.cpp" />
     <ClCompile Include="src\Movable.cpp" />
     <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\Entity.cpp" />
@@ -200,6 +201,8 @@
   <ItemGroup>
     <ClInclude Include="src\Component.h" />
     <ClInclude Include="src\Entry.h" />
+    <ClInclude Include="src\GameInstance.h" />
+    <ClInclude Include="src\KeyboardTarget.h" />
     <ClInclude Include="src\Movable.h" />
     <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\EKey.h" />
@@ -207,8 +210,10 @@
     <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\EntityManager.h" />
     <ClInclude Include="src\Event.h" />
+    <ClInclude Include="src\PlayerInteraction.h" />
     <ClInclude Include="src\vec2.h" />
     <ClInclude Include="src\ResourceManager.h" />
+    <ClInclude Include="src\World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

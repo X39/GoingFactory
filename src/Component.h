@@ -5,17 +5,18 @@
 #include "Event.h"
 #include "EKey.h"
 #include "EModifier.h"
+#include "GameInstance.h"
+#include "PlayerInteraction.h"
 
 namespace x39::goingfactory
 {
-	class EntityManager;
-	class ResourceManager;
 	enum class EComponent
 	{
 		Render,
 		Simulate,
 		Health,
-		Keyboard
+		Keyboard,
+		PlayerInteractible
 	};
 	class Component
 	{
@@ -30,14 +31,14 @@ namespace x39::goingfactory
 	class RenderComponent : public Component
 	{
 	public:
-		virtual void render_init(ResourceManager&) {}
-		virtual void render(ResourceManager&) = 0;
+		virtual void render_init(GameInstance&) {}
+		virtual void render(GameInstance&) = 0;
 		static EComponent type() { return EComponent::Render; }
 	};
 	class SimulateComponent : public Component
 	{
 	public:
-		virtual void simulate(EntityManager&) = 0;
+		virtual void simulate(GameInstance&) = 0;
 		static EComponent type() { return EComponent::Simulate; }
 	};
 	class HealthComponent : public Component
@@ -87,8 +88,14 @@ namespace x39::goingfactory
 	class KeyboardComponent : public Component
 	{
 	public:
-		virtual void key_down(EntityManager&, io::EKey, io::EModifier) {};
-		virtual void key_up(EntityManager&, io::EKey, io::EModifier) {};
+		virtual void key_down(GameInstance&, io::EKey, io::EModifier) {};
+		virtual void key_up(GameInstance&, io::EKey, io::EModifier) {};
 		static EComponent type() { return EComponent::Keyboard; }
+	};
+	class PlayerInteractibleComponent : public Component
+	{
+	public:
+		static EComponent type() { return EComponent::PlayerInteractible; }
+		virtual void interact(GameInstance&, io::EPlayerInteraction) = 0;
 	};
 }

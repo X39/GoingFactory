@@ -8,8 +8,6 @@
 
 namespace x39::goingfactory
 {
-	class EntityManager;
-	class ResourceManager;
 	namespace entity
 	{
 		class Entity : public Component

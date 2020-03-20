@@ -6,7 +6,7 @@ namespace x39::goingfactory::entity
 {
 	class Player : public Entity,
 		public RenderComponent,
-		public KeyboardComponent,
+		public PlayerInteractibleComponent,
 		public SimulateComponent
 	{
 		static EntityRegister<Player> entityRegister;
@@ -23,11 +23,10 @@ namespace x39::goingfactory::entity
 		position velocity() const { return m_velocity; }
 		void velocity(position pos) { m_velocity = pos; }
 
-		virtual void render_init(ResourceManager&) override;
-		virtual void render(ResourceManager&) override;
-		virtual void simulate(EntityManager&) override;
-		virtual void key_down(EntityManager&, io::EKey, io::EModifier) override;
-		virtual void key_up(EntityManager&, io::EKey, io::EModifier) override;
+		virtual void render_init(GameInstance&) override;
+		virtual void render(GameInstance&) override;
+		virtual void simulate(GameInstance&) override;
+		virtual void interact(GameInstance&, io::EPlayerInteraction) override;
 
 		virtual bool is_type(EComponent component) const override
 		{
@@ -35,7 +34,7 @@ namespace x39::goingfactory::entity
 			{
 			case x39::goingfactory::EComponent::Render:
 			case x39::goingfactory::EComponent::Simulate:
-			case x39::goingfactory::EComponent::Keyboard:
+			case x39::goingfactory::EComponent::PlayerInteractible:
 				return true;
 			default:
 				return false;

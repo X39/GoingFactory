@@ -9,6 +9,7 @@
 
 #include <cstdio>
 #include <string>
+#include <sstream>
 
 #include "ResourceManager.h"
 #include "EntityManager.h"
@@ -17,12 +18,14 @@
 #include "Player.h"
 #include "EKey.h"
 #include "EModifier.h"
+#include "GameInstance.h"
+#include "KeyboardTarget.h"
 
 int DISPLAY_WIDTH;
 int DISPLAY_HEIGHT;
 
 const float RENDER_FPS = 60;
-const float SIMULATION_FPS = 30;
+const float SIMULATION_FPS = 60;
 int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer, ALLEGRO_TIMER*& simulation_timer, ALLEGRO_FONT*& font)
 {
 	if (!al_init())
@@ -67,10 +70,10 @@ int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_qu
 		return -1;
 	}
 
-	font = al_load_ttf_font("pirulen.ttf", 72, 0);
+	font = al_load_ttf_font("arial.ttf", 72, 0);
 	if (!font)
 	{
-		fprintf(stderr, "Could not load 'pirulen.ttf'.\n");
+		fprintf(stderr, "Could not load 'arial.ttf'.\n");
 		font = al_create_builtin_font(); //Load fallback
 	}
 
@@ -101,12 +104,19 @@ int main()
 
 	x39::goingfactory::ResourceManager resources_manager;
 	x39::goingfactory::EntityManager entity_manager;
-	entity_manager.onEntityAdded.subscribe([&resources_manager](
+	x39::goingfactory::io::KeyboardTarget keyboard_target;
+	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_up, x39::goingfactory::io::EKey::W);
+	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_left, x39::goingfactory::io::EKey::A);
+	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_down, x39::goingfactory::io::EKey::S);
+	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_right, x39::goingfactory::io::EKey::D);
+	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::trigger_a, x39::goingfactory::io::EKey::SPACE);
+	x39::goingfactory::GameInstance game_instance(entity_manager, resources_manager);
+	entity_manager.onEntityAdded.subscribe([&game_instance](
 		x39::goingfactory::EntityManager& entity_manager, x39::goingfactory::EntityManager::EntityAddedEventArgs args) -> void {
 			if (args.entity->is_type(x39::goingfactory::EComponent::Render))
 			{
 				auto renderComponent = args.entity->get_component<x39::goingfactory::RenderComponent>();
-				renderComponent->render_init(resources_manager);
+				renderComponent->render_init(game_instance);
 			}
 		});
 	entity_manager.push_back(std::make_shared<x39::goingfactory::entity::Player>());
@@ -114,7 +124,9 @@ int main()
 	movable->pos({ DISPLAY_WIDTH / 2.0f, DISPLAY_HEIGHT / 2.0f });
 	entity_manager.push_back(movable);
 
-	auto old_time = al_get_time();
+	auto old_frame_time = al_get_time();
+	auto old_sim_time = al_get_time();
+	int last_sim_fps = 0;
 	bool redraw = false;
 	bool simulate = false;
 	bool mouseDown = false;
@@ -151,9 +163,10 @@ int main()
 				if (it->is_type(x39::goingfactory::EComponent::Keyboard))
 				{
 					auto keyboardComponent = it->get_component<x39::goingfactory::KeyboardComponent>();
-					keyboardComponent->key_down(entity_manager, key, modifier);
+					keyboardComponent->key_down(game_instance, key, modifier);
 				}
 			}
+			keyboard_target.key_down(key, modifier);
 		}
 		else if (ev.type == ALLEGRO_EVENT_KEY_UP)
 		{
@@ -164,9 +177,10 @@ int main()
 				if (it->is_type(x39::goingfactory::EComponent::Keyboard))
 				{
 					auto keyboardComponent = it->get_component<x39::goingfactory::KeyboardComponent>();
-					keyboardComponent->key_up(entity_manager, key, modifier);
+					keyboardComponent->key_up(game_instance, key, modifier);
 				}
 			}
+			keyboard_target.key_up(key, modifier);
 		}
 		else if (ev.type == ALLEGRO_EVENT_TIMER)
 		{
@@ -179,37 +193,55 @@ int main()
 				simulate = true;
 			}
 		}
-		if (redraw && al_is_event_queue_empty(event_queue))
-		{
-			auto new_time = al_get_time();
-			auto fpsString = std::to_string((int)(1 / (new_time - old_time)));
-			al_draw_text(font, al_map_rgb(255, 0, 0), 0, 0, 0, fpsString.c_str());
-			old_time = new_time;
-
-			for (auto it : entity_manager)
-			{
-				if (it->is_type(x39::goingfactory::EComponent::Render))
-				{
-					auto renderComponent = it->get_component<x39::goingfactory::RenderComponent>();
-					renderComponent->render(resources_manager);
-				}
-			}
-
-			al_flip_display();
-			al_clear_to_color(al_map_rgb(0, 0, 0));
-			redraw = false;
-		}
-		if (simulate && al_is_event_queue_empty(event_queue))
+		if (simulate)
 		{
 			for (auto it : entity_manager)
 			{
 				if (it->is_type(x39::goingfactory::EComponent::Simulate))
 				{
 					auto simulateComponent = it->get_component<x39::goingfactory::SimulateComponent>();
-					simulateComponent->simulate(entity_manager);
+					simulateComponent->simulate(game_instance);
 				}
 			}
+			keyboard_target.entity_interact(game_instance);
+
+			auto new_time = al_get_time();
+			last_sim_fps = (int)(1 / (new_time - old_sim_time));
+			old_sim_time = new_time;
 			simulate = false;
+		}
+		if (redraw && al_is_event_queue_empty(event_queue))
+		{
+			for (auto it : entity_manager)
+			{
+				if (it->is_type(x39::goingfactory::EComponent::Render))
+				{
+					auto renderComponent = it->get_component<x39::goingfactory::RenderComponent>();
+					renderComponent->render(game_instance);
+				}
+			}
+
+			auto new_time = al_get_time();
+			auto fps = (int)(1 / (new_time - old_frame_time));
+			std::stringstream sstream;
+
+			sstream << "Render-FPS: " << fps;
+			al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 3, 0, sstream.str().c_str());
+			sstream.str("");
+
+			sstream << "Simulation-FPS: " << last_sim_fps;
+			al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 2, 0, sstream.str().c_str());
+			sstream.str("");
+
+			sstream << "Entity Count: " << entity_manager.size();
+			al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 1, 0, sstream.str().c_str());
+			sstream.str("");
+
+			old_frame_time = new_time;
+
+			al_flip_display();
+			al_clear_to_color(al_map_rgb(0, 0, 0));
+			redraw = false;
 		}
 	}
 
