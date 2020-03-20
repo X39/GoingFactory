@@ -39,7 +39,7 @@ size_t x39::goingfactory::EntityManager::push_back(std::shared_ptr<x39::goingfac
 	else
 	{
 		size_t index = free_spot - res->begin();
-		res->emplace(free_spot, ptr);
+		*free_spot = ptr;
 		ptr->m_local_id = index;
 		EntityAddedEventArgs args(ptr);
 		onEntityAdded.raise(*this, args);
