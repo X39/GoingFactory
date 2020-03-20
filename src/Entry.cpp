@@ -251,8 +251,16 @@ int main()
 			{
 				if (it) { count++; }
 			}
-			sstream << "Entity Count: " << count << " (cap: " << entity_manager.size() << ")";
+			sstream << "Entity Manager Info: alive: " << count << "; size: " << entity_manager.size() << "; capacity: " << entity_manager.capacity();
 			al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 1, 0, sstream.str().c_str());
+			sstream.str("");
+
+			sstream << "Controls:";
+			al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 0, 0, sstream.str().c_str());
+			sstream.str("");
+
+			sstream << "Up (W) | Left (A) | Down (S) | Right (D) | Shoot (Space) | Speed x2 (LShift) | Speed x0.5 (LCTRL)";
+			al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 1, 0, sstream.str().c_str());
 			sstream.str("");
 
 			old_frame_time = new_time;

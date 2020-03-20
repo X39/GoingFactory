@@ -66,5 +66,6 @@ namespace x39::goingfactory
 		iterator begin() { return { *this }; }
 		iterator end() { auto res = m_atomic_vector_ptr.load(); return { *this, res->size() }; }
 		size_t size() const { auto res = m_atomic_vector_ptr.load(); return res->size(); }
+		size_t capacity() const { auto res = m_atomic_vector_ptr.load(); return res->capacity(); }
 	};
 }
