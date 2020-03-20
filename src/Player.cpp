@@ -4,20 +4,21 @@
 #include <allegro5/allegro_image.h>
 
 #include "ResourceManager.h"
+#include "World.h"
 #include "EntityManager.h"
-#include "Entry.h"
 #include "Movable.h"
 
 x39::goingfactory::entity::EntityRegister<x39::goingfactory::entity::Player> entityRegister("Player",
 	[]() -> std::shared_ptr<x39::goingfactory::entity::Entity> { return std::make_shared<x39::goingfactory::entity::Player>(); });
 
 
-void x39::goingfactory::entity::Player::render(GameInstance& game)
+void x39::goingfactory::entity::Player::render(GameInstance& game, vec2 translate)
 {
 	auto bitmap = game.resource_manager.get_bitmap(m_textures[m_texture_index]);
 	float angle = m_velocity.to_radians() + /* 90° */ 1.5708;
 	m_prev_rad = m_velocity.x == 0 && m_velocity.y == 0 ? m_prev_rad : angle;
-	al_draw_rotated_bitmap(bitmap, 8, 8, m_pos.x, m_pos.y, m_prev_rad, NULL);
+	auto pos = m_pos - translate;
+	al_draw_rotated_bitmap(bitmap, 8, 8, pos.x, pos.y, m_prev_rad, NULL);
 	m_texture_index++;
 	if (m_textures.size() == m_texture_index)
 	{
@@ -38,9 +39,9 @@ void x39::goingfactory::entity::Player::simulate(GameInstance& game)
 	m_pos.y += m_velocity.y;
 	m_velocity.y *= 0.9;
 	if (m_pos.x < 0) { m_pos.x = 0; }
-	else if (m_pos.x > DISPLAY_WIDTH) { m_pos.x = DISPLAY_WIDTH; }
+	else if (m_pos.x > game.world.level_width()) { m_pos.x = game.world.level_width(); }
 	if (m_pos.y < 0) { m_pos.y = 0; }
-	else if (m_pos.y > DISPLAY_HEIGHT) { m_pos.y = DISPLAY_HEIGHT; }
+	else if (m_pos.y > game.world.level_height()) { m_pos.y = game.world.level_height(); }
 }
 void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayerInteraction playerInteraction)
 {

@@ -19,6 +19,7 @@
 #include "EKey.h"
 #include "EModifier.h"
 #include "GameInstance.h"
+#include "World.h"
 #include "KeyboardTarget.h"
 
 int DISPLAY_WIDTH;
@@ -105,12 +106,13 @@ int main()
 	x39::goingfactory::ResourceManager resources_manager;
 	x39::goingfactory::EntityManager entity_manager;
 	x39::goingfactory::io::KeyboardTarget keyboard_target;
+	x39::goingfactory::World world;
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_up, x39::goingfactory::io::EKey::W);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_left, x39::goingfactory::io::EKey::A);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_down, x39::goingfactory::io::EKey::S);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_right, x39::goingfactory::io::EKey::D);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::trigger_a, x39::goingfactory::io::EKey::SPACE);
-	x39::goingfactory::GameInstance game_instance(entity_manager, resources_manager);
+	x39::goingfactory::GameInstance game_instance(entity_manager, resources_manager, world);
 	entity_manager.onEntityAdded.subscribe([&game_instance](
 		x39::goingfactory::EntityManager& entity_manager, x39::goingfactory::EntityManager::EntityAddedEventArgs args) -> void {
 			if (args.entity->is_type(x39::goingfactory::EComponent::Render))
@@ -119,10 +121,11 @@ int main()
 				renderComponent->render_init(game_instance);
 			}
 		});
-	entity_manager.push_back(std::make_shared<x39::goingfactory::entity::Player>());
-	auto movable = std::make_shared<x39::goingfactory::entity::Movable>();
-	movable->pos({ DISPLAY_WIDTH / 2.0f, DISPLAY_HEIGHT / 2.0f });
-	entity_manager.push_back(movable);
+	auto player = std::make_shared<x39::goingfactory::entity::Player>();
+	world.set_player(player);
+	world.set_viewport(32, 32, DISPLAY_WIDTH - 64, DISPLAY_HEIGHT - 64);
+	world.set_level(5000, 5000);
+	entity_manager.push_back(player);
 
 	auto old_frame_time = al_get_time();
 	auto old_sim_time = al_get_time();
@@ -212,14 +215,7 @@ int main()
 		}
 		if (redraw && al_is_event_queue_empty(event_queue))
 		{
-			for (auto it : entity_manager)
-			{
-				if (it->is_type(x39::goingfactory::EComponent::Render))
-				{
-					auto renderComponent = it->get_component<x39::goingfactory::RenderComponent>();
-					renderComponent->render(game_instance);
-				}
-			}
+			world.render(game_instance);
 
 			auto new_time = al_get_time();
 			auto fps = (int)(1 / (new_time - old_frame_time));

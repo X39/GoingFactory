@@ -5,13 +5,13 @@
 
 #include "ResourceManager.h"
 #include "EntityManager.h"
-#include "Entry.h"
+#include "World.h"
 
 x39::goingfactory::entity::EntityRegister<x39::goingfactory::entity::Movable> entityRegister("Movable",
 	[]() -> std::shared_ptr<x39::goingfactory::entity::Entity> { return std::make_shared<x39::goingfactory::entity::Movable>(); });
 
 
-void x39::goingfactory::entity::Movable::render(GameInstance& game)
+void x39::goingfactory::entity::Movable::render(GameInstance& game, vec2 translate)
 {
 	float angle = m_velocity.to_radians() + /* 90° */ 1.5708;
 	m_prev_rad = m_velocity.x == 0 && m_velocity.y == 0 ? m_prev_rad : angle;
@@ -26,10 +26,11 @@ void x39::goingfactory::entity::Movable::render(GameInstance& game)
 		std::array<vec2, 2> { vec2 { -1, 2 }, vec2 { -2, 2 } },
 		std::array<vec2, 2> { vec2 { -2, 2 }, vec2 { -3, 0 } }
 	};
+	auto pos = m_pos - translate;
 	for (auto it : arr)
 	{
 		const float scale = 2.0f;
-		al_draw_line(m_pos.x + it[0].x * scale, m_pos.y + it[0].y * scale, m_pos.x + it[1].x * scale, m_pos.y + it[1].y * scale, color, 1);
+		al_draw_line(pos.x + it[0].x * scale, pos.y + it[0].y * scale, pos.x + it[1].x * scale, pos.y + it[1].y * scale, color, 1);
 	}
 }
 
@@ -44,7 +45,7 @@ void x39::goingfactory::entity::Movable::simulate(GameInstance& game)
 		m_velocity.y *= m_velocity_tick_modifier;
 	}
 	if (m_pos.x < 0) { m_pos.x = 0; }
-	else if (m_pos.x > DISPLAY_WIDTH) { m_pos.x = DISPLAY_WIDTH; }
+	else if (m_pos.x > game.world.level_width()) { m_pos.x = game.world.level_width(); }
 	if (m_pos.y < 0) { m_pos.y = 0; }
-	else if (m_pos.y > DISPLAY_HEIGHT) { m_pos.y = DISPLAY_HEIGHT; }
+	else if (m_pos.y > game.world.level_height()) { m_pos.y = game.world.level_height(); }
 }

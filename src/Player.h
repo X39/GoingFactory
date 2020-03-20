@@ -24,7 +24,7 @@ namespace x39::goingfactory::entity
 		void velocity(position pos) { m_velocity = pos; }
 
 		virtual void render_init(GameInstance&) override;
-		virtual void render(GameInstance&) override;
+		virtual void render(GameInstance&, vec2) override;
 		virtual void simulate(GameInstance&) override;
 		virtual void interact(GameInstance&, io::EPlayerInteraction) override;
 

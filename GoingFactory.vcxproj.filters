@@ -22,9 +22,6 @@
     <Filter Include="Source Files\entity">
       <UniqueIdentifier>{5fff2f82-4926-4bea-89ba-e3f8914f8ca9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\world">
-      <UniqueIdentifier>{7cd43f6d-df00-4250-8d96-ddfb664d75d1}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Entry.cpp">
@@ -49,6 +46,9 @@
       <Filter>Source Files\entity</Filter>
     </ClCompile>
     <ClCompile Include="src\KeyboardTarget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\World.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -89,9 +89,6 @@
     <ClInclude Include="src\Movable.h">
       <Filter>Header Files\entity</Filter>
     </ClInclude>
-    <ClInclude Include="src\World.h">
-      <Filter>Header Files\world</Filter>
-    </ClInclude>
     <ClInclude Include="src\GameInstance.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -100,6 +97,9 @@
     </ClInclude>
     <ClInclude Include="src\PlayerInteraction.h">
       <Filter>Header Files\io</Filter>
+    </ClInclude>
+    <ClInclude Include="src\World.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

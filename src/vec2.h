@@ -11,6 +11,9 @@ namespace x39::goingfactory
 		vec2(int x, float y) : x(x), y(y) {}
 		vec2(int x, int y) : x(x), y(y) {}
 		vec2(float x, int y) : x(x), y(y) {}
+		vec2(size_t x, float y) : x(x), y(y) {}
+		vec2(size_t x, size_t y) : x(x), y(y) {}
+		vec2(float x, size_t y) : x(x), y(y) {}
 		vec2(float x, float y) : x(x), y(y) {}
 
 		vec2 operator + (const vec2& rvalue)

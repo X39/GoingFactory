@@ -32,7 +32,7 @@ namespace x39::goingfactory
 	{
 	public:
 		virtual void render_init(GameInstance&) {}
-		virtual void render(GameInstance&) = 0;
+		virtual void render(GameInstance&, vec2) = 0;
 		static EComponent type() { return EComponent::Render; }
 	};
 	class SimulateComponent : public Component
