@@ -27,7 +27,7 @@ void x39::goingfactory::entity::Asteroid::render(GameInstance& game, vec2 transl
 		std::array<vec2, 2> { vec2 { -1, 2 }, vec2 { -2, 2 } },
 		std::array<vec2, 2> { vec2 { -2, 2 }, vec2 { -3, 0 } }
 	};
-	auto pos = m_pos - translate;
+	auto pos = position() - translate;
 	for (auto it : arr)
 	{
 		al_draw_line(pos.x + it[0].x * scale, pos.y + it[0].y * scale, pos.x + it[1].x * scale, pos.y + it[1].y * scale, color, 1);
@@ -43,20 +43,20 @@ void x39::goingfactory::entity::Asteroid::render(GameInstance& game, vec2 transl
 	al_draw_line(left, pos.y + 9, right - right_reduction, pos.y + 9, al_map_rgb(0xff, 0x1e, 0x56), 1);
 	if (health() == 0)
 	{
-		game.entity_manager.destroy(this);
+		game.entity_manager.pool_destroy(this);
 	}
 }
 
 void x39::goingfactory::entity::Asteroid::simulate(GameInstance& game)
 {
 	Movable::simulate(game);
-	vec2 topLeft = m_pos - 8;
-	vec2 botRight = m_pos + 8;
-	auto position = game.world.player()->pos();
+	vec2 topLeft = position() - 8;
+	vec2 botRight = position() + 8;
+	auto position = game.world.player()->get_component<PositionComponent>()->position();
 	if (topLeft < position && position < botRight)
 	{
 		auto healthComponent = game.world.player()->get_component<HealthComponent>();
 		healthComponent->damage(0.1);
-		game.entity_manager.destroy(this);
+		game.entity_manager.pool_destroy(this);
 	}
 }

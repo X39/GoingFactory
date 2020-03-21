@@ -124,26 +124,29 @@ int main()
 				renderComponent->render_init(game_instance);
 			}
 		});
-	auto player = std::make_shared<x39::goingfactory::entity::Player>();
+	auto player = new x39::goingfactory::entity::Player();
 	world.set_player(player);
 	world.set_viewport(32, 32, DISPLAY_WIDTH - 64, DISPLAY_HEIGHT - 64);
 	world.set_level(5000, 5000);
-	player->pos({2500 + (rand() % 1000 - 500), 2500 + (rand() % 1000 - 500) });
-	entity_manager.push_back(player);
+	player->position({2500 + (rand() % 1000 - 500), 2500 + (rand() % 1000 - 500) });
+	entity_manager.pool_create(player);
 
-	for (int i = 0; i < 500; i++)
+	for (int i = 0; i < 5000; i++)
 	{
-		auto asteroid = std::make_shared<x39::goingfactory::entity::Asteroid>();
-		asteroid->pos({ rand() % 5000, rand() % 5000 });
+		auto asteroid = new x39::goingfactory::entity::Asteroid();
+		asteroid->position({ rand() % 5000, rand() % 5000 });
 		asteroid->velocity({ (rand() % 10) / 10.0f, (rand() % 10) / 10.0f });
-		entity_manager.push_back(asteroid);
+		entity_manager.pool_create(asteroid);
 	}
+
+	entity_manager.act_pools();
 
 	auto old_frame_time = al_get_time();
 	auto old_sim_time = al_get_time();
 	int last_sim_fps = 0;
 	bool redraw = false;
 	bool simulate = false;
+	bool simulating = false;
 	bool mouseDown = false;
 	while (true)
 	{
@@ -212,8 +215,9 @@ int main()
 				simulate = true;
 			}
 		}
-		if (simulate)
+		if (simulate && !simulating)
 		{
+			simulating = true;
 			for (auto it : entity_manager)
 			{
 				if (!it) { continue; }
@@ -229,6 +233,7 @@ int main()
 			last_sim_fps = (int)(1 / (new_time - old_sim_time));
 			old_sim_time = new_time;
 			simulate = false;
+			simulating = false;
 		}
 		if (redraw && al_is_event_queue_empty(event_queue))
 		{
@@ -237,6 +242,16 @@ int main()
 			auto new_time = al_get_time();
 			auto fps = (int)(1 / (new_time - old_frame_time));
 			std::stringstream sstream;
+
+
+			sstream << "Controls:";
+			al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 0, 0, sstream.str().c_str());
+			sstream.str("");
+
+			sstream << "Up (W) | Left (A) | Down (S) | Right (D) | Shoot (Space) | Speed x2 (LShift) | Speed x0.5 (LCTRL)";
+			al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 1, 0, sstream.str().c_str());
+			sstream.str("");
+
 
 			sstream << "Render-FPS: " << fps;
 			al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 3, 0, sstream.str().c_str());
@@ -255,12 +270,13 @@ int main()
 			al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 1, 0, sstream.str().c_str());
 			sstream.str("");
 
-			sstream << "Controls:";
-			al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 0, 0, sstream.str().c_str());
+
+			sstream << "Player Position: { " << player->position().x << ", " << player->position().y << " }";
+			al_draw_text(font, al_map_rgb(255, 255, 0), DISPLAY_WIDTH / 2 + 1, DISPLAY_HEIGHT - 1 - 10 * 3, 0, sstream.str().c_str());
 			sstream.str("");
 
-			sstream << "Up (W) | Left (A) | Down (S) | Right (D) | Shoot (Space) | Speed x2 (LShift) | Speed x0.5 (LCTRL)";
-			al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 1, 0, sstream.str().c_str());
+			sstream << "Player Chunk: { " << player->chunk()->index_x() << ", " << player->chunk()->index_y() << "}";
+			al_draw_text(font, al_map_rgb(255, 255, 0), DISPLAY_WIDTH / 2 + 1, DISPLAY_HEIGHT - 1 - 10 * 2, 0, sstream.str().c_str());
 			sstream.str("");
 
 			old_frame_time = new_time;
@@ -269,6 +285,7 @@ int main()
 			al_clear_to_color(al_map_rgb(0, 0, 0));
 			redraw = false;
 		}
+		entity_manager.act_pools();
 	}
 
 	al_destroy_font(font);

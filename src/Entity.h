@@ -3,8 +3,10 @@
 #include <unordered_map>
 #include <string>
 
+#include "chunk.h"
 #include "vec2.h"
 #include "Component.h"
+#include "Event.h"
 
 namespace x39::goingfactory
 {
@@ -15,15 +17,12 @@ namespace x39::goingfactory
 		private:
 			friend class EntityManager;
 			size_t m_local_id;
-		protected:
-			position m_pos;
+			void raise_onDestroy() { EventArgs args; onDestroy.raise(*this, args); }
 		public:
+			Event<Entity> onDestroy;
 			static std::unordered_map<std::string, std::function<std::shared_ptr<x39::goingfactory::entity::Entity>()>>& registry();
-			Entity() : m_local_id(~0), m_pos() {}
+			Entity() : m_local_id(~0) { }
 			size_t local_id() { return m_local_id; }
-			position pos() const { return m_pos; }
-			void pos(position pos) { m_pos = pos; }
-
 		};
 		template <typename T> struct EntityRegister
 		{

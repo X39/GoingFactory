@@ -5,7 +5,8 @@
 namespace x39::goingfactory::entity
 {
 	class Movable : public Entity,
-		public SimulateComponent
+		public SimulateComponent,
+		public PositionComponent
 	{
 		static EntityRegister<Movable> entityRegister;
 	protected:
@@ -13,9 +14,9 @@ namespace x39::goingfactory::entity
 		float m_prev_rad;
 		float m_velocity_tick_modifier;
 	public:
-		Movable() : Entity(), m_velocity(0, 0), m_prev_rad(0), m_velocity_tick_modifier(0.9) { }
-		position velocity() const { return m_velocity; }
-		void velocity(position pos) { m_velocity = pos; }
+		Movable() : Entity(), m_velocity(0, 0), m_prev_rad(0), m_velocity_tick_modifier(0.9f) { }
+		vec2 velocity() const { return m_velocity; }
+		void velocity(vec2 pos) { m_velocity = pos; }
 
 		void velocity_tick_modifier(float f) { m_velocity_tick_modifier = f; }
 		float velocity_tick_modifier() { return m_velocity_tick_modifier; }
@@ -25,6 +26,7 @@ namespace x39::goingfactory::entity
 		{
 			switch (component)
 			{
+			case x39::goingfactory::EComponent::Position:
 			case x39::goingfactory::EComponent::Simulate:
 				return true;
 			default:

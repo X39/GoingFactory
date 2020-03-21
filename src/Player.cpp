@@ -17,7 +17,7 @@ void x39::goingfactory::entity::Player::render(GameInstance& game, vec2 translat
 	auto bitmap = game.resource_manager.get_bitmap(m_textures[m_texture_index]);
 	float angle = m_velocity.to_radians() + /* 90° */ 1.5708;
 	m_prev_rad = m_velocity.x == 0 && m_velocity.y == 0 ? m_prev_rad : angle;
-	auto pos = m_pos - translate;
+	auto pos = position() - translate;
 	al_draw_rotated_bitmap(bitmap, 8, 8, pos.x, pos.y, m_prev_rad, NULL);
 	m_texture_index++;
 	if (m_textures.size() == m_texture_index)
@@ -44,21 +44,6 @@ void x39::goingfactory::entity::Player::render_init(GameInstance& game)
 {
 	m_textures.push_back(game.resource_manager.load_bitmap("Textures/Player.png"));
 }
-
-void x39::goingfactory::entity::Player::simulate(GameInstance& game)
-{
-	const float coef = 0.4;
-	m_pos.x += m_velocity.x;
-	m_velocity.x *= 0.9;
-	m_pos.y += m_velocity.y;
-	m_velocity.y *= 0.9;
-	if (m_pos.x < 0) { m_pos.x = 0; }
-	else if (m_pos.x > game.world.level_width()) { m_pos.x = game.world.level_width(); }
-	if (m_pos.y < 0) { m_pos.y = 0; }
-	else if (m_pos.y > game.world.level_height()) { m_pos.y = game.world.level_height(); }
-
-
-}
 void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayerInteraction playerInteraction)
 {
 	float move_coef = 1;
@@ -80,12 +65,12 @@ void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayer
 		if (d - m_last_shot > 0.25)
 		{
 			m_last_shot = d;
-			auto movable = std::make_shared<Laser>();
-			movable->pos(m_pos);
-			movable->set_owner(this);
+			auto laser = new Laser();
+			laser->position(position());
+			laser->set_owner(this);
 			auto new_velocity = vec2::from_radians(m_prev_rad - /* 90° */ 1.5708) * 10;
-			movable->velocity(new_velocity);
-			game.entity_manager.push_back(movable);
+			laser->velocity(new_velocity);
+			game.entity_manager.pool_create(laser);
 		}
 	}
 }

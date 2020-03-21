@@ -71,6 +71,10 @@ namespace x39::goingfactory
 		{
 			return { x / rvalue.x, y / rvalue.y };
 		}
+		vec2 operator / (float rvalue)
+		{
+			return { x / rvalue, y / rvalue };
+		}
 		vec2& operator /= (const vec2& rvalue)
 		{
 			x /= rvalue.x;
@@ -100,5 +104,4 @@ namespace x39::goingfactory
 		float to_radians() const { return std::atan2(y, x); }
 		static vec2 from_radians(float rad) { return { std::cos(rad), std::sin(rad) }; }
 	};
-	typedef vec2 position;
 }

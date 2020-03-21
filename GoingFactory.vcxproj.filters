@@ -55,7 +55,7 @@
       <Filter>Source Files\entity</Filter>
     </ClCompile>
     <ClCompile Include="src\Laser.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -112,6 +112,12 @@
     </ClInclude>
     <ClInclude Include="src\Laser.h">
       <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\chunk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EComponent.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

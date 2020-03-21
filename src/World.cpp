@@ -6,12 +6,13 @@
 
 void x39::goingfactory::World::render(GameInstance& game)
 {
-	if (!m_player)
+	if (!m_player || !m_player->is_type(EComponent::Position))
 	{
 		return;
 	}
+	auto playerPositionComponent = m_player->get_component<PositionComponent>();
 	vec2 center = { m_viewport_w / 2 + m_viewport_x, m_viewport_h / 2 + m_viewport_y };
-	auto player_pos_centered = m_player->pos() - center;
+	auto player_pos_centered = playerPositionComponent->position() - center;
 	auto color = al_map_rgb(0, 127, 0);
 	al_draw_line(
 		m_viewport_x,
@@ -65,15 +66,22 @@ void x39::goingfactory::World::render(GameInstance& game)
 		color, 1);
 
 
-	for (auto it : game.entity_manager)
+	for (auto it = game.entity_manager.begin(EComponent::Render); it != game.entity_manager.end(EComponent::Render); it++)
 	{
-		if (!it) { continue; }
-		auto entity_pos = it->pos() - player_pos_centered;
-		if (entity_pos.x > m_viewport_x && entity_pos.x < m_viewport_w + m_viewport_x &&
-			entity_pos.y > m_viewport_y && entity_pos.y < m_viewport_h + m_viewport_y &&
-			it->is_type(x39::goingfactory::EComponent::Render))
+		if ((*it)->is_type(EComponent::Position))
 		{
-			auto renderComponent = it->get_component<x39::goingfactory::RenderComponent>();
+			auto positionComponent = (*it)->get_component<x39::goingfactory::PositionComponent>();
+			auto position = positionComponent->position() - player_pos_centered;
+			if (position.x > m_viewport_x&& position.x < m_viewport_w + m_viewport_x &&
+				position.y > m_viewport_y&& position.y < m_viewport_h + m_viewport_y)
+			{
+				auto renderComponent = (*it)->get_component<x39::goingfactory::RenderComponent>();
+				renderComponent->render(game, player_pos_centered);
+			}
+		}
+		else
+		{
+			auto renderComponent = (*it)->get_component<x39::goingfactory::RenderComponent>();
 			renderComponent->render(game, player_pos_centered);
 		}
 	}

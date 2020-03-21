@@ -4,20 +4,15 @@
 
 #include "Event.h"
 #include "EKey.h"
+#include "vec2.h"
+#include "chunk.h"
 #include "EModifier.h"
 #include "GameInstance.h"
 #include "PlayerInteraction.h"
+#include "EComponent.h"
 
 namespace x39::goingfactory
 {
-	enum class EComponent
-	{
-		Render,
-		Simulate,
-		Health,
-		Keyboard,
-		PlayerInteractible
-	};
 	class Component
 	{
 	public:
@@ -27,6 +22,19 @@ namespace x39::goingfactory
 			static_assert(std::is_base_of<Component, T>::value, "x39::goingfactory::entity::Entity::get_component<T>() can only convert to x39::goingfactory::Component types");
 			return dynamic_cast<T*>(this);
 		}
+	};
+	class PositionComponent : public Component
+	{
+	private:
+		friend class EntityManager;
+		vec2 m_pos;
+		chunk* m_chunk;
+		EntityManager* m_entity_manager;
+	public:
+		PositionComponent() : m_pos(0, 0), m_chunk(nullptr), m_entity_manager(nullptr) {}
+		vec2 position() { return m_pos; }
+		void position(vec2);
+		const chunk* chunk() { return m_chunk; }
 	};
 	class RenderComponent : public Component
 	{
@@ -93,6 +101,12 @@ namespace x39::goingfactory
 		static EComponent type() { return EComponent::Keyboard; }
 	};
 	class PlayerInteractibleComponent : public Component
+	{
+	public:
+		static EComponent type() { return EComponent::PlayerInteractible; }
+		virtual void interact(GameInstance&, io::EPlayerInteraction) = 0;
+	};
+	class CollidableComponent : public Component
 	{
 	public:
 		static EComponent type() { return EComponent::PlayerInteractible; }

@@ -33,14 +33,10 @@ void x39::goingfactory::io::KeyboardTarget::entity_interact(GameInstance& game)
 	if (is_active(x39::goingfactory::io::EPlayerInteraction::trigger_b)) { interaction |= x39::goingfactory::io::EPlayerInteraction::trigger_b; }
 	if (interaction != x39::goingfactory::io::EPlayerInteraction::empty)
 	{
-		for (auto it : game.entity_manager)
+		for (auto it = game.entity_manager.begin(EComponent::PlayerInteractible); it != game.entity_manager.end(EComponent::PlayerInteractible); it++)
 		{
-			if (!it) { continue; }
-			if (it->is_type(EComponent::PlayerInteractible))
-			{
-				auto playerInteractible = it->get_component<PlayerInteractibleComponent>();
-				playerInteractible->interact(game, interaction);
-			}
+			auto playerInteractible = (*it)->get_component<PlayerInteractibleComponent>();
+			playerInteractible->interact(game, interaction);
 		}
 	}
 }
