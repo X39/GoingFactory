@@ -10,6 +10,9 @@
 #include <cstdio>
 #include <string>
 #include <sstream>
+#include <random>
+
+#include "ThreadPool.h"
 
 #include "ResourceManager.h"
 #include "EntityManager.h"
@@ -21,7 +24,6 @@
 #include "GameInstance.h"
 #include "World.h"
 #include "KeyboardTarget.h"
-#include <random>
 
 int DISPLAY_WIDTH;
 int DISPLAY_HEIGHT;
@@ -127,14 +129,15 @@ int main()
 	auto player = new x39::goingfactory::entity::Player();
 	world.set_player(player);
 	world.set_viewport(32, 32, DISPLAY_WIDTH - 64, DISPLAY_HEIGHT - 64);
-	world.set_level(5000, 5000);
-	player->position({2500 + (rand() % 1000 - 500), 2500 + (rand() % 1000 - 500) });
+	const size_t level_size = 5000;
+	world.set_level(level_size, level_size);
+	player->position({(level_size / 2) + (rand() % 1000 - 500), (level_size / 2) + (rand() % 1000 - 500) });
 	entity_manager.pool_create(player);
 
-	for (int i = 0; i < 5000; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		auto asteroid = new x39::goingfactory::entity::Asteroid();
-		asteroid->position({ rand() % 5000, rand() % 5000 });
+		asteroid->position({ rand() % level_size, rand() % level_size });
 		asteroid->velocity({ (rand() % 10) / 10.0f, (rand() % 10) / 10.0f });
 		entity_manager.pool_create(asteroid);
 	}
@@ -146,7 +149,6 @@ int main()
 	int last_sim_fps = 0;
 	bool redraw = false;
 	bool simulate = false;
-	bool simulating = false;
 	bool mouseDown = false;
 	while (true)
 	{
@@ -215,27 +217,39 @@ int main()
 				simulate = true;
 			}
 		}
-		if (simulate && !simulating)
+		if (simulate)
 		{
-			simulating = true;
-			for (auto it : entity_manager)
+			std::vector<std::future<void>> results;
+			auto start = entity_manager.begin(x39::goingfactory::EComponent::Simulate);
+			auto end = entity_manager.end(x39::goingfactory::EComponent::Simulate);
+			const size_t handle_amount = 100;
+			size_t range = end - start;
+			size_t tasks = range / handle_amount + (range / handle_amount == 0 ? 0 : 1);
+			for (; tasks > 0; tasks--)
 			{
-				if (!it) { continue; }
-				if (it->is_type(x39::goingfactory::EComponent::Simulate))
-				{
-					auto simulateComponent = it->get_component<x39::goingfactory::SimulateComponent>();
-					simulateComponent->simulate(game_instance);
-				}
+				auto range_start = (tasks - 1) * handle_amount;
+				auto range_end = tasks * handle_amount;
+				results.emplace_back(
+					game_instance.thread_pool().enqueue([&start, range_start, range_end, &game_instance, range] {
+						for (auto i = range_start; i != range_end && i != range; i++)
+						{
+							auto it = start + i;
+							auto simulateComponent = (*it)->get_component<x39::goingfactory::SimulateComponent>();
+							simulateComponent->simulate(game_instance);
+						}
+						}
+					)
+				);
 			}
 			keyboard_target.entity_interact(game_instance);
+			for (auto&& result : results) { result.get(); }
 
 			auto new_time = al_get_time();
 			last_sim_fps = (int)(1 / (new_time - old_sim_time));
 			old_sim_time = new_time;
 			simulate = false;
-			simulating = false;
 		}
-		if (redraw && al_is_event_queue_empty(event_queue))
+		if (redraw)// && al_is_event_queue_empty(event_queue))
 		{
 			world.render(game_instance);
 

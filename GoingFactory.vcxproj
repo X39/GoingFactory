@@ -218,6 +218,7 @@
     <ClInclude Include="src\EntityManager.h" />
     <ClInclude Include="src\Event.h" />
     <ClInclude Include="src\PlayerInteraction.h" />
+    <ClInclude Include="src\ThreadPool.h" />
     <ClInclude Include="src\vec2.h" />
     <ClInclude Include="src\ResourceManager.h" />
     <ClInclude Include="src\World.h" />
