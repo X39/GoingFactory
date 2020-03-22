@@ -16,7 +16,7 @@ void x39::goingfactory::entity::Asteroid::render(GameInstance& game, vec2 transl
 
 	float angle = m_velocity.to_radians() + /* 90° */ 1.5708;
 	m_prev_rad = m_velocity.x == 0 && m_velocity.y == 0 ? m_prev_rad : angle;
-	auto color = al_map_rgb(255, 255, 255);
+	auto color = al_map_rgb(255, 0, 0);
 	std::array<std::array<vec2, 2>, 8> arr = {
 		std::array<vec2, 2> { vec2 { -3, 0 }, vec2 { -1, -2 } },
 		std::array<vec2, 2> { vec2 { -1, -2 }, vec2 { 1, -3 } },

@@ -115,35 +115,6 @@ void x39::goingfactory::World::render(GameInstance& game)
         }
         al_hold_bitmap_drawing(false);
     }
-    
-    // Draw Viewport
-    {
-        auto color = al_map_rgb(0, 127, 0);
-        al_draw_line(
-            m_viewport_x,
-            m_viewport_y,
-            m_viewport_x + m_viewport_w,
-            m_viewport_y,
-            color, 1);
-        al_draw_line(
-            m_viewport_x,
-            m_viewport_y,
-            m_viewport_x,
-            m_viewport_y + m_viewport_h,
-            color, 1);
-        al_draw_line(
-            m_viewport_x + m_viewport_w,
-            m_viewport_y + m_viewport_h,
-            m_viewport_x + m_viewport_w,
-            m_viewport_y,
-            color, 1);
-        al_draw_line(
-            m_viewport_x + m_viewport_w,
-            m_viewport_y + m_viewport_h,
-            m_viewport_x,
-            m_viewport_y + m_viewport_h,
-            color, 1);
-    }
     // Draw Level Boundaries
     {
         auto color = al_map_rgb(127, 0, 0);
@@ -171,6 +142,36 @@ void x39::goingfactory::World::render(GameInstance& game)
             0 - player_pos_centered.x,
             m_level_h - player_pos_centered.y,
             color, 1);
+    }
+
+    // Draw Viewport
+    {
+        auto color = al_map_rgb(0, 127, 0);
+        al_draw_line(
+            m_viewport_x,
+            m_viewport_y,
+            m_viewport_x + m_viewport_w,
+            m_viewport_y,
+            color, 1);
+        al_draw_line(
+            m_viewport_x,
+            m_viewport_y,
+            m_viewport_x,
+            m_viewport_y + m_viewport_h,
+            color, 1);
+        al_draw_line(
+            m_viewport_x + m_viewport_w,
+            m_viewport_y + m_viewport_h,
+            m_viewport_x + m_viewport_w,
+            m_viewport_y,
+            color, 1);
+        al_draw_line(
+            m_viewport_x + m_viewport_w,
+            m_viewport_y + m_viewport_h,
+            m_viewport_x,
+            m_viewport_y + m_viewport_h,
+            color, 1);
+        color = al_map_rgb(0, 0, 0);
     }
 
     for (auto it = game.entity_manager.begin(EComponent::Render); it != game.entity_manager.end(EComponent::Render); it++)

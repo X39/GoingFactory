@@ -28,8 +28,8 @@
 int DISPLAY_WIDTH;
 int DISPLAY_HEIGHT;
 
-const float RENDER_FPS = 20;
-const float SIMULATION_FPS = 20;
+const float RENDER_FPS = 60;
+const float SIMULATION_FPS = 60;
 int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer, ALLEGRO_TIMER*& simulation_timer, ALLEGRO_FONT*& font)
 {
 	if (!al_init())
@@ -132,7 +132,8 @@ int main()
 		});
 	auto player = new x39::goingfactory::entity::Player();
 	world.set_player(player);
-	world.set_viewport(32, 32, DISPLAY_WIDTH - 64, DISPLAY_HEIGHT - 64);
+	const int viewport_offset = 32;
+	world.set_viewport(viewport_offset, viewport_offset, DISPLAY_WIDTH - viewport_offset * 2, DISPLAY_HEIGHT - viewport_offset * 2);
 	const size_t level_size = 5000;
 	world.set_level(level_size, level_size);
 	player->position({(level_size / 2) + (rand() % 1000 - 500), (level_size / 2) + (rand() % 1000 - 500) });
@@ -256,6 +257,12 @@ int main()
 		if (redraw)// && al_is_event_queue_empty(event_queue))
 		{
 			world.render(game_instance);
+			// world.set_viewport(viewport_offset, viewport_offset, DISPLAY_WIDTH - viewport_offset * 2, DISPLAY_HEIGHT - viewport_offset * 2);
+			auto color = al_map_rgba(0, 0, 0, 200);
+			al_draw_filled_rectangle(0, 0, DISPLAY_WIDTH, viewport_offset, color);
+			al_draw_filled_rectangle(0, 0, viewport_offset, DISPLAY_HEIGHT, color);
+			al_draw_filled_rectangle(0, DISPLAY_HEIGHT - viewport_offset, DISPLAY_WIDTH, DISPLAY_HEIGHT, color);
+			al_draw_filled_rectangle(DISPLAY_WIDTH - viewport_offset, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, color);
 
 			auto new_time = al_get_time();
 			auto fps = (int)(1 / (new_time - old_frame_time));
