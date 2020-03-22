@@ -134,11 +134,11 @@ int main()
 	player->position({(level_size / 2) + (rand() % 1000 - 500), (level_size / 2) + (rand() % 1000 - 500) });
 	entity_manager.pool_create(player);
 
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < 500; i++)
 	{
 		auto asteroid = new x39::goingfactory::entity::Asteroid();
 		asteroid->position({ rand() % level_size, rand() % level_size });
-		asteroid->velocity({ (rand() % 10) / 10.0f, (rand() % 10) / 10.0f });
+		asteroid->velocity({ (rand() % 20) / 20.0f, (rand() % 20) / 20.0f });
 		entity_manager.pool_create(asteroid);
 	}
 
