@@ -19,7 +19,7 @@ namespace x39::goingfactory
 		size_t m_level_w;
 		size_t m_level_h;
 	public:
-		World() : m_viewport_x(0), m_viewport_y(0), m_viewport_w(0), m_viewport_h(0), m_level_w(0), m_level_h(0), m_player() { }
+		World();
 		size_t level_width() { return m_level_w; }
 		size_t level_height() { return m_level_h; }
 		entity::Entity* player() { return m_player; }

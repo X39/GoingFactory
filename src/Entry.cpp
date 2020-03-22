@@ -28,8 +28,8 @@
 int DISPLAY_WIDTH;
 int DISPLAY_HEIGHT;
 
-const float RENDER_FPS = 60;
-const float SIMULATION_FPS = 60;
+const float RENDER_FPS = 20;
+const float SIMULATION_FPS = 20;
 int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer, ALLEGRO_TIMER*& simulation_timer, ALLEGRO_FONT*& font)
 {
 	if (!al_init())
@@ -87,6 +87,9 @@ int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_qu
 	al_register_event_source(event_queue, al_get_mouse_event_source());
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
 
+
+	// al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
+
 	al_start_timer(render_timer);
 	al_start_timer(simulation_timer);
 	al_clear_to_color(al_map_rgb(0, 0, 0));
@@ -110,6 +113,7 @@ int main()
 	x39::goingfactory::EntityManager entity_manager;
 	x39::goingfactory::io::KeyboardTarget keyboard_target;
 	x39::goingfactory::World world;
+	al_set_target_backbuffer(display);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_up, x39::goingfactory::io::EKey::W);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_left, x39::goingfactory::io::EKey::A);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_down, x39::goingfactory::io::EKey::S);

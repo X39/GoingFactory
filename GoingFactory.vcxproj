@@ -191,6 +191,7 @@
     <ClCompile Include="src\KeyboardTarget.cpp" />
     <ClCompile Include="src\Laser.cpp" />
     <ClCompile Include="src\Movable.cpp" />
+    <ClCompile Include="src\FastNoise.cpp" />
     <ClCompile Include="src\Player.cpp" />
     <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\EntityManager.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="src\KeyboardTarget.h" />
     <ClInclude Include="src\Laser.h" />
     <ClInclude Include="src\Movable.h" />
+    <ClInclude Include="src\FastNoise.h" />
     <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\EKey.h" />
     <ClInclude Include="src\EModifier.h" />
