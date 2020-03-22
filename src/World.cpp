@@ -25,6 +25,43 @@ void x39::goingfactory::World::render(GameInstance& game)
     vec2 center = { m_viewport_w / 2 + m_viewport_x, m_viewport_h / 2 + m_viewport_y };
     auto player_pos_centered = playerPositionComponent->position() - center;
 
+
+    // Draw Level
+    {
+        al_hold_bitmap_drawing(true);
+        FastNoise generator(1203012041254125152);
+        const int size = 16;
+        for (int32_t x = ((int32_t)player_pos_centered.x) - ((int32_t)player_pos_centered.x) % size; x < player_pos_centered.x + m_viewport_w; x += size)
+        {
+            for (int32_t y = ((int32_t)player_pos_centered.y) - ((int32_t)player_pos_centered.y) % size; y < player_pos_centered.y + m_viewport_h; y += size)
+            {
+                vec2 pos = { x, y };
+                float f = 0;
+                for (int i = 0; i < size; i++)
+                {
+                    f += generator.GetPerlin(pos.x + i, pos.y + i);
+                    f += generator.GetPerlin(pos.x + size - i, pos.y + i);
+                }
+                auto color_rgb = f / (size * 2);
+                auto color = al_map_rgb((unsigned char)(color_rgb * 255), (unsigned char)(color_rgb * 255), (unsigned char)(color_rgb * 255));
+                // al_draw_pixel(pos.x - player_pos_centered.x + m_viewport_x, pos.y - player_pos_centered.y + m_viewport_y, color);
+                al_draw_filled_rectangle(
+                  pos.x - player_pos_centered.x + m_viewport_x,
+                  pos.y - player_pos_centered.y + m_viewport_y,
+                  pos.x + size - player_pos_centered.x + m_viewport_x,
+                  pos.y + size - player_pos_centered.y + m_viewport_x,
+                  color);
+                // al_draw_bitmap_region(
+                //   m_bitmap,
+                //   (unsigned char)(color_rgb * 255), 0, 1, 1,
+                //   pos.x - player_pos_centered.x + m_viewport_x,
+                //   pos.y - player_pos_centered.y + m_viewport_y,
+                //   0);
+            }
+        }
+        al_hold_bitmap_drawing(false);
+    }
+
     // Draw Chunks
     {
         auto color = al_map_rgb(0, 0, 32);
@@ -33,11 +70,11 @@ void x39::goingfactory::World::render(GameInstance& game)
             for (int32_t y = 0; y < (m_level_h / chunk::chunk_size + 1); y++)
             {
                 auto chunk = game.entity_manager.chunk_at(x, y);
-                vec2 pos = {x * chunk::chunk_size, y * chunk::chunk_size };
+                vec2 pos = { x * chunk::chunk_size, y * chunk::chunk_size };
                 pos -= player_pos_centered;
                 if (chunk &&
-                    pos.x + chunk::chunk_size > m_viewport_x && pos.x < m_viewport_w + m_viewport_x &&
-                    pos.y + chunk::chunk_size > m_viewport_y && pos.y < m_viewport_h + m_viewport_y)
+                    pos.x + chunk::chunk_size > m_viewport_x&& pos.x < m_viewport_w + m_viewport_x &&
+                    pos.y + chunk::chunk_size > m_viewport_y&& pos.y < m_viewport_h + m_viewport_y)
                 {
                     al_draw_line(
                         pos.x,
@@ -80,41 +117,6 @@ void x39::goingfactory::World::render(GameInstance& game)
         }
     }
 
-    // Draw Level
-    {
-        al_hold_bitmap_drawing(true);
-        FastNoise generator(1203012041254125152);
-        const int size = 16;
-        for (int32_t x = ((int32_t)player_pos_centered.x) - ((int32_t)player_pos_centered.x) % size; x < player_pos_centered.x + m_viewport_w; x += size)
-        {
-            for (int32_t y = ((int32_t)player_pos_centered.y) - ((int32_t)player_pos_centered.y) % size; y < player_pos_centered.y + m_viewport_h; y += size)
-            {
-                vec2 pos = { x, y };
-                float f = 0;
-                for (int i = 0; i < size; i++)
-                {
-                    f += generator.GetPerlin(pos.x + i, pos.y + i);
-                    f += generator.GetPerlin(pos.x + size - i, pos.y + i);
-                }
-                auto color_rgb = f / (size * 2);
-                auto color = al_map_rgb((unsigned char)(color_rgb * 255), (unsigned char)(color_rgb * 255), (unsigned char)(color_rgb * 255));
-                // al_draw_pixel(pos.x - player_pos_centered.x + m_viewport_x, pos.y - player_pos_centered.y + m_viewport_y, color);
-                al_draw_filled_rectangle(
-                  pos.x - player_pos_centered.x + m_viewport_x,
-                  pos.y - player_pos_centered.y + m_viewport_y,
-                  pos.x + size - player_pos_centered.x + m_viewport_x,
-                  pos.y + size - player_pos_centered.y + m_viewport_x,
-                  color);
-                // al_draw_bitmap_region(
-                //   m_bitmap,
-                //   (unsigned char)(color_rgb * 255), 0, 1, 1,
-                //   pos.x - player_pos_centered.x + m_viewport_x,
-                //   pos.y - player_pos_centered.y + m_viewport_y,
-                //   0);
-            }
-        }
-        al_hold_bitmap_drawing(false);
-    }
     // Draw Level Boundaries
     {
         auto color = al_map_rgb(127, 0, 0);
