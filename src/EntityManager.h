@@ -74,6 +74,15 @@ namespace x39::goingfactory
 		}
 
 
+		chunk* chunk_at(vec2 pos)
+		{
+			auto coordinate = chunk::to_chunk_coordinate(pos);
+			if (m_chunks.contains(coordinate))
+			{
+				return m_chunks[coordinate];
+			}
+			return nullptr;
+		}
 		chunk* chunk_at(int32_t x, int32_t y)
 		{
 			auto coordinate = chunk::to_chunk_coordinate(x, y);

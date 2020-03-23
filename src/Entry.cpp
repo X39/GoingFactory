@@ -11,6 +11,7 @@
 #include <string>
 #include <sstream>
 #include <random>
+#include <iostream>
 
 #include "ThreadPool.h"
 
@@ -28,7 +29,7 @@
 int DISPLAY_WIDTH;
 int DISPLAY_HEIGHT;
 
-const float RENDER_FPS = 60;
+const float RENDER_FPS = 30;
 const float SIMULATION_FPS = 60;
 int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer, ALLEGRO_TIMER*& simulation_timer, ALLEGRO_FONT*& font)
 {
@@ -134,15 +135,14 @@ int main()
 	world.set_player(player);
 	const int viewport_offset = 32;
 	world.set_viewport(viewport_offset, viewport_offset, DISPLAY_WIDTH - viewport_offset * 2, DISPLAY_HEIGHT - viewport_offset * 2);
-	const size_t level_size = 5000;
-	world.set_level(level_size, level_size);
-	player->position({(level_size / 2) + (rand() % 1000 - 500), (level_size / 2) + (rand() % 1000 - 500) });
+	const int level_size = 5000;
+	player->position({0,0});
 	entity_manager.pool_create(player);
 
-	for (int i = 0; i < 500; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		auto asteroid = new x39::goingfactory::entity::Asteroid();
-		asteroid->position({ rand() % level_size, rand() % level_size });
+		asteroid->position({ (rand() % level_size - level_size / 2), (rand() % level_size - level_size / 2) });
 		asteroid->velocity({ (rand() % 20) / 20.0f, (rand() % 20) / 20.0f });
 		entity_manager.pool_create(asteroid);
 	}
@@ -159,6 +159,7 @@ int main()
 	{
 		ALLEGRO_EVENT ev;
 		al_wait_for_event(event_queue, &ev);
+
 		if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
 		{
 			break;
@@ -195,6 +196,7 @@ int main()
 				}
 			}
 			keyboard_target.key_down(key, modifier);
+			world.keydown(key);
 		}
 		else if (ev.type == ALLEGRO_EVENT_KEY_UP)
 		{
@@ -229,7 +231,7 @@ int main()
 			auto end = entity_manager.end(x39::goingfactory::EComponent::Simulate);
 			const size_t handle_amount = 100;
 			size_t range = end - start;
-			size_t tasks = range / handle_amount + (range / handle_amount == 0 ? 0 : 1);
+			size_t tasks = range / handle_amount + (range / handle_amount == 0 ? 1 : 0);
 			for (; tasks > 0; tasks--)
 			{
 				auto range_start = (tasks - 1) * handle_amount;

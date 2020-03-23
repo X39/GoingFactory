@@ -19,10 +19,6 @@ void x39::goingfactory::entity::Movable::simulate(GameInstance& game)
 		m_velocity.x *= m_velocity_tick_modifier;
 		m_velocity.y *= m_velocity_tick_modifier;
 	}
-	if (pos.x < 0) { pos.x = 0; m_velocity.x *= -1; }
-	else if (pos.x > game.world.level_width()) { pos.x = game.world.level_width(); m_velocity.x *= -1; }
-	if (pos.y < 0) { pos.y = 0; m_velocity.y *= -1; }
-	else if (pos.y > game.world.level_height()) { pos.y = game.world.level_height(); m_velocity.y *= -1; }
 
 
 	position(pos);
