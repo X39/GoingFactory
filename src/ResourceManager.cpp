@@ -29,5 +29,5 @@ size_t x39::goingfactory::ResourceManager::load_bitmap(std::string path)
 	}
 	m_bitmaps.push_back(bitmap);
 	m_bitmaps_path[path] = index;
-	return index;
+	return index + 1;
 }

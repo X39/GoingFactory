@@ -5,6 +5,7 @@ namespace x39::goingfactory::io
 {
     enum class EModifier
     {
+        EMPTY = 0,
         SHIFT = 0x00001,
         CTRL = 0x00002,
         ALT = 0x00004,

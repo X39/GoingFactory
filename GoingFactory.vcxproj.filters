@@ -22,6 +22,15 @@
     <Filter Include="Source Files\entity">
       <UniqueIdentifier>{5fff2f82-4926-4bea-89ba-e3f8914f8ca9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ui">
+      <UniqueIdentifier>{8321ae15-d390-47c7-a895-019cfbf3b171}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ui">
+      <UniqueIdentifier>{fc709745-7bff-4c5b-ab09-a8a210896526}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\io">
+      <UniqueIdentifier>{75121cbd-f685-40e7-a9a4-d47edfb7f907}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Entry.cpp">
@@ -45,9 +54,6 @@
     <ClCompile Include="src\Movable.cpp">
       <Filter>Source Files\entity</Filter>
     </ClCompile>
-    <ClCompile Include="src\KeyboardTarget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\World.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -59,6 +65,15 @@
     </ClCompile>
     <ClCompile Include="src\FastNoise.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UXPanel.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UXElement.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\KeyboardTarget.cpp">
+      <Filter>Source Files\io</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -127,6 +142,12 @@
     </ClInclude>
     <ClInclude Include="src\FastNoise.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UXPanel.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UXElement.h">
+      <Filter>Header Files\ui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

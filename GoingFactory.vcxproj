@@ -197,6 +197,8 @@
     <ClCompile Include="src\EntityManager.cpp" />
     <ClCompile Include="src\Entry.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
+    <ClCompile Include="src\UXElement.cpp" />
+    <ClCompile Include="src\UXPanel.cpp" />
     <ClCompile Include="src\World.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -221,6 +223,8 @@
     <ClInclude Include="src\Event.h" />
     <ClInclude Include="src\PlayerInteraction.h" />
     <ClInclude Include="src\ThreadPool.h" />
+    <ClInclude Include="src\UXElement.h" />
+    <ClInclude Include="src\UXPanel.h" />
     <ClInclude Include="src\vec2.h" />
     <ClInclude Include="src\ResourceManager.h" />
     <ClInclude Include="src\World.h" />

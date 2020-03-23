@@ -2,26 +2,37 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include "Entity.h"
+#include "ResourceManager.h"
 #include "EntityManager.h"
 #include "FastNoise.h"
 
-int z = 0;
-int size = 32;
+int alpha = 0;
+int size = 16;
 x39::goingfactory::FastNoise generator(1203012041254125152);
+size_t grass1_texture_id = 0;
+size_t grass2_1_texture_id = 0;
+size_t grass2_2_texture_id = 0;
+size_t grass2_3_texture_id = 0;
+size_t dirt_texture_id = 0;
+size_t stone_texture_id = 0;
+float factor_a = 0.1;
+float factor_b = 0.2;
+float factor_c = 0.3;
 // Get-/SetFrequency ~= Zoom
 
 x39::goingfactory::World::World() : m_viewport_x(0), m_viewport_y(0), m_viewport_w(0), m_viewport_h(0), m_player()
 {
-    // m_bitmap = al_create_bitmap(256, 0);
-    // al_set_target_bitmap(m_bitmap);
-    // for (int i = 0; i < 256; i++)
-    // {
-    // 	al_put_pixel(i, 0, al_map_rgb(i, i, i));
-    // }
 }
 
 void x39::goingfactory::World::render(GameInstance& game)
 {
+    if (grass1_texture_id == 0) { grass1_texture_id = game.resource_manager.load_bitmap("Textures/Grass.png"); }
+    if (grass2_1_texture_id == 0) { grass2_1_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_1.png"); }
+    if (grass2_2_texture_id == 0) { grass2_2_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_2.png"); }
+    if (grass2_3_texture_id == 0) { grass2_3_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_3.png"); }
+    if (dirt_texture_id == 0) { dirt_texture_id = game.resource_manager.load_bitmap("Textures/Dirt.png"); }
+    if (stone_texture_id == 0) { stone_texture_id = game.resource_manager.load_bitmap("Textures/Stone.png"); }
+
     if (!m_player || !m_player->is_type(EComponent::Position))
     {
         return;
@@ -33,36 +44,85 @@ void x39::goingfactory::World::render(GameInstance& game)
 
     // Draw Level
     {
+        const int tile_size = 16;
         al_hold_bitmap_drawing(true);
-        for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % size - size; x < top_left_viewport.x + m_viewport_w; x += size)
+        for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % tile_size - tile_size; x < top_left_viewport.x + m_viewport_w; x += tile_size)
         {
-            for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % size - size; y < top_left_viewport.y + m_viewport_h; y += size)
+            for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % tile_size - tile_size; y < top_left_viewport.y + m_viewport_h; y += tile_size)
             {
-                vec2 pos = { x, y };
-                float f = 0;
-                for (int i = 0; i < size; i++)
                 {
-                    f += generator.GetPerlin(pos.x + i, pos.y + i, z);
-                    f += generator.GetPerlin(pos.x + size - i, pos.y + i, z);
+                    vec2 pos = { x, y };
+                    float f = 0;
+                    for (int i = 0; i < tile_size; i++)
+                    {
+                        f += generator.GetPerlin(pos.x + i, pos.y + i);
+                        f += generator.GetPerlin(pos.x + tile_size - i, pos.y + i);
+                    }
+                    f = std::fabsf(f / (tile_size * 2));
+                    size_t texture = stone_texture_id;
+                    if (f < factor_a)
+                    {
+                        auto t = (int)(al_get_time() * 3);
+                        switch (t % 3)
+                        {
+                        case 0:
+                            texture = grass2_1_texture_id;
+                            break;
+                        case 1:
+                            texture = grass2_2_texture_id;
+                            break;
+                        default:
+                            texture = grass2_3_texture_id;
+                            break;
+                        }
+                    }
+                    else if (f < factor_b)
+                    {
+                        texture = grass1_texture_id;
+                    }
+                    else if (f < factor_c)
+                    {
+                        texture = dirt_texture_id;
+                    }
+                    pos -= top_left_viewport;
+                    al_draw_bitmap(game.resource_manager.get_bitmap(texture), pos.x + m_viewport_x, pos.y + m_viewport_y, 0);
                 }
-                auto color_rgb = f / (size * 2);
-                auto color = al_map_rgb((unsigned char)(color_rgb * 255), (unsigned char)(color_rgb * 255), (unsigned char)(color_rgb * 255));
-                // al_draw_pixel(pos.x - player_pos_centered.x + m_viewport_x, pos.y - player_pos_centered.y + m_viewport_y, color);
-                al_draw_filled_rectangle(
-                  pos.x - top_left_viewport.x + m_viewport_x,
-                  pos.y - top_left_viewport.y + m_viewport_y,
-                  pos.x + size - top_left_viewport.x + m_viewport_x,
-                  pos.y + size - top_left_viewport.y + m_viewport_x,
-                  color);
-                // al_draw_bitmap_region(
-                //   m_bitmap,
-                //   (unsigned char)(color_rgb * 255), 0, 1, 1,
-                //   pos.x - player_pos_centered.x + m_viewport_x,
-                //   pos.y - player_pos_centered.y + m_viewport_y,
-                //   0);
             }
         }
         al_hold_bitmap_drawing(false);
+        if (alpha > 0)
+        {
+            for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % size - size; x < top_left_viewport.x + m_viewport_w; x += size)
+            {
+                for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % size - size; y < top_left_viewport.y + m_viewport_h; y += size)
+                {
+                    {
+                        vec2 pos = { x, y };
+                        float f = 0;
+                        for (int i = 0; i < size; i++)
+                        {
+                            f += generator.GetPerlin(pos.x + i, pos.y + i);
+                            f += generator.GetPerlin(pos.x + size - i, pos.y + i);
+                        }
+                        f = std::fabsf(f / (tile_size * 2));
+                        auto color = al_map_rgba((unsigned char)(f * 255), (unsigned char)(f * 255), (unsigned char)(f * 255), alpha);
+                        // al_draw_pixel(pos.x - player_pos_centered.x + m_viewport_x, pos.y - player_pos_centered.y + m_viewport_y, color);
+                        al_draw_filled_rectangle(
+                            pos.x - top_left_viewport.x + m_viewport_x,
+                            pos.y - top_left_viewport.y + m_viewport_y,
+                            pos.x + size - top_left_viewport.x + m_viewport_x,
+                            pos.y + size - top_left_viewport.y + m_viewport_x,
+                            color);
+                        // al_draw_bitmap_region(
+                        //   m_bitmap,
+                        //   (unsigned char)(color_rgb * 255), 0, 1, 1,
+                        //   pos.x - player_pos_centered.x + m_viewport_x,
+                        //   pos.y - player_pos_centered.y + m_viewport_y,
+                        //   0);
+                    }
+                }
+            }
+        }
     }
 
     // Draw Chunks
@@ -189,10 +249,10 @@ void x39::goingfactory::World::keydown(io::EKey key)
         generator.SetInterp(FastNoise::Interp::Quintic);
         break;
     case io::EKey::PAD_ASTERISK:
-        z++;
+        alpha += 16;
         break;
     case io::EKey::PAD_SLASH:
-        z--;
+        alpha -= 16;
         break;
     case io::EKey::PAD_DELETE:
         size++;
@@ -204,59 +264,11 @@ void x39::goingfactory::World::keydown(io::EKey key)
         }
         size--;
         break;
-    case io::EKey::PAD_7:
-    {
-        int left, right;
-        generator.GetCellularDistance2Indices(left, right);
-        left += 0.1;
-        if (left >= right || left > 4)
-        {
-            break;
-        }
-        generator.SetCellularDistance2Indices(left, right);
-    }
-    break;
-    case io::EKey::PAD_4:
-    {
-        int left, right;
-        generator.GetCellularDistance2Indices(left, right);
-        left -= 0.1;
-        if (left < 0)
-        {
-            break;
-        }
-        generator.SetCellularDistance2Indices(left, right);
-    }
-    break;
-    case io::EKey::PAD_8:
-    {
-        int left, right;
-        generator.GetCellularDistance2Indices(left, right);
-        right += 0.1;
-        if (left >= right)
-        {
-            break;
-        }
-        generator.SetCellularDistance2Indices(left, right);
-    }
-    break;
-    case io::EKey::PAD_5:
-    {
-        int left, right;
-        generator.GetCellularDistance2Indices(left, right);
-        right -= 0.1;
-        if (left >= right)
-        {
-            break;
-        }
-        generator.SetCellularDistance2Indices(left, right);
-    }
-    break;
-    case io::EKey::PAD_9:
-        generator.SetFractalGain(generator.GetFractalGain() + 0.001);
-        break;
-    case io::EKey::PAD_6:
-        generator.SetFractalGain(generator.GetFractalGain() - 0.001);
-        break;
+    case io::EKey::PAD_7: factor_a += 0.1; break;
+    case io::EKey::PAD_4: factor_a -= 0.1; break;
+    case io::EKey::PAD_8: factor_b += 0.1; break;
+    case io::EKey::PAD_5: factor_b -= 0.1; break;
+    case io::EKey::PAD_9: factor_c += 0.1; break;
+    case io::EKey::PAD_6: factor_c -= 0.1; break;
     }
 }
