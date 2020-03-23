@@ -286,6 +286,10 @@ int main()
 			al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 1, 0, sstream.str().c_str());
 			sstream.str("");
 
+			sstream << "Note that all numpad buttons (but enter) also have a meaning.";
+			al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 2, 0, sstream.str().c_str());
+			sstream.str("");
+
 
 			sstream << "Render-FPS: " << fps;
 			al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 3, 0, sstream.str().c_str());

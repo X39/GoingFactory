@@ -6,7 +6,8 @@
 #include "EntityManager.h"
 #include "FastNoise.h"
 
-int alpha = 0;
+bool render_grayscale = false;
+bool render_chunks = false;
 int size = 16;
 x39::goingfactory::FastNoise generator(1203012041254125152);
 size_t grass1_texture_id = 0;
@@ -44,53 +45,7 @@ void x39::goingfactory::World::render(GameInstance& game)
 
     // Draw Level
     {
-        const int tile_size = 16;
-        al_hold_bitmap_drawing(true);
-        for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % tile_size - tile_size; x < top_left_viewport.x + m_viewport_w; x += tile_size)
-        {
-            for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % tile_size - tile_size; y < top_left_viewport.y + m_viewport_h; y += tile_size)
-            {
-                {
-                    vec2 pos = { x, y };
-                    float f = 0;
-                    for (int i = 0; i < tile_size; i++)
-                    {
-                        f += generator.GetPerlin(pos.x + i, pos.y + i);
-                        f += generator.GetPerlin(pos.x + tile_size - i, pos.y + i);
-                    }
-                    f = std::fabsf(f / (tile_size * 2));
-                    size_t texture = stone_texture_id;
-                    if (f < factor_a)
-                    {
-                        auto t = (int)(al_get_time() * 3);
-                        switch (t % 3)
-                        {
-                        case 0:
-                            texture = grass2_1_texture_id;
-                            break;
-                        case 1:
-                            texture = grass2_2_texture_id;
-                            break;
-                        default:
-                            texture = grass2_3_texture_id;
-                            break;
-                        }
-                    }
-                    else if (f < factor_b)
-                    {
-                        texture = grass1_texture_id;
-                    }
-                    else if (f < factor_c)
-                    {
-                        texture = dirt_texture_id;
-                    }
-                    pos -= top_left_viewport;
-                    al_draw_bitmap(game.resource_manager.get_bitmap(texture), pos.x + m_viewport_x, pos.y + m_viewport_y, 0);
-                }
-            }
-        }
-        al_hold_bitmap_drawing(false);
-        if (alpha > 0)
+        if (render_grayscale)
         {
             for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % size - size; x < top_left_viewport.x + m_viewport_w; x += size)
             {
@@ -104,8 +59,8 @@ void x39::goingfactory::World::render(GameInstance& game)
                             f += generator.GetPerlin(pos.x + i, pos.y + i);
                             f += generator.GetPerlin(pos.x + size - i, pos.y + i);
                         }
-                        f = std::fabsf(f / (tile_size * 2));
-                        auto color = al_map_rgba((unsigned char)(f * 255), (unsigned char)(f * 255), (unsigned char)(f * 255), alpha);
+                        f = std::fabsf(f / (size * 2));
+                        auto color = al_map_rgba((unsigned char)(f * 255), (unsigned char)(f * 255), (unsigned char)(f * 255), 255);
                         // al_draw_pixel(pos.x - player_pos_centered.x + m_viewport_x, pos.y - player_pos_centered.y + m_viewport_y, color);
                         al_draw_filled_rectangle(
                             pos.x - top_left_viewport.x + m_viewport_x,
@@ -123,9 +78,59 @@ void x39::goingfactory::World::render(GameInstance& game)
                 }
             }
         }
+        else
+        {
+            const int tile_size = 16;
+            al_hold_bitmap_drawing(true);
+            for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % tile_size - tile_size; x < top_left_viewport.x + m_viewport_w; x += tile_size)
+            {
+                for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % tile_size - tile_size; y < top_left_viewport.y + m_viewport_h; y += tile_size)
+                {
+                    {
+                        vec2 pos = { x, y };
+                        float f = 0;
+                        for (int i = 0; i < tile_size; i++)
+                        {
+                            f += generator.GetPerlin(pos.x + i, pos.y + i);
+                            f += generator.GetPerlin(pos.x + tile_size - i, pos.y + i);
+                        }
+                        f = std::fabsf(f / (tile_size * 2));
+                        size_t texture = stone_texture_id;
+                        if (f < factor_a)
+                        {
+                            auto t = (int)(al_get_time() * 3);
+                            switch (t % 3)
+                            {
+                            case 0:
+                                texture = grass2_1_texture_id;
+                                break;
+                            case 1:
+                                texture = grass2_2_texture_id;
+                                break;
+                            default:
+                                texture = grass2_3_texture_id;
+                                break;
+                            }
+                        }
+                        else if (f < factor_b)
+                        {
+                            texture = grass1_texture_id;
+                        }
+                        else if (f < factor_c)
+                        {
+                            texture = dirt_texture_id;
+                        }
+                        pos -= top_left_viewport;
+                        al_draw_bitmap(game.resource_manager.get_bitmap(texture), pos.x + m_viewport_x, pos.y + m_viewport_y, 0);
+                    }
+                }
+            }
+            al_hold_bitmap_drawing(false);
+        }
     }
 
     // Draw Chunks
+    if (render_chunks)
     {
         auto color = al_map_rgb(0, 0, 32);
         for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % chunk::chunk_size - chunk::chunk_size; x < top_left_viewport.x + m_viewport_w; x += chunk::chunk_size)
@@ -249,10 +254,10 @@ void x39::goingfactory::World::keydown(io::EKey key)
         generator.SetInterp(FastNoise::Interp::Quintic);
         break;
     case io::EKey::PAD_ASTERISK:
-        alpha += 16;
+        render_chunks = !render_chunks;
         break;
     case io::EKey::PAD_SLASH:
-        alpha -= 16;
+        render_grayscale = !render_grayscale;
         break;
     case io::EKey::PAD_DELETE:
         size++;
