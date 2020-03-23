@@ -29,11 +29,26 @@ namespace x39::goingfactory
 		int32_t index_y() const { return m_index_y; }
 		static inline int64_t to_chunk_coordinate(const vec2& pos)
 		{
-			return (((int64_t)std::floorf(pos.x / chunk_size)) << 32) | (int64_t)std::floorf(pos.y / chunk_size);
+			const uint32_t max = UINT32_MAX;
+			const uint32_t max_halfed = max / 2;
+
+			float x_floored = std::floorf(pos.x / chunk_size);
+			uint32_t x_casted = max_halfed + (int32_t)x_floored;
+
+			float y_floored = std::floorf(pos.y / chunk_size);
+			uint32_t y_casted = max_halfed + (int32_t)y_floored;
+
+			int64_t result = (((int64_t)x_casted) << 32) | y_casted;
+			return result;
 		}
 		static inline int64_t to_chunk_coordinate(int32_t x, int32_t y)
 		{
-			return (((int64_t)x) << 32) | (int64_t)y;
+			const uint32_t max = UINT32_MAX;
+			const uint32_t max_halfed = max / 2;
+			uint32_t x_adjusted = max_halfed + x;
+			uint32_t y_adjusted = max_halfed + y;
+			int64_t result = ((int64_t)x_adjusted) << 32 | y_adjusted;
+			return result;
 		}
 		int64_t coordinate() { return to_chunk_coordinate(m_index_x, m_index_y); }
 	};
