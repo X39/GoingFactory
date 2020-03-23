@@ -11,7 +11,8 @@ x39::goingfactory::entity::EntityRegister<x39::goingfactory::entity::Movable> en
 void x39::goingfactory::entity::Movable::simulate(GameInstance& game)
 {
 	const float coef = 0.4f;
-	auto pos = position();
+	auto original_pos = position();
+	auto pos = original_pos;
 	pos.x += m_velocity.x;
 	pos.y += m_velocity.y;
 	if (m_velocity_tick_modifier < 1 && m_velocity_tick_modifier >= 0)
@@ -20,6 +21,26 @@ void x39::goingfactory::entity::Movable::simulate(GameInstance& game)
 		m_velocity.y *= m_velocity_tick_modifier;
 	}
 
-
+	if (is_type(EComponent::Collidable))
+	{
+		auto collidableComponent = get_component<CollidableComponent>();
+		for (auto local_entity_it = game.entity_manager.begin(position()); local_entity_it != game.entity_manager.end(position()); local_entity_it++)
+		{
+			if (*local_entity_it == this) { continue; }
+			if ((*local_entity_it)->is_type(EComponent::Collidable) && (*local_entity_it)->is_type(EComponent::Position))
+			{
+				auto otherCollidableComponent = (*local_entity_it)->get_component<CollidableComponent>();
+				auto otherPositionComponent = (*local_entity_it)->get_component<PositionComponent>();
+				if (collidableComponent->collides_with(*otherCollidableComponent))
+				{
+					auto new_vel = original_pos - otherPositionComponent->position();
+					new_vel.normalize();
+					pos += new_vel;
+					velocity(new_vel);
+					break;
+				}
+			}
+		}
+	}
 	position(pos);
 }

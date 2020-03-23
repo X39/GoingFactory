@@ -10,6 +10,7 @@
 #include "GameInstance.h"
 #include "PlayerInteraction.h"
 #include "EComponent.h"
+#include "collision_primitives.h"
 
 namespace x39::goingfactory
 {
@@ -30,7 +31,22 @@ namespace x39::goingfactory
 		vec2 m_pos;
 		chunk* m_chunk;
 		EntityManager* m_entity_manager;
+	protected:
+		virtual void position_changed() {};
 	public:
+		struct OnPositionChangingEventArgs : public EventArgs {
+		private:
+			vec2 m_old_pos;
+			vec2 m_new_pos;
+		public:
+			vec2 position_old() { return m_old_pos; }
+			vec2 position_new() { return m_new_pos; }
+
+			OnPositionChangingEventArgs(vec2 old_pos, vec2 new_pos) :
+				m_old_pos(old_pos),
+				m_new_pos(new_pos) {}
+		};
+		Event<PositionComponent, OnPositionChangingEventArgs> OnPositionChanging;
 		PositionComponent() : m_pos(0, 0), m_chunk(nullptr), m_entity_manager(nullptr) {}
 		vec2 position() { return m_pos; }
 		void position(vec2);
@@ -109,7 +125,23 @@ namespace x39::goingfactory
 	class CollidableComponent : public Component
 	{
 	public:
-		static EComponent type() { return EComponent::PlayerInteractible; }
-		virtual void interact(GameInstance&, io::EPlayerInteraction) = 0;
+		static EComponent type() { return EComponent::Collidable; }
+		virtual const std::vector<x39::goingfactory::primitives::collision*>& collidables() const = 0;
+		bool collides_with(const CollidableComponent& other) const
+		{
+			auto& self_collidables = collidables();
+			auto& other_collidables = other.collidables();
+			for (auto self_collidable : self_collidables)
+			{
+				for (auto other_collidable : other_collidables)
+				{
+					if (self_collidable->collides_with(*other_collidable))
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
 	};
 }

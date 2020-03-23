@@ -30,7 +30,7 @@
 int DISPLAY_WIDTH;
 int DISPLAY_HEIGHT;
 
-#if DEBUG
+#if _DEBUG
 const float RENDER_FPS = 30;
 const float SIMULATION_FPS = 30;
 #else

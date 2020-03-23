@@ -208,6 +208,7 @@
   <ItemGroup>
     <ClInclude Include="src\Asteroid.h" />
     <ClInclude Include="src\chunk.h" />
+    <ClInclude Include="src\collision_primitives.h" />
     <ClInclude Include="src\Component.h" />
     <ClInclude Include="src\EComponent.h" />
     <ClInclude Include="src\Entry.h" />

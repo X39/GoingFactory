@@ -69,7 +69,10 @@ void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayer
 			auto laser = new Laser();
 			laser->position(position());
 			laser->set_owner(this);
-			auto new_velocity = vec2::from_radians(m_prev_rad - /* 90° */ 1.5708) * 10;
+			auto new_velocity = vec2::from_radians(m_prev_rad - /* 90° */ 1.5708);
+			new_velocity.normalize();
+			auto vel = velocity();
+			new_velocity *= (vel.length() + 10);
 			laser->velocity(new_velocity);
 			game.entity_manager.pool_create(laser);
 		}

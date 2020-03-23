@@ -103,5 +103,20 @@ namespace x39::goingfactory
 		}
 		float to_radians() const { return std::atan2(y, x); }
 		static vec2 from_radians(float rad) { return { std::cos(rad), std::sin(rad) }; }
+		float length() const {
+			return std::sqrtf(std::powf(x, 2) + std::powf(y, 2));
+		}
+		void normalize() {
+			auto len = length();
+			if (len == 0)
+			{
+				x = y = 1;
+			}
+			else
+			{
+				x /= len;
+				y /= len;
+			}
+		}
 	};
 }

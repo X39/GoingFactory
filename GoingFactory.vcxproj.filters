@@ -76,7 +76,7 @@
       <Filter>Source Files\io</Filter>
     </ClCompile>
     <ClCompile Include="src\Marker.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="src\Marker.h">
       <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\collision_primitives.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -4,6 +4,8 @@
 
 void x39::goingfactory::PositionComponent::position(vec2 newpos)
 {
+	OnPositionChangingEventArgs args(m_pos, newpos);
+	OnPositionChanging.raise(*this, args);
 	if (!m_chunk || !m_entity_manager)
 	{
 		m_pos = newpos;
@@ -17,4 +19,5 @@ void x39::goingfactory::PositionComponent::position(vec2 newpos)
 		}
 		m_pos = newpos;
 	}
+	position_changed();
 }
