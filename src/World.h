@@ -1,6 +1,7 @@
 #pragma once
 #include "GameInstance.h"
 #include "EKey.h"
+#include "vec2.h"
 
 namespace x39::goingfactory
 {
@@ -24,5 +25,6 @@ namespace x39::goingfactory
 		void render(GameInstance&);
 
 		void keydown(io::EKey key);
+		bool is_in_view(vec2 pos, int offset = 0);
 	};
 }

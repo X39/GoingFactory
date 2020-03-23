@@ -190,6 +190,7 @@
     <ClCompile Include="src\Component.cpp" />
     <ClCompile Include="src\KeyboardTarget.cpp" />
     <ClCompile Include="src\Laser.cpp" />
+    <ClCompile Include="src\Marker.cpp" />
     <ClCompile Include="src\Movable.cpp" />
     <ClCompile Include="src\FastNoise.cpp" />
     <ClCompile Include="src\Player.cpp" />
@@ -213,6 +214,7 @@
     <ClInclude Include="src\GameInstance.h" />
     <ClInclude Include="src\KeyboardTarget.h" />
     <ClInclude Include="src\Laser.h" />
+    <ClInclude Include="src\Marker.h" />
     <ClInclude Include="src\Movable.h" />
     <ClInclude Include="src\FastNoise.h" />
     <ClInclude Include="src\Player.h" />

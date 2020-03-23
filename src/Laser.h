@@ -30,5 +30,6 @@ namespace x39::goingfactory::entity
 				return false;
 			}
 		}
+		virtual std::string type_name() const override { return "Laser"; }
 	};
 }

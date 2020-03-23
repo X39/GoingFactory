@@ -75,6 +75,9 @@
     <ClCompile Include="src\KeyboardTarget.cpp">
       <Filter>Source Files\io</Filter>
     </ClCompile>
+    <ClCompile Include="src\Marker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -148,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="src\UXElement.h">
       <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Marker.h">
+      <Filter>Header Files\entity</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

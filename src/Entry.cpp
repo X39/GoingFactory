@@ -20,6 +20,7 @@
 #include "Entity.h"
 #include "Asteroid.h"
 #include "Player.h"
+#include "Marker.h"
 #include "EKey.h"
 #include "EModifier.h"
 #include "GameInstance.h"
@@ -29,8 +30,13 @@
 int DISPLAY_WIDTH;
 int DISPLAY_HEIGHT;
 
+#if DEBUG
+const float RENDER_FPS = 30;
+const float SIMULATION_FPS = 30;
+#else
 const float RENDER_FPS = 30;
 const float SIMULATION_FPS = 60;
+#endif
 int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer, ALLEGRO_TIMER*& simulation_timer, ALLEGRO_FONT*& font)
 {
 	if (!al_init())
@@ -122,6 +128,7 @@ int main()
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_a, x39::goingfactory::io::EKey::LSHIFT);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_b, x39::goingfactory::io::EKey::LCTRL);
 	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::trigger_a, x39::goingfactory::io::EKey::SPACE);
+	keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::trigger_b, x39::goingfactory::io::EKey::ALT);
 	x39::goingfactory::GameInstance game_instance(entity_manager, resources_manager, world);
 	entity_manager.onEntityAdded.subscribe([&game_instance](
 		x39::goingfactory::EntityManager& entity_manager, x39::goingfactory::EntityManager::EntityAddedEventArgs args) -> void {
@@ -139,7 +146,7 @@ int main()
 	player->position({0,0});
 	entity_manager.pool_create(player);
 
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 0; i++)
 	{
 		auto asteroid = new x39::goingfactory::entity::Asteroid();
 		asteroid->position({ (rand() % level_size - level_size / 2), (rand() % level_size - level_size / 2) });
@@ -217,11 +224,11 @@ int main()
 		{
 			if (ev.timer.source == render_timer)
 			{
-				redraw = true;
+			redraw = true;
 			}
 			else if (ev.timer.source == simulation_timer)
 			{
-				simulate = true;
+			simulate = true;
 			}
 		}
 		if (simulate)
@@ -275,7 +282,7 @@ int main()
 			al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 0, 0, sstream.str().c_str());
 			sstream.str("");
 
-			sstream << "Up (W) | Left (A) | Down (S) | Right (D) | Shoot (Space) | Speed x2 (LShift) | Speed x0.5 (LCTRL)";
+			sstream << "Up (W) | Left (A) | Down (S) | Right (D) | Trigger (Space|Alt) | Fast (LShift) | Slow (LCTRL)";
 			al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 1, 0, sstream.str().c_str());
 			sstream.str("");
 
@@ -305,6 +312,29 @@ int main()
 			sstream << "Player Chunk: { " << player->chunk()->index_x() << ", " << player->chunk()->index_y() << "}";
 			al_draw_text(font, al_map_rgb(255, 255, 0), DISPLAY_WIDTH / 2 + 1, DISPLAY_HEIGHT - 1 - 10 * 2, 0, sstream.str().c_str());
 			sstream.str("");
+
+			int v_off = 5;
+			auto color_in_view = al_map_rgb(0, 127, 0);
+			auto color_out_of_view = al_map_rgb(127, 0, 0);
+			for (auto it : entity_manager)
+			{
+				if (it->is_type(x39::goingfactory::EComponent::Position))
+				{
+					auto positionComponent = it->get_component<x39::goingfactory::PositionComponent>();
+					sstream << it->type_name() << "(" << "): { " << positionComponent->position().x << ", " << positionComponent->position().y << " }";
+					if (world.is_in_view(positionComponent->position(), -32))
+					{
+						al_draw_text(font, color_in_view, 1, DISPLAY_HEIGHT - 1 - 10 * v_off, 0, sstream.str().c_str());
+					}
+					else
+					{
+						al_draw_text(font, color_out_of_view, 1, DISPLAY_HEIGHT - 1 - 10 * v_off, 0, sstream.str().c_str());
+					}
+					sstream.str("");
+					v_off++;
+				}
+
+			}
 
 			old_frame_time = new_time;
 

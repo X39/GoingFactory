@@ -22,6 +22,7 @@ namespace x39::goingfactory::entity
 		float velocity_tick_modifier() { return m_velocity_tick_modifier; }
 		virtual void simulate(GameInstance&) override;
 
+		virtual std::string type_name() const override { return "Movable"; }
 		virtual bool is_type(EComponent component) const override
 		{
 			switch (component)

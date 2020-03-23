@@ -6,6 +6,7 @@
 #include "ResourceManager.h"
 #include "World.h"
 #include "EntityManager.h"
+#include "Marker.h"
 #include "Laser.h"
 
 x39::goingfactory::entity::EntityRegister<x39::goingfactory::entity::Player> entityRegister("Player",
@@ -62,15 +63,26 @@ void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayer
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::trigger_a) != x39::goingfactory::io::EPlayerInteraction::empty)
 	{
 		double d = al_get_time();
-		if (d - m_last_shot > 0.25)
+		if (d - m_last_trigger_a > 0.25)
 		{
-			m_last_shot = d;
+			m_last_trigger_a = d;
 			auto laser = new Laser();
 			laser->position(position());
 			laser->set_owner(this);
 			auto new_velocity = vec2::from_radians(m_prev_rad - /* 90° */ 1.5708) * 10;
 			laser->velocity(new_velocity);
 			game.entity_manager.pool_create(laser);
+		}
+	}
+	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::trigger_b) != x39::goingfactory::io::EPlayerInteraction::empty)
+	{
+		double d = al_get_time();
+		if (d - m_last_trigger_b > 1)
+		{
+			m_last_trigger_b = d;
+			auto marker = new Marker();
+			marker->position(position());
+			game.entity_manager.pool_create(marker);
 		}
 	}
 }

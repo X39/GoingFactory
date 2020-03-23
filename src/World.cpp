@@ -272,3 +272,20 @@ void x39::goingfactory::World::keydown(io::EKey key)
     case io::EKey::PAD_6: factor_c -= 0.1; break;
     }
 }
+
+bool x39::goingfactory::World::is_in_view(vec2 pos, int offset)
+{
+    if (!m_player || !m_player->is_type(EComponent::Position))
+    {
+        return false;
+    }
+    auto playerPositionComponent = m_player->get_component<PositionComponent>();
+    vec2 center = { m_viewport_w / 2 + m_viewport_x, m_viewport_h / 2 + m_viewport_y };
+    auto top_left_viewport = playerPositionComponent->position() - center;
+    pos -= top_left_viewport;
+    if (pos.x > m_viewport_x + offset && pos.y > m_viewport_y + offset && pos.x < m_viewport_x + m_viewport_w - offset && pos.y < m_viewport_y + m_viewport_h - offset)
+    {
+        return true;
+    }
+    return false;
+}
