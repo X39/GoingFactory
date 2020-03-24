@@ -8,13 +8,13 @@ x39::goingfactory::entity::EntityRegister<x39::goingfactory::entity::Movable> en
 	[]() -> std::shared_ptr<x39::goingfactory::entity::Entity> { return std::make_shared<x39::goingfactory::entity::Movable>(); });
 
 
-void x39::goingfactory::entity::Movable::simulate(GameInstance& game)
+void x39::goingfactory::entity::Movable::simulate(GameInstance& game, float sim_coef)
 {
 	const float coef = 0.4f;
 	auto original_pos = position();
 	auto pos = original_pos;
-	pos.x += m_velocity.x;
-	pos.y += m_velocity.y;
+	pos.x += m_velocity.x * sim_coef;
+	pos.y += m_velocity.y * sim_coef;
 	if (m_velocity_tick_modifier < 1 && m_velocity_tick_modifier >= 0)
 	{
 		m_velocity.x *= m_velocity_tick_modifier;

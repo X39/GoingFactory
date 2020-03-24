@@ -47,7 +47,7 @@ void x39::goingfactory::entity::Player::render_init(GameInstance& game)
 }
 void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayerInteraction playerInteraction)
 {
-	float move_coef = 1;
+	float move_coef = 60;
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_a) != x39::goingfactory::io::EPlayerInteraction::empty)
 	{ move_coef *= 2; }
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_b) != x39::goingfactory::io::EPlayerInteraction::empty)
@@ -72,7 +72,7 @@ void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayer
 			auto new_velocity = vec2::from_radians(m_prev_rad - /* 90° */ 1.5708);
 			new_velocity.normalize();
 			auto vel = velocity();
-			new_velocity *= (vel.length() + 10);
+			new_velocity *= (vel.length() + 600);
 			laser->velocity(new_velocity);
 			game.entity_manager.pool_create(laser);
 		}

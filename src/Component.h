@@ -62,7 +62,7 @@ namespace x39::goingfactory
 	class SimulateComponent : public Component
 	{
 	public:
-		virtual void simulate(GameInstance&) = 0;
+		virtual void simulate(GameInstance& game, float sim_coef) = 0;
 		static EComponent type() { return EComponent::Simulate; }
 	};
 	class HealthComponent : public Component

@@ -47,9 +47,9 @@ void x39::goingfactory::entity::Asteroid::render(GameInstance& game, vec2 transl
 	}
 }
 
-void x39::goingfactory::entity::Asteroid::simulate(GameInstance& game)
+void x39::goingfactory::entity::Asteroid::simulate(GameInstance& game, float sim_coef)
 {
-	Movable::simulate(game);
+	Movable::simulate(game, sim_coef);
 	vec2 topLeft = position() - 8;
 	vec2 botRight = position() + 8;
 	auto position = game.world.player()->get_component<PositionComponent>()->position();

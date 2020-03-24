@@ -9,12 +9,15 @@ x39::goingfactory::entity::EntityRegister<x39::goingfactory::entity::Laser> enti
 void x39::goingfactory::entity::Laser::render(GameInstance& game, vec2 translate)
 {
 	auto pos = position() - translate;
-	al_draw_line(pos.x, pos.y, pos.x + m_velocity.x, pos.y + m_velocity.y, al_map_rgb(255, 0, 0), 1);
+	auto vel = velocity();
+	vel.normalize();
+	vel *= 10;
+	al_draw_line(pos.x, pos.y, pos.x + vel.x, pos.y + vel.y, al_map_rgb(255, 0, 0), 1);
 }
 
-void x39::goingfactory::entity::Laser::simulate(GameInstance& game)
+void x39::goingfactory::entity::Laser::simulate(GameInstance& game, float sim_coef)
 {
-	Movable::simulate(game);
+	Movable::simulate(game, sim_coef);
 	vec2 topLeft = position() - 8;
 	vec2 botRight = position() + 8;
 	for (auto it = game.entity_manager.begin(position()); it != game.entity_manager.end(position()); it++)

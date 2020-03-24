@@ -8,6 +8,7 @@
 
 bool render_grayscale = false;
 bool render_chunks = false;
+bool render_background = true;
 int size = 16;
 x39::goingfactory::FastNoise generator(1203012041254125152);
 size_t grass1_texture_id = 0;
@@ -45,7 +46,7 @@ void x39::goingfactory::World::render(GameInstance& game)
 
     // Draw Level
     {
-        if (render_grayscale)
+        if (render_grayscale && render_background)
         {
             for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % size - size; x < top_left_viewport.x + m_viewport_w; x += size)
             {
@@ -78,7 +79,7 @@ void x39::goingfactory::World::render(GameInstance& game)
                 }
             }
         }
-        else
+        else if (render_background)
         {
             const int tile_size = 16;
             al_hold_bitmap_drawing(true);
@@ -255,6 +256,9 @@ void x39::goingfactory::World::keydown(io::EKey key)
         break;
     case io::EKey::PAD_ASTERISK:
         render_chunks = !render_chunks;
+        break;
+    case io::EKey::PAD_ENTER:
+        render_background = !render_background;
         break;
     case io::EKey::PAD_SLASH:
         render_grayscale = !render_grayscale;

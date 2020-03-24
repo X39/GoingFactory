@@ -32,12 +32,10 @@ int DISPLAY_HEIGHT;
 
 #if _DEBUG
 const float RENDER_FPS = 30;
-const float SIMULATION_FPS = 30;
 #else
 const float RENDER_FPS = 30;
-const float SIMULATION_FPS = 60;
 #endif
-int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer, ALLEGRO_TIMER*& simulation_timer, ALLEGRO_FONT*& font)
+int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer, ALLEGRO_FONT*& font)
 {
     if (!al_init())
     {
@@ -74,13 +72,6 @@ int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_qu
         return -1;
     }
 
-    simulation_timer = al_create_timer(1.0 / SIMULATION_FPS);
-    if (!simulation_timer)
-    {
-        fprintf(stderr, "failed to create simulation_timer!\n");
-        return -1;
-    }
-
     font = al_load_ttf_font("arial.ttf", 72, 0);
     if (!font)
     {
@@ -90,7 +81,6 @@ int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_qu
 
     al_register_event_source(event_queue, al_get_display_event_source(display));
     al_register_event_source(event_queue, al_get_timer_event_source(render_timer));
-    al_register_event_source(event_queue, al_get_timer_event_source(simulation_timer));
     al_register_event_source(event_queue, al_get_mouse_event_source());
     al_register_event_source(event_queue, al_get_keyboard_event_source());
 
@@ -98,7 +88,6 @@ int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_qu
     // al_set_new_bitmap_flags(ALLEGRO_VIDEO_BITMAP);
 
     al_start_timer(render_timer);
-    al_start_timer(simulation_timer);
     al_clear_to_color(al_map_rgb(0, 0, 0));
     al_flip_display();
     return 0;
@@ -108,9 +97,8 @@ int main()
     ALLEGRO_DISPLAY* display;
     ALLEGRO_EVENT_QUEUE* event_queue;
     ALLEGRO_TIMER* render_timer;
-    ALLEGRO_TIMER* simulation_timer;
     ALLEGRO_FONT* font;
-    int init_res = initialize_allegro(display, event_queue, render_timer, simulation_timer, font);
+    int init_res = initialize_allegro(display, event_queue, render_timer, font);
     if (init_res)
     {
         return init_res;
@@ -142,15 +130,15 @@ int main()
     world.set_player(player);
     const int viewport_offset = 32;
     world.set_viewport(viewport_offset, viewport_offset, DISPLAY_WIDTH - viewport_offset * 2, DISPLAY_HEIGHT - viewport_offset * 2);
-    const int level_size = 5000;
+    const int level_size = 50000;
     player->position({0,0});
     entity_manager.pool_create(player);
 
-    for (int i = 0; i < 500; i++)
+    for (int i = 0; i < 5000; i++)
     {
         auto asteroid = new x39::goingfactory::entity::Asteroid();
         asteroid->position({ (rand() % level_size - level_size / 2), (rand() % level_size - level_size / 2) });
-        asteroid->velocity({ (rand() % 20) / 20.0f, (rand() % 20) / 20.0f });
+        asteroid->velocity({ ((rand() % 20) / 20.0f) * 60, ((rand() % 20) / 20.0f) * 60 });
         entity_manager.pool_create(asteroid);
     }
 
@@ -160,7 +148,7 @@ int main()
     auto old_sim_time = al_get_time();
     int last_sim_fps = 0;
     bool redraw = false;
-    bool simulate = false;
+    bool simulate = true;
     bool mouseDown = false;
     while (true)
     {
@@ -224,46 +212,43 @@ int main()
         {
             if (ev.timer.source == render_timer)
             {
-            redraw = true;
-            }
-            else if (ev.timer.source == simulation_timer)
-            {
-            simulate = true;
+                redraw = true;
             }
         }
         if (simulate)
         {
-            std::vector<std::future<void>> results;
-            auto start = entity_manager.begin(x39::goingfactory::EComponent::Simulate);
-            auto end = entity_manager.end(x39::goingfactory::EComponent::Simulate);
-            const size_t handle_amount = 100;
-            size_t range = end - start;
-            size_t tasks = range / handle_amount + (range % handle_amount == 0 ? 0 : 1);
-            for (; tasks > 0; tasks--)
-            {
-                auto range_start = (tasks - 1) * handle_amount;
-                auto range_end = tasks * handle_amount;
-                results.emplace_back(
-                    game_instance.thread_pool().enqueue([&start, range_start, range_end, &game_instance, range] {
-                        for (auto i = range_start; i != range_end && i != range; i++)
-                        {
-                            auto it = start + i;
-                            auto simulateComponent = (*it)->get_component<x39::goingfactory::SimulateComponent>();
-                            simulateComponent->simulate(game_instance);
-                        }
-                        }
-                    )
-                );
-            }
-            keyboard_target.entity_interact(game_instance);
-            for (auto&& result : results) { result.get(); }
-
-            auto new_time = al_get_time();
-            last_sim_fps = (int)(1 / (new_time - old_sim_time));
-            old_sim_time = new_time;
             simulate = false;
+            entity_manager.act_pools();
+            auto new_time = al_get_time();
+            float sim_delta = (float)(new_time - old_sim_time);
+            last_sim_fps = sim_delta >= 1 ? 0 : (int)(1 / sim_delta);
+            old_sim_time = new_time;
+            game_instance.thread_pool().enqueue([&] {
+                std::vector<std::future<void>> results;
+                auto start = entity_manager.begin(x39::goingfactory::EComponent::Simulate);
+                auto end = entity_manager.end(x39::goingfactory::EComponent::Simulate);
+                const size_t handle_amount = 100;
+                size_t range = end - start;
+                size_t tasks = range / handle_amount + (range % handle_amount == 0 ? 0 : 1);
+                for (; tasks > 0; tasks--)
+                {
+                    auto range_start = (tasks - 1) * handle_amount;
+                    auto range_end = tasks * handle_amount;
+                    results.emplace_back(
+                        game_instance.thread_pool().enqueue([sim_delta, &start, range_start, range_end, &game_instance, range] {
+                            for (auto i = range_start; i != range_end && i != range; i++)
+                            {
+                                auto it = start + i;
+                                auto simulateComponent = (*it)->get_component<x39::goingfactory::SimulateComponent>();
+                                simulateComponent->simulate(game_instance, sim_delta);
+                            } } ) );
+                }
+                keyboard_target.entity_interact(game_instance);
+                for (auto&& result : results) { result.get(); }
+                simulate = true;
+            });
         }
-        if (redraw)// && al_is_event_queue_empty(event_queue))
+        if (redraw && al_is_event_queue_empty(event_queue))
         {
             world.render(game_instance);
             // world.set_viewport(viewport_offset, viewport_offset, DISPLAY_WIDTH - viewport_offset * 2, DISPLAY_HEIGHT - viewport_offset * 2);
@@ -345,12 +330,10 @@ int main()
             al_clear_to_color(al_map_rgb(0, 0, 0));
             redraw = false;
         }
-        entity_manager.act_pools();
     }
 
     al_destroy_font(font);
     al_destroy_timer(render_timer);
-    al_destroy_timer(simulation_timer);
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
 
