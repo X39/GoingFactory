@@ -124,10 +124,12 @@ namespace x39::goingfactory
 	};
 	class CollidableComponent : public Component
 	{
+	protected:
+		virtual void collision_happened(CollidableComponent& other) {}
 	public:
 		static EComponent type() { return EComponent::Collidable; }
 		virtual const std::vector<x39::goingfactory::primitives::collision*>& collidables() const = 0;
-		bool collides_with(const CollidableComponent& other) const
+		bool collides_with(CollidableComponent& other)
 		{
 			auto& self_collidables = collidables();
 			auto& other_collidables = other.collidables();
@@ -137,6 +139,7 @@ namespace x39::goingfactory
 				{
 					if (self_collidable->collides_with(*other_collidable))
 					{
+						collision_happened(other);
 						return true;
 					}
 				}
