@@ -11,12 +11,21 @@ namespace x39::goingfactory
 	}
 	class World
 	{
+	public:
+		struct Tile
+		{
+			bool is_passable;
+			bool has_tree;
+			int tile_texture;
+		};
+		static const size_t tile_size = 16;
 	private:
 		entity::Entity* m_player;
 		size_t m_viewport_x;
 		size_t m_viewport_y;
 		size_t m_viewport_w;
 		size_t m_viewport_h;
+		void draw_level(GameInstance&);
 	public:
 		World();
 		entity::Entity* player() { return m_player; }
@@ -26,5 +35,7 @@ namespace x39::goingfactory
 
 		void keydown(io::EKey key);
 		bool is_in_view(vec2 pos, int offset = 0);
+		Tile get_tile(vec2 vec) { return get_tile(vec.x, vec.y); }
+		Tile get_tile(int x, int y);
 	};
 }
