@@ -7,8 +7,8 @@
 
 #include "Event.h"
 #include "vec2.h"
-#include "EComponent.h"
 #include "chunk.h"
+#include "Component.h"
 
 namespace x39::goingfactory
 {
@@ -17,7 +17,6 @@ namespace x39::goingfactory
 		class Entity;
 	}
 	class chunk;
-	class PositionComponent;
 	class EntityManager
 	{
 	private:

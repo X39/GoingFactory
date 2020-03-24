@@ -115,6 +115,8 @@ int main()
     keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_right, x39::goingfactory::io::EKey::D);
     keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_a, x39::goingfactory::io::EKey::LSHIFT);
     keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_b, x39::goingfactory::io::EKey::LCTRL);
+    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_c, x39::goingfactory::io::EKey::RSHIFT);
+    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_d, x39::goingfactory::io::EKey::RCTRL);
     keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::trigger_a, x39::goingfactory::io::EKey::SPACE);
     keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::trigger_b, x39::goingfactory::io::EKey::ALT);
     x39::goingfactory::GameInstance game_instance(entity_manager, resources_manager, world);

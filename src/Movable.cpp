@@ -28,29 +28,32 @@ void x39::goingfactory::entity::Movable::simulate(GameInstance& game, float sim_
 	if (is_type(EComponent::Collidable))
 	{
 		auto collidableComponent = get_component<CollidableComponent>();
-		if (!game.world.get_tile(pos.x, pos.y).is_passable)
+		if (collidableComponent->can_collide())
 		{
-			vec2 new_vel = { (int)original_pos.x % World::tile_size + World::tile_size / 2, (int)original_pos.y % World::tile_size + World::tile_size / 2 };
-			new_vel.normalize();
-			pos += new_vel;
-			velocity(new_vel);
-		}
-		else
-		{
-			for (auto local_entity_it = game.entity_manager.begin(position()); local_entity_it != game.entity_manager.end(position()); local_entity_it++)
+			if (!game.world.get_tile(pos.x, pos.y).is_passable)
 			{
-				if (*local_entity_it == this) { continue; }
-				if ((*local_entity_it)->is_type(EComponent::Collidable) && (*local_entity_it)->is_type(EComponent::Position))
+				vec2 new_vel = { (int)original_pos.x % World::tile_size + World::tile_size / 2, (int)original_pos.y % World::tile_size + World::tile_size / 2 };
+				new_vel.normalize();
+				pos += new_vel;
+				velocity(new_vel);
+			}
+			else
+			{
+				for (auto local_entity_it = game.entity_manager.begin(position()); local_entity_it != game.entity_manager.end(position()); local_entity_it++)
 				{
-					auto otherCollidableComponent = (*local_entity_it)->get_component<CollidableComponent>();
-					auto otherPositionComponent = (*local_entity_it)->get_component<PositionComponent>();
-					if (collidableComponent->collides_with(*otherCollidableComponent))
+					if (*local_entity_it == this) { continue; }
+					if ((*local_entity_it)->is_type(EComponent::Collidable) && (*local_entity_it)->is_type(EComponent::Position))
 					{
-						auto new_vel = original_pos - otherPositionComponent->position();
-						new_vel.normalize();
-						pos += new_vel;
-						velocity(new_vel);
-						break;
+						auto otherCollidableComponent = (*local_entity_it)->get_component<CollidableComponent>();
+						auto otherPositionComponent = (*local_entity_it)->get_component<PositionComponent>();
+						if (collidableComponent->collides_with(*otherCollidableComponent))
+						{
+							auto new_vel = original_pos - otherPositionComponent->position();
+							new_vel.normalize();
+							pos += new_vel;
+							velocity(new_vel);
+							break;
+						}
 					}
 				}
 			}

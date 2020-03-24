@@ -19,7 +19,18 @@ void x39::goingfactory::entity::Player::render(GameInstance& game, vec2 translat
 	float angle = m_velocity.to_radians() + /* 90° */ 1.5708;
 	m_prev_rad = m_velocity.x == 0 && m_velocity.y == 0 ? m_prev_rad : angle;
 	auto pos = position() - translate;
-	al_draw_rotated_bitmap(bitmap, 8, 8, pos.x, pos.y, m_prev_rad, NULL);
+	if (can_collide())
+	{
+		al_draw_rotated_bitmap(bitmap, 8, 8, pos.x, pos.y, m_prev_rad, NULL);
+	}
+	else
+	{
+		int op, src, dst;
+		al_get_blender(&op, &src, &dst);
+		al_set_blender(ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA, ALLEGRO_ALPHA);
+		al_draw_rotated_bitmap(bitmap, 8, 8, pos.x, pos.y, m_prev_rad, NULL);
+		al_set_blender(op, src, dst);
+	}
 	m_texture_index++;
 	if (m_textures.size() == m_texture_index)
 	{
@@ -52,6 +63,8 @@ void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayer
 	{ move_coef *= 2; }
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_b) != x39::goingfactory::io::EPlayerInteraction::empty)
 	{ move_coef *= 0.5; }
+	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_c) != x39::goingfactory::io::EPlayerInteraction::empty)
+	{ can_collide(false); } else { can_collide(true); }
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::move_left) != x39::goingfactory::io::EPlayerInteraction::empty)
 	{ m_velocity.x += -move_coef; }
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::move_right) != x39::goingfactory::io::EPlayerInteraction::empty)
