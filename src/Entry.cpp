@@ -146,7 +146,7 @@ int main()
 	player->position({0,0});
 	entity_manager.pool_create(player);
 
-	for (int i = 0; i < 0; i++)
+	for (int i = 0; i < 500; i++)
 	{
 		auto asteroid = new x39::goingfactory::entity::Asteroid();
 		asteroid->position({ (rand() % level_size - level_size / 2), (rand() % level_size - level_size / 2) });
@@ -238,7 +238,7 @@ int main()
 			auto end = entity_manager.end(x39::goingfactory::EComponent::Simulate);
 			const size_t handle_amount = 100;
 			size_t range = end - start;
-			size_t tasks = range / handle_amount + (range / handle_amount == 0 ? 1 : 0);
+			size_t tasks = range / handle_amount + (range % handle_amount == 0 ? 0 : 1);
 			for (; tasks > 0; tasks--)
 			{
 				auto range_start = (tasks - 1) * handle_amount;
