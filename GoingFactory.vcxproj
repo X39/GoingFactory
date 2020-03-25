@@ -208,7 +208,6 @@
   <ItemGroup>
     <ClInclude Include="src\Asteroid.h" />
     <ClInclude Include="src\chunk.h" />
-    <ClInclude Include="src\collision_primitives.h" />
     <ClInclude Include="src\Component.h" />
     <ClInclude Include="src\EComponent.h" />
     <ClInclude Include="src\Entry.h" />
@@ -216,6 +215,7 @@
     <ClInclude Include="src\KeyboardTarget.h" />
     <ClInclude Include="src\Laser.h" />
     <ClInclude Include="src\Marker.h" />
+    <ClInclude Include="src\matrix.h" />
     <ClInclude Include="src\Movable.h" />
     <ClInclude Include="src\FastNoise.h" />
     <ClInclude Include="src\Player.h" />

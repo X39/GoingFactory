@@ -155,7 +155,7 @@
     <ClInclude Include="src\Marker.h">
       <Filter>Header Files\entity</Filter>
     </ClInclude>
-    <ClInclude Include="src\collision_primitives.h">
+    <ClInclude Include="src\matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

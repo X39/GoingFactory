@@ -15,20 +15,5 @@ namespace x39::goingfactory::entity
 		virtual void simulate(GameInstance& game, float sim_coef) override;
 
 		virtual std::string type_name() const override { return "Asteroid"; }
-		virtual bool is_type(EComponent component) const override
-		{
-			if (Movable::is_type(component))
-			{
-				return true;
-			}
-			switch (component)
-			{
-			case x39::goingfactory::EComponent::Render:
-			case x39::goingfactory::EComponent::Health:
-				return true;
-			default:
-				return false;
-			}
-		}
 	};
 }

@@ -16,7 +16,7 @@ x39::goingfactory::entity::EntityRegister<x39::goingfactory::entity::Player> ent
 void x39::goingfactory::entity::Player::render(GameInstance& game, vec2 translate)
 {
 	auto bitmap = game.resource_manager.get_bitmap(m_textures[m_texture_index]);
-	float angle = m_velocity.to_radians() + /* 90° */ 1.5708;
+	float angle = m_velocity.angle_radians() + /* 90° */ 1.5708;
 	m_prev_rad = m_velocity.x == 0 && m_velocity.y == 0 ? m_prev_rad : angle;
 	auto pos = position() - translate;
 	if (can_collide())
@@ -82,7 +82,7 @@ void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayer
 			auto laser = new Laser();
 			laser->position(position());
 			laser->set_owner(this);
-			auto new_velocity = vec2::from_radians(m_prev_rad - /* 90° */ 1.5708);
+			auto new_velocity = vec2::from_angle_radians(m_prev_rad - /* 90° */ 1.5708);
 			new_velocity.normalize();
 			auto vel = velocity();
 			new_velocity *= (vel.length() + 600);

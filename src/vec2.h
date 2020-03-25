@@ -19,11 +19,36 @@ namespace x39::goingfactory
 		vec2(double x, double y) : x((float)x), y((float)y) {}
 		vec2(float x, double y) : x(x), y((float)y) {}
 
-		vec2 operator + (float rvalue)
+
+		float angle_radians() const { return std::atan2(y, x); }
+		static vec2 from_angle_radians(float rad) { return { std::cos(rad), std::sin(rad) }; }
+		float length() const {
+			return std::sqrtf(std::powf(x, 2) + std::powf(y, 2));
+		}
+		void normalize() {
+			auto len = length();
+			if (len == 0)
+			{
+				x = y = 1;
+			}
+			else
+			{
+				x /= len;
+				y /= len;
+			}
+		}
+
+
+		float crossproduct (const vec2& rvalue) const
+		{
+			return x * rvalue.y - y * rvalue.x;
+		}
+
+		vec2 operator + (float rvalue) const
 		{
 			return { x + rvalue, y + rvalue };
 		}
-		vec2 operator + (const vec2& rvalue)
+		vec2 operator + (const vec2& rvalue) const
 		{
 			return { x + rvalue.x, y + rvalue.y };
 		}
@@ -33,11 +58,11 @@ namespace x39::goingfactory
 			y += rvalue.y;
 			return *this;
 		}
-		vec2 operator - (const vec2& rvalue)
+		vec2 operator - (const vec2& rvalue) const
 		{
 			return { x - rvalue.x, y - rvalue.y };
 		}
-		vec2 operator - (float rvalue)
+		vec2 operator - (float rvalue) const
 		{
 			return { x - rvalue, y - rvalue };
 		}
@@ -47,11 +72,11 @@ namespace x39::goingfactory
 			y -= rvalue.y;
 			return *this;
 		}
-		vec2 operator * (const vec2& rvalue)
+		vec2 operator * (const vec2& rvalue) const
 		{
 			return { x * rvalue.x, y * rvalue.y };
 		}
-		vec2 operator * (float rvalue)
+		vec2 operator * (float rvalue) const
 		{
 			return { x * rvalue, y * rvalue };
 		}
@@ -67,11 +92,11 @@ namespace x39::goingfactory
 			y *= rvalue;
 			return *this;
 		}
-		vec2 operator / (const vec2& rvalue)
+		vec2 operator / (const vec2& rvalue) const
 		{
 			return { x / rvalue.x, y / rvalue.y };
 		}
-		vec2 operator / (float rvalue)
+		vec2 operator / (float rvalue) const
 		{
 			return { x / rvalue, y / rvalue };
 		}
@@ -81,42 +106,29 @@ namespace x39::goingfactory
 			y /= rvalue.y;
 			return *this;
 		}
-		bool operator < (const vec2& rvalue)
+		bool operator < (const vec2& rvalue) const
 		{
 			return x < rvalue.x && y < rvalue.y;
 		}
-		bool operator <= (const vec2& rvalue)
+		bool operator <= (const vec2& rvalue) const
 		{
 			return x <= rvalue.x && y <= rvalue.y;
 		}
-		bool operator > (const vec2& rvalue)
+		bool operator > (const vec2& rvalue) const
 		{
 			return x > rvalue.x && y > rvalue.y;
 		}
-		bool operator >= (const vec2& rvalue)
+		bool operator >= (const vec2& rvalue) const
 		{
 			return x >= rvalue.x && y >= rvalue.y;
 		}
-		bool operator == (const vec2& rvalue)
+		bool operator == (const vec2& rvalue) const
 		{
 			return x == rvalue.x && y == rvalue.y;
 		}
-		float to_radians() const { return std::atan2(y, x); }
-		static vec2 from_radians(float rad) { return { std::cos(rad), std::sin(rad) }; }
-		float length() const {
-			return std::sqrtf(std::powf(x, 2) + std::powf(y, 2));
-		}
-		void normalize() {
-			auto len = length();
-			if (len == 0)
-			{
-				x = y = 1;
-			}
-			else
-			{
-				x /= len;
-				y /= len;
-			}
+		bool operator != (const vec2& rvalue) const
+		{
+			return x != rvalue.x && y != rvalue.y;
 		}
 	};
 }

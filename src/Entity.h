@@ -12,7 +12,7 @@ namespace x39::goingfactory
 {
 	namespace entity
 	{
-		class Entity : public Component
+		class Entity : virtual public Component
 		{
 		private:
 			friend class EntityManager;
@@ -23,8 +23,6 @@ namespace x39::goingfactory
 			static std::unordered_map<std::string, std::function<std::shared_ptr<x39::goingfactory::entity::Entity>()>>& registry();
 			Entity() : m_local_id(~0) { }
 			size_t local_id() { return m_local_id; }
-			virtual bool is_type(EComponent component) const override { return false; }
-
 			virtual std::string type_name() const = 0;
 		};
 		template <typename T> struct EntityRegister

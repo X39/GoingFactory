@@ -23,16 +23,5 @@ namespace x39::goingfactory::entity
 		virtual void simulate(GameInstance& game, float sim_coef) override;
 
 		virtual std::string type_name() const override { return "Movable"; }
-		virtual bool is_type(EComponent component) const override
-		{
-			switch (component)
-			{
-			case x39::goingfactory::EComponent::Position:
-			case x39::goingfactory::EComponent::Simulate:
-				return true;
-			default:
-				return false;
-			}
-		}
 	};
 }

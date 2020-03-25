@@ -16,7 +16,7 @@ namespace x39::goingfactory
 		{
 			bool is_passable;
 			bool has_tree;
-			int tile_texture;
+			size_t tile_texture;
 		};
 		static const size_t tile_size = 16;
 	private:
@@ -35,7 +35,7 @@ namespace x39::goingfactory
 
 		void keydown(io::EKey key);
 		bool is_in_view(vec2 pos, int offset = 0);
-		Tile get_tile(vec2 vec) { return get_tile(vec.x, vec.y); }
+		Tile get_tile(vec2 vec) { return get_tile((int)vec.x, (int)vec.y); }
 		Tile get_tile(int x, int y);
 	};
 }

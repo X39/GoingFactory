@@ -25,17 +25,15 @@ void x39::goingfactory::entity::Movable::simulate(GameInstance& game, float sim_
 		m_velocity.y *= m_velocity_tick_modifier;
 	}
 
-	if (is_type(EComponent::Collidable))
+	if (Component::is_type(EComponent::Collidable))
 	{
-		auto collidableComponent = get_component<CollidableComponent>();
+		auto collidableComponent = Component::get_component<CollidableComponent>();
 		if (collidableComponent->can_collide())
 		{
 			if (!game.world.get_tile(pos.x, pos.y).is_passable)
 			{
-				vec2 new_vel = { (int)original_pos.x % World::tile_size + World::tile_size / 2, (int)original_pos.y % World::tile_size + World::tile_size / 2 };
-				new_vel.normalize();
-				pos += new_vel;
-				velocity(new_vel);
+				velocity({});
+				return;
 			}
 			else
 			{
@@ -46,13 +44,10 @@ void x39::goingfactory::entity::Movable::simulate(GameInstance& game, float sim_
 					{
 						auto otherCollidableComponent = (*local_entity_it)->get_component<CollidableComponent>();
 						auto otherPositionComponent = (*local_entity_it)->get_component<PositionComponent>();
-						if (collidableComponent->collides_with(*otherCollidableComponent))
+						if (collidableComponent->intersects_with(*otherCollidableComponent))
 						{
-							auto new_vel = original_pos - otherPositionComponent->position();
-							new_vel.normalize();
-							pos += new_vel;
-							velocity(new_vel);
-							break;
+							velocity({});
+							return;
 						}
 					}
 				}
