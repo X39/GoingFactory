@@ -17,12 +17,15 @@ void x39::goingfactory::entity::Movable::simulate(GameInstance& game, float sim_
 	const float coef = 0.4f;
 	auto original_pos = position();
 	auto pos = original_pos;
+
+
+
 	pos.x += m_velocity.x * sim_coef;
 	pos.y += m_velocity.y * sim_coef;
-	if (m_velocity_tick_modifier < 1 && m_velocity_tick_modifier >= 0)
+	if (m_velocity_modifier < 1 && m_velocity_modifier >= 0)
 	{
-		m_velocity.x *= m_velocity_tick_modifier;
-		m_velocity.y *= m_velocity_tick_modifier;
+		m_velocity.x -= m_velocity.x * (m_velocity_modifier * sim_coef);
+		m_velocity.y -= m_velocity.y * (m_velocity_modifier * sim_coef);
 	}
 
 	if (Component::is_type(EComponent::Collidable))
@@ -44,15 +47,20 @@ void x39::goingfactory::entity::Movable::simulate(GameInstance& game, float sim_
 					{
 						auto otherCollidableComponent = (*local_entity_it)->get_component<CollidableComponent>();
 						auto otherPositionComponent = (*local_entity_it)->get_component<PositionComponent>();
-						if (collidableComponent->intersects_with(*otherCollidableComponent))
+						x39::goingfactory::CollidableComponent::line delta;
+						if (collidableComponent->intersects_with(*otherCollidableComponent, &delta))
 						{
-							velocity({});
-							return;
+							m_velocity -= delta.p2 - delta.p1;
+							pos = original_pos;
+							pos.x += m_velocity.x * sim_coef;
+							pos.y += m_velocity.y * sim_coef;
 						}
 					}
 				}
 			}
 		}
 	}
+
+
 	position(pos);
 }

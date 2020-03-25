@@ -152,6 +152,7 @@ int main()
     bool redraw = false;
     bool simulate = true;
     bool mouseDown = false;
+    bool halt_simulation = false;
     while (true)
     {
         ALLEGRO_EVENT ev;
@@ -183,6 +184,10 @@ int main()
         {
             auto modifier = static_cast<x39::goingfactory::io::EModifier>(ev.keyboard.modifiers);
             auto key = static_cast<x39::goingfactory::io::EKey>(ev.keyboard.keycode);
+            if (key == x39::goingfactory::io::EKey::PAUSE)
+            {
+                halt_simulation = !halt_simulation;
+            }
             for (auto it : entity_manager)
             {
                 if (!it) { continue; }
@@ -225,30 +230,45 @@ int main()
             float sim_delta = (float)(new_time - old_sim_time);
             last_sim_fps = sim_delta >= 1 ? 0 : (int)(1 / sim_delta);
             old_sim_time = new_time;
+//#define X39_GF_DISABLE_MT
+#ifndef X39_GF_DISABLE_MT
             game_instance.thread_pool().enqueue([&] {
                 std::vector<std::future<void>> results;
+#endif
                 auto start = entity_manager.begin(x39::goingfactory::EComponent::Simulate);
                 auto end = entity_manager.end(x39::goingfactory::EComponent::Simulate);
                 const size_t handle_amount = 100;
                 size_t range = end - start;
                 size_t tasks = range / handle_amount + (range % handle_amount == 0 ? 0 : 1);
-                for (; tasks > 0; tasks--)
+                if (!halt_simulation)
                 {
-                    auto range_start = (tasks - 1) * handle_amount;
-                    auto range_end = tasks * handle_amount;
-                    results.emplace_back(
-                        game_instance.thread_pool().enqueue([sim_delta, &start, range_start, range_end, &game_instance, range] {
-                            for (auto i = range_start; i != range_end && i != range; i++)
-                            {
-                                auto it = start + i;
-                                auto simulateComponent = (*it)->get_component<x39::goingfactory::SimulateComponent>();
-                                simulateComponent->simulate(game_instance, sim_delta);
-                            } } ) );
+                    for (; tasks > 0; tasks--)
+                    {
+                        auto range_start = (tasks - 1) * handle_amount;
+                        auto range_end = tasks * handle_amount;
+#ifndef X39_GF_DISABLE_MT
+                        results.emplace_back(
+                            game_instance.thread_pool().enqueue([sim_delta, &start, range_start, range_end, &game_instance, range] {
+#endif
+                                for (auto i = range_start; i != range_end && i != range; i++)
+                                {
+                                    auto it = start + i;
+                                    auto simulateComponent = (*it)->get_component<x39::goingfactory::SimulateComponent>();
+                                    simulateComponent->simulate(game_instance, sim_delta);
+                                }
+#ifndef X39_GF_DISABLE_MT
+                                }));
+#endif
+                    }
                 }
                 keyboard_target.entity_interact(game_instance);
+#ifndef X39_GF_DISABLE_MT
                 for (auto&& result : results) { result.get(); }
+#endif
                 simulate = true;
-            });
+#ifndef X39_GF_DISABLE_MT
+                });
+#endif
         }
         if (redraw && al_is_event_queue_empty(event_queue))
         {

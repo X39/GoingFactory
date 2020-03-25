@@ -62,9 +62,8 @@ void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayer
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_a) != x39::goingfactory::io::EPlayerInteraction::empty)
 	{ move_coef *= 2; }
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_b) != x39::goingfactory::io::EPlayerInteraction::empty)
-	{ move_coef *= 0.5; }
-	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_c) != x39::goingfactory::io::EPlayerInteraction::empty)
-	{ can_collide(false); } else { can_collide(true); }
+	{ move_coef *= 0.125; }
+	can_collide((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_c) == x39::goingfactory::io::EPlayerInteraction::empty);
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::move_left) != x39::goingfactory::io::EPlayerInteraction::empty)
 	{ m_velocity.x += -move_coef; }
 	if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::move_right) != x39::goingfactory::io::EPlayerInteraction::empty)

@@ -9,8 +9,9 @@
 bool render_grayscale = false;
 bool render_chunks = false;
 bool render_background = true;
+bool render_collisions = false;
 int size = 16;
-x39::goingfactory::FastNoise generator(1203012041254125152);
+x39::goingfactory::FastNoise generator(12030220512152);
 size_t grass1_texture_id = 0;
 size_t grass2_1_texture_id = 0;
 size_t grass2_2_texture_id = 0;
@@ -163,30 +164,29 @@ void x39::goingfactory::World::render(GameInstance& game)
             {
                 for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % size - size; y < top_left_viewport.y + m_viewport_h; y += size)
                 {
+                    vec2 pos = { x + (float)m_viewport_x, y + (float)m_viewport_y };
+                    float f = 0;
+                    for (int i = 0; i < size; i++)
                     {
-                        vec2 pos = { x, y };
-                        float f = 0;
-                        for (int i = 0; i < size; i++)
-                        {
-                            f += std::fabsf(generator.GetPerlin(pos.x + i, pos.y + i));
-                            f += std::fabsf(generator.GetPerlin(pos.x + size - i, pos.y + i));
-                        }
-                        f = f / (size * 2);
-                        auto color = al_map_rgba((unsigned char)(f * 255), (unsigned char)(f * 255), (unsigned char)(f * 255), 255);
-                        // al_draw_pixel(pos.x - player_pos_centered.x + m_viewport_x, pos.y - player_pos_centered.y + m_viewport_y, color);
-                        al_draw_filled_rectangle(
-                            pos.x - top_left_viewport.x + m_viewport_x,
-                            pos.y - top_left_viewport.y + m_viewport_y,
-                            pos.x + size - top_left_viewport.x + m_viewport_x,
-                            pos.y + size - top_left_viewport.y + m_viewport_x,
-                            color);
-                        // al_draw_bitmap_region(
-                        //   m_bitmap,
-                        //   (unsigned char)(color_rgb * 255), 0, 1, 1,
-                        //   pos.x - player_pos_centered.x + m_viewport_x,
-                        //   pos.y - player_pos_centered.y + m_viewport_y,
-                        //   0);
+                        f += std::fabsf(generator.GetPerlin(pos.x + i, pos.y + i));
+                        f += std::fabsf(generator.GetPerlin(pos.x + size - i, pos.y + i));
                     }
+                    f = f / (size * 2);
+                    auto color = al_map_rgba((unsigned char)(f * 255), (unsigned char)(f * 255), (unsigned char)(f * 255), 255);
+                    pos -= top_left_viewport;
+                    // al_draw_pixel(pos.x - player_pos_centered.x + m_viewport_x, pos.y - player_pos_centered.y + m_viewport_y, color);
+                    al_draw_filled_rectangle(
+                        pos.x,
+                        pos.y,
+                        pos.x + size ,
+                        pos.y + size,
+                        color);
+                    // al_draw_bitmap_region(
+                    //   m_bitmap,
+                    //   (unsigned char)(color_rgb * 255), 0, 1, 1,
+                    //   pos.x - player_pos_centered.x + m_viewport_x,
+                    //   pos.y - player_pos_centered.y + m_viewport_y,
+                    //   0);
                 }
             }
         }
@@ -279,6 +279,7 @@ void x39::goingfactory::World::render(GameInstance& game)
             color, 1);
         color = al_map_rgb(0, 0, 0);
     }
+    auto yellow = al_map_rgb(255, 255, 0);
 
     for (auto it = game.entity_manager.begin(EComponent::Render); it != game.entity_manager.end(EComponent::Render); it++)
     {
@@ -297,6 +298,19 @@ void x39::goingfactory::World::render(GameInstance& game)
         {
             auto renderComponent = (*it)->get_component<x39::goingfactory::RenderComponent>();
             renderComponent->render(game, top_left_viewport);
+        }
+        if (render_collisions && (*it)->is_type(EComponent::Collidable))
+        {
+            auto collidableComponent = (*it)->get_component<CollidableComponent>();
+            auto lines = collidableComponent->collidable_lines();
+            for (auto line : lines)
+            {
+                al_draw_line(
+                    line.p1.x - top_left_viewport.x, line.p1.y - top_left_viewport.y,
+                    line.p2.x - top_left_viewport.x, line.p2.y - top_left_viewport.y,
+                    yellow,
+                    1);
+            }
         }
     }
 }
@@ -320,6 +334,9 @@ void x39::goingfactory::World::keydown(io::EKey key)
     case io::EKey::PAD_3:
         generator.SetInterp(FastNoise::Interp::Quintic);
         break;
+    case io::EKey::PAD_4:
+        render_collisions = !render_collisions;
+        break;
     case io::EKey::PAD_ASTERISK:
         render_chunks = !render_chunks;
         break;
@@ -339,12 +356,6 @@ void x39::goingfactory::World::keydown(io::EKey key)
         }
         size--;
         break;
-    case io::EKey::PAD_7:  break;
-    case io::EKey::PAD_4:  break;
-    case io::EKey::PAD_8:  break;
-    case io::EKey::PAD_5:  break;
-    case io::EKey::PAD_9:  break;
-    case io::EKey::PAD_6:  break;
     }
 }
 

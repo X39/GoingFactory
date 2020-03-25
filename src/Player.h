@@ -27,44 +27,35 @@ namespace x39::goingfactory::entity
 
 		virtual std::string type_name() const override { return "Player"; }
 
+
 		// Inherited via CollidableComponent
-		virtual const std::vector<x39::goingfactory::CollidableComponent::line>& collidable_lines() const override {
+		virtual vec2 collidable_root() const { return position(); }
+		virtual const std::vector<x39::goingfactory::CollidableComponent::line> collidable_lines() const override {
 			auto pos = position();
 			const int size = 16;
+			vec2 top_left = pos + vec2{ -(size / 2), -(size / 2) };
+			vec2 top_right = top_left + vec2{ size, 0 };
+			vec2 bot_left = top_left + vec2{ 0, size };
+			vec2 bot_right = top_left + vec2{ size, size };
+			vec2 translated_top_left = top_left + m_velocity;
+			vec2 translated_top_right = top_right + m_velocity;
+			vec2 translated_bot_left = bot_left + m_velocity;
+			vec2 translated_bot_right = bot_right + m_velocity;
 			return {
-				{
-					vec2{-(size / 2), -(size / 2) } -pos,
-					vec2{-(size / 2), -(size / 2)} +vec2{ size, 0 } -pos },
-				{
-					vec2{-(size / 2), -(size / 2) } -pos,
-					vec2{-(size / 2), -(size / 2)} +vec2{ 0, size } -pos
-				},
-				{
-					vec2{-(size / 2), -(size / 2) } +vec2{ size, size } -pos,
-					vec2{-(size / 2), -(size / 2)} +vec2{ size, 0 } -pos
-				},
-				{
-					vec2{-(size / 2), -(size / 2) } +vec2{ size, size } -pos,
-					vec2{-(size / 2), -(size / 2)} +vec2{ 0, size } -pos
-				},
+				{ top_left, top_right },
+				{ top_right, bot_right },
+				{ bot_right, bot_left },
+				{ bot_left, top_left },
 
+				{ top_left, translated_top_left },
+				{ top_right, translated_top_right },
+				{ bot_right, translated_bot_right },
+				{ bot_left, translated_bot_left },
 
-
-				{
-					vec2{-(size / 2), -(size / 2) } -pos + m_velocity,
-					vec2{-(size / 2), -(size / 2)} +vec2{ size, 0 } -pos },
-				{
-					vec2{-(size / 2), -(size / 2) } -pos + m_velocity,
-					vec2{-(size / 2), -(size / 2)} +vec2{ 0, size } -pos + m_velocity
-				},
-				{
-					vec2{-(size / 2), -(size / 2) } +vec2{ size, size } -pos + m_velocity,
-					vec2{-(size / 2), -(size / 2)} +vec2{ size, 0 } -pos + m_velocity
-				},
-				{
-					vec2{-(size / 2), -(size / 2) } +vec2{ size, size } -pos + m_velocity,
-					vec2{-(size / 2), -(size / 2)} +vec2{ 0, size } -pos + m_velocity
-				},
+				{ translated_top_left, translated_top_right },
+				{ translated_top_right, translated_bot_right },
+				{ translated_bot_right, translated_bot_left },
+				{ translated_bot_left, translated_top_left }
 			};
 		}
 	};

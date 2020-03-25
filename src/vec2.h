@@ -22,6 +22,9 @@ namespace x39::goingfactory
 
 		float angle_radians() const { return std::atan2(y, x); }
 		static vec2 from_angle_radians(float rad) { return { std::cos(rad), std::sin(rad) }; }
+		float length_squared() const {
+			return std::powf(x, 2) + std::powf(y, 2);
+		}
 		float length() const {
 			return std::sqrtf(std::powf(x, 2) + std::powf(y, 2));
 		}
