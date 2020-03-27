@@ -28,6 +28,7 @@ namespace x39::goingfactory
 		void draw_level(GameInstance&);
 	public:
 		World();
+		~World();
 		entity::Entity* player() { return m_player; }
 		void set_viewport(size_t x, size_t y, size_t w, size_t h) { m_viewport_x = x; m_viewport_y = y; m_viewport_w = w; m_viewport_h = h; }
 		void set_player(entity::Entity* player) { m_player = player; }

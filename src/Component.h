@@ -154,7 +154,7 @@ namespace x39::goingfactory
         {
             const std::vector<vec2>* points_1 = &points_a;
             const std::vector<vec2>* points_2 = &points_b;
-
+            vec2 outvec;
             if (overlap)
             {
                 *overlap = INFINITY;
@@ -200,6 +200,10 @@ namespace x39::goingfactory
                     { // No overlap, collission impossible. Return false.
                         return false;
                     }
+                    vec2 tmpvec = axis;
+                    tmpvec.normalize();
+                    tmpvec *= std::min(max_1, max_2) - std::max(min_1, min_2);
+                    outvec += tmpvec;
                     if (overlap)
                     {
                         *overlap = std::min(std::min(max_1, max_2) - std::max(min_1, min_2), *overlap);

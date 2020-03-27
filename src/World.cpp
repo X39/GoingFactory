@@ -2,14 +2,17 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include "Entity.h"
+#include "Movable.h"
 #include "ResourceManager.h"
 #include "EntityManager.h"
 #include "FastNoise.h"
+#include <fstream>
 
 bool render_grayscale = false;
 bool render_chunks = false;
 bool render_background = true;
 bool render_collisions = false;
+bool render_movable_infos = false;
 int size = 16;
 x39::goingfactory::FastNoise generator(12030220512152);
 size_t grass1_texture_id = 0;
@@ -20,6 +23,9 @@ size_t tree_texture_id = 0;
 size_t dirt_texture_id = 0;
 size_t stone_texture_id = 0;
 // Get-/SetFrequency ~= Zoom
+
+x39::goingfactory::vec2 store_a_player_vel;
+x39::goingfactory::vec2 store_a_player_pos;
 
 class RandomFromPerlin
 {
@@ -134,7 +140,43 @@ void x39::goingfactory::World::draw_level(GameInstance& game)
 
 x39::goingfactory::World::World() : m_viewport_x(0), m_viewport_y(0), m_viewport_w(0), m_viewport_h(0), m_player()
 {
-    generator.SetFrequency(generator.GetFrequency() - 0.003);
+    std::ifstream f("world.settings");
+    if (f.good())
+    {
+        float frequency;
+        f >>
+            frequency >>
+            store_a_player_vel.x >> store_a_player_vel.y >>
+            store_a_player_pos.x >> store_a_player_pos.y >>
+            render_grayscale >>
+            render_chunks >>
+            render_background >>
+            render_collisions >>
+            render_movable_infos >>
+            size;
+        generator.SetFrequency(frequency);
+    }
+    else
+    {
+        generator.SetFrequency(generator.GetFrequency() - 0.003);
+    }
+}
+x39::goingfactory::World::~World()
+{
+    std::ofstream f("world.settings");
+    if (f.good())
+    {
+        f <<
+            generator.GetFrequency() << std::endl <<
+            store_a_player_vel.x << std::endl << store_a_player_vel.y << std::endl <<
+            store_a_player_pos.x << std::endl << store_a_player_pos.y << std::endl <<
+            render_grayscale << std::endl <<
+            render_chunks << std::endl <<
+            render_background << std::endl <<
+            render_collisions << std::endl <<
+            render_movable_infos << std::endl <<
+            size << std::endl;
+    }
 }
 
 void x39::goingfactory::World::render(GameInstance& game)
@@ -280,6 +322,7 @@ void x39::goingfactory::World::render(GameInstance& game)
         color = al_map_rgb(0, 0, 0);
     }
     auto yellow = al_map_rgb(255, 255, 0);
+    auto green = al_map_rgb(0, 255, 0);
 
     for (auto it = game.entity_manager.begin(EComponent::Render); it != game.entity_manager.end(EComponent::Render); it++)
     {
@@ -314,6 +357,29 @@ void x39::goingfactory::World::render(GameInstance& game)
                     1);
             }
         }
+        if (render_movable_infos)
+        {
+            auto movable = dynamic_cast<entity::Movable*>(*it);
+            if (movable)
+            {
+                al_draw_line(
+                    movable->position().x - top_left_viewport.x, movable->position().y - top_left_viewport.y,
+                    movable->position().x - top_left_viewport.x + movable->velocity().x, movable->position().y - top_left_viewport.y + movable->velocity().y,
+                    green,
+                    1);
+
+                al_draw_line(
+                    movable->position().x - top_left_viewport.x - 2, movable->position().y - top_left_viewport.y - 2,
+                    movable->position().x - top_left_viewport.x + 2, movable->position().y - top_left_viewport.y + 2,
+                    green,
+                    1);
+                al_draw_line(
+                    movable->position().x - top_left_viewport.x + 2, movable->position().y - top_left_viewport.y - 2,
+                    movable->position().x - top_left_viewport.x - 2, movable->position().y - top_left_viewport.y + 2,
+                    green,
+                    1);
+            }
+        }
     }
 }
 
@@ -338,6 +404,17 @@ void x39::goingfactory::World::keydown(io::EKey key)
         break;
     case io::EKey::PAD_4:
         render_collisions = !render_collisions;
+        break;
+    case io::EKey::PAD_5:
+        render_movable_infos = !render_movable_infos;
+        break;
+    case io::EKey::PAD_7:
+        store_a_player_pos = dynamic_cast<entity::Movable*>(m_player)->position();
+        store_a_player_vel = dynamic_cast<entity::Movable*>(m_player)->velocity();
+        break;
+    case io::EKey::PAD_8:
+        dynamic_cast<entity::Movable*>(m_player)->position(store_a_player_pos);
+        dynamic_cast<entity::Movable*>(m_player)->velocity(store_a_player_vel);
         break;
     case io::EKey::PAD_ASTERISK:
         render_chunks = !render_chunks;

@@ -43,6 +43,7 @@ namespace x39::goingfactory::entity
             vec2 translated_bot_left = bot_left + direction;
             vec2 translated_bot_right = bot_right + direction;
 
+
             direction.normalize();
             float angle = direction.angle_radians();
             float angleabs = angle < 0 ? -angle : angle;
