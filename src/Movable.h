@@ -13,6 +13,7 @@ namespace x39::goingfactory::entity
 		vec2 m_velocity;
 		float m_prev_rad;
 		float m_velocity_modifier;
+		float m_sim_coef;
 	public:
 		Movable() : Entity(), m_velocity(0, 0), m_prev_rad(0), m_velocity_modifier(0.9f) { }
 		vec2 velocity() const { return m_velocity; }

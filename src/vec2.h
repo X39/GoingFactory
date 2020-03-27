@@ -46,6 +46,10 @@ namespace x39::goingfactory
 		{
 			return x * rvalue.y - y * rvalue.x;
 		}
+		float dotproduct (const vec2& rvalue) const
+		{
+			return x * rvalue.y + y * rvalue.x;
+		}
 
 		vec2 operator + (float rvalue) const
 		{
@@ -132,6 +136,15 @@ namespace x39::goingfactory
 		bool operator != (const vec2& rvalue) const
 		{
 			return x != rvalue.x && y != rvalue.y;
+		}
+
+		vec2 perpendicular_clockwise() const
+		{
+			return {y, -x};
+		}
+		vec2 perpendicular_counter_clockwise() const
+		{
+			return {-y, x};
 		}
 	};
 }

@@ -133,8 +133,27 @@ int main()
     const int viewport_offset = 32;
     world.set_viewport(viewport_offset, viewport_offset, DISPLAY_WIDTH - viewport_offset * 2, DISPLAY_HEIGHT - viewport_offset * 2);
     const int level_size = 50000;
-    player->position({0,0});
+    /*
+    m_pos
+    {x=-299.819855 y=-198.473175 }
+    x: -299.819855
+    y: -198.473175
+    m_velocity
+    {x=48.4052124 y=-58.0977020 }
+        x: 48.4052124
+        y: -58.0977020
+    */
+    //player->position({ -299.819855, -198.473175 });
+    //x39::goingfactory::vec2 player_vel = { 48.4052124, -58.0977020 };
+    //player->velocity(player_vel);
     entity_manager.pool_create(player);
+    auto marker = new x39::goingfactory::entity::Marker();
+    //auto player_vel_len = player_vel.length();
+    //player_vel.normalize();
+    //player_vel *= player_vel_len * 0.6666;
+    //marker->position(player->position() + player_vel);
+    marker->position({ 32, 8 });
+    entity_manager.pool_create(marker);
 
     for (int i = 0; i < 0; i++)
     {
@@ -152,7 +171,7 @@ int main()
     bool redraw = false;
     bool simulate = true;
     bool mouseDown = false;
-    bool halt_simulation = false;
+    bool halt_simulation = true;
     while (true)
     {
         ALLEGRO_EVENT ev;

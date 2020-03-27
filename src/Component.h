@@ -147,112 +147,83 @@ namespace x39::goingfactory
     {
     private:
         bool m_can_collide;
+        bool separating_axis_theorem(
+            const std::vector<vec2>& points_a,
+            const std::vector<vec2>& points_b,
+            float* overlap) const
+        {
+            const std::vector<vec2>* points_1 = &points_a;
+            const std::vector<vec2>* points_2 = &points_b;
+
+            if (overlap)
+            {
+                *overlap = INFINITY;
+            }
+            for (int i = 0; i <= 1; i++)
+            {
+                if (i == 1)
+                {
+                    points_2 = &points_a;
+                    points_1 = &points_b;
+                }
+                for (size_t i = 0; i < points_1->size(); i++)
+                {
+                    vec2 p1 = (*points_1)[i];
+                    vec2 p2 = (*points_1)[i + 1 >= points_1->size() ? 0 : i + 1];
+                    // Find projected axis
+                    auto vec = p2 - p1;
+                    auto axis = vec.perpendicular_clockwise();
+
+                    // Get minimum & maximum for projected axis with line_1
+                    float min_1 = INFINITY, max_1 = -INFINITY;
+                    for (size_t a = 0; a < points_1->size(); a++)
+                    {
+                        vec2 p = (*points_1)[a];
+                        float projection = p.dotproduct(vec);
+                        min_1 = std::min(projection, min_1);
+                        max_1 = std::max(projection, max_1);
+                    }
+
+                    // Get minimum & maximum for projected axis with line_1
+                    float min_2 = INFINITY, max_2 = -INFINITY;
+                    for (size_t b = 0; b < points_2->size(); b++)
+                    {
+                        vec2 p = (*points_2)[b];
+                        float projection = p.dotproduct(vec);
+                        min_2 = std::min(projection, min_2);
+                        max_2 = std::max(projection, max_2);
+                    }
+
+
+                    // Check if overlap is occuring between max & min of a and b
+                    if (!(max_1 >= min_2 && max_2 >= min_1))
+                    { // No overlap, collission impossible. Return false.
+                        return false;
+                    }
+                    if (overlap)
+                    {
+                        *overlap = std::min(std::min(max_1, max_2) - std::max(min_1, min_2), *overlap);
+                    }
+                }
+            }
+            return true;
+        }
     protected:
         virtual void collision_happened(CollidableComponent& other) {}
     public:
-        struct line
-        {
-            line() : p1(), p2() {}
-            line(float x1, float y1, float x2, float y2) : p1({ x1, y1 }), p2({ x2, y2 }) {}
-            line(vec2 p1, vec2 p2) : p1(p1), p2(p2) {}
-            vec2 p1;
-            vec2 p2;
-
-            float slope() const {
-                return (p2.y - p1.y ) / (p2.x - p1.x);
-            }
-            vec2 direction() const {
-                vec2 dir = p2 - p1;
-                return dir;
-            }
-            vec2 direction_normalized() const {
-                vec2 dir = direction();
-                dir.normalize();
-                return dir;
-            }
-        };
         CollidableComponent() : m_can_collide(true) { push_component(type()); }
         static EComponent type() { return EComponent::Collidable; }
-        virtual const std::vector<x39::goingfactory::CollidableComponent::line> collidable_lines() const = 0;
-        virtual vec2 collidable_root() const = 0;
+        virtual const std::vector<vec2> polygon_points() const = 0;
         bool can_collide() { return m_can_collide; }
         void can_collide(bool flag) { m_can_collide = flag; }
 
-
-        bool intersects_with(CollidableComponent& other, line* delta = nullptr)
+        bool intersects_with(CollidableComponent& other, float* distance)
         {
             if (!m_can_collide || !other.m_can_collide)
             {
                 return false;
             }
-            bool flag = false;
-            auto root = collidable_root();
-            for (auto& self_line : collidable_lines())
-            {
-                for (auto& othr_line : other.collidable_lines())
-                {
-
-                    float s1_x, s1_y, s2_x, s2_y;
-                    s1_x = self_line.p2.x - self_line.p1.x;
-                    s1_y = self_line.p2.y - self_line.p1.y;
-                    s2_x = othr_line.p2.x - othr_line.p1.x;
-                    s2_y = othr_line.p2.y - othr_line.p1.y;
-
-                    float s, t;
-                    s = (-s1_y * (self_line.p1.x - othr_line.p1.x) + s1_x * (self_line.p1.y - othr_line.p1.y)) / (-s2_x * s1_y + s1_x * s2_y);
-                    t = (s2_x * (self_line.p1.y - othr_line.p1.y) - s2_y * (self_line.p1.x - othr_line.p1.x)) / (-s2_x * s1_y + s1_x * s2_y);
-
-                    if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
-                    {
-                        // Collision detected
-                        if (delta)
-                        {
-                            if (!flag)
-                            {
-                                delta->p1 = self_line.p1;
-                                delta->p2 = othr_line.p1;
-                                flag = true;
-                            }
-                            if ((self_line.p1 - root).length_squared() < delta->p1.length_squared()) { delta->p1 = self_line.p1; }
-
-                            if ((self_line.p2 - root).length_squared() < delta->p1.length_squared()) { delta->p1 = self_line.p2; }
-
-                            if ((othr_line.p1 - root).length_squared() < delta->p2.length_squared()) { delta->p2 = othr_line.p1; }
-                            if ((othr_line.p2 - root).length_squared() < delta->p2.length_squared()) { delta->p2 = othr_line.p2; }
-                        }
-                        else
-                        {
-                            return true;
-                        }
-                    }
-                    // No collision
-
-                    // // Check if both lines have the same slope
-                    // if (self_line.slope() == othr_line.slope())
-                    // { // lines are parallel
-                    //     // Check self_line is inside of other_line
-                    //     if (!(self_line.p1.x >= othr_line.p1.x && self_line.p1.x <= othr_line.p2.x) &&
-                    //         !(self_line.p2.x >= othr_line.p1.x && self_line.p2.x <= othr_line.p2.x)) { continue; }
-                    //     if (!(self_line.p1.y >= othr_line.p1.y && self_line.p1.y <= othr_line.p2.y) &&
-                    //         !(self_line.p2.y >= othr_line.p1.y && self_line.p2.y <= othr_line.p2.y)) { continue; }
-                    //     // Ensure that self_line and othr_line have different base
-                    //     if (self_line.direction().angle_radians() != othr_line.direction().angle_radians()) { continue; }
-                    //     // Lines are parallel & one point is inside the other & they do not have the same angle.
-                    //     collision_happened(other);
-                    //     return true;
-                    // }
-                    // else
-                    // { // Lines are not parallel, find intersection
-                    //     auto cross = self_line.direction().crossproduct(othr_line.direction());
-                    //     // Check cross is outside of self_line
-                    //     if (cross <= self_line.p1.x) { continue; }
-                    //     if (cross >= self_line.p2.x) { continue; }
-                    //     collision_happened(other);
-                    //     return true;
-                    // }
-                }
-            }
-            return flag;
+            return separating_axis_theorem(polygon_points(), other.polygon_points(), distance);
         }
     };
 }

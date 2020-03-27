@@ -19,13 +19,13 @@ namespace x39::goingfactory::entity
 
 		// Inherited via CollidableComponent
 		virtual vec2 collidable_root() const { return position(); }
-		virtual const std::vector<x39::goingfactory::CollidableComponent::line> collidable_lines() const override {
+		virtual const std::vector<vec2> polygon_points() const override {
 			auto pos = position();
 			vec2 top_left = pos + vec2{ -(size / 2), -(size / 2) };
 			vec2 top_right = top_left + vec2{ size, 0 };
 			vec2 bot_left = top_left + vec2{ 0, size };
 			vec2 bot_right = top_left + vec2{ size, size };
-			return { { top_left, top_right }, { top_right, bot_right }, { bot_right, bot_left }, { bot_left, top_left } };
+			return { top_left, top_right, bot_right, bot_left };
 		}
 	};
 }

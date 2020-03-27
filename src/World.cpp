@@ -302,12 +302,14 @@ void x39::goingfactory::World::render(GameInstance& game)
         if (render_collisions && (*it)->is_type(EComponent::Collidable))
         {
             auto collidableComponent = (*it)->get_component<CollidableComponent>();
-            auto lines = collidableComponent->collidable_lines();
-            for (auto line : lines)
+            auto points = collidableComponent->polygon_points();
+            for (size_t i = 0; i < points.size(); i++)
             {
+                vec2 p1 = points[i];
+                vec2 p2 = points[i + 1 >= points.size() ? 0 : i + 1];
                 al_draw_line(
-                    line.p1.x - top_left_viewport.x, line.p1.y - top_left_viewport.y,
-                    line.p2.x - top_left_viewport.x, line.p2.y - top_left_viewport.y,
+                    p1.x - top_left_viewport.x, p1.y - top_left_viewport.y,
+                    p2.x - top_left_viewport.x, p2.y - top_left_viewport.y,
                     yellow,
                     1);
             }
