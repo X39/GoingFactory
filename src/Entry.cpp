@@ -27,13 +27,18 @@
 #include "World.h"
 #include "KeyboardTarget.h"
 
+
+#define X39_GF_DISABLE_MT
+#define X39_GF_SKIP_SIM 20
+
+
 int DISPLAY_WIDTH;
 int DISPLAY_HEIGHT;
 
 #if _DEBUG
 const float RENDER_FPS = 30;
 #else
-const float RENDER_FPS = 30;
+const float RENDER_FPS = 60;
 #endif
 int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer, ALLEGRO_FONT*& font)
 {
@@ -172,6 +177,9 @@ int main()
     bool simulate = true;
     bool mouseDown = false;
     bool halt_simulation = true;
+#ifdef X39_GF_SKIP_SIM
+    int _x39_gf_skip_sim = 0;
+#endif // X39_GF_SKIP_SIM
     while (true)
     {
         ALLEGRO_EVENT ev;
@@ -243,19 +251,17 @@ int main()
         }
         if (simulate)
         {
+
             simulate = false;
             entity_manager.act_pools();
             auto new_time = al_get_time();
             float sim_delta = (float)(new_time - old_sim_time);
             last_sim_fps = sim_delta >= 1 ? 0 : (int)(1 / sim_delta);
             old_sim_time = new_time;
-            if (last_sim_fps <= RENDER_FPS)
-            {
-#define X39_GF_DISABLE_MT
 #ifndef X39_GF_DISABLE_MT
                 game_instance.thread_pool().enqueue([&] {
                     std::vector<std::future<void>> results;
-#endif
+#endif // X39_GF_DISABLE_MT
                     auto start = entity_manager.begin(x39::goingfactory::EComponent::Simulate);
                     auto end = entity_manager.end(x39::goingfactory::EComponent::Simulate);
                     const size_t handle_amount = 100;
@@ -270,7 +276,7 @@ int main()
 #ifndef X39_GF_DISABLE_MT
                             results.emplace_back(
                                 game_instance.thread_pool().enqueue([sim_delta, &start, range_start, range_end, &game_instance, range] {
-#endif
+#endif // X39_GF_DISABLE_MT
                                     for (auto i = range_start; i != range_end && i != range; i++)
                                     {
                                         auto it = start + i;
@@ -279,22 +285,17 @@ int main()
                                     }
 #ifndef X39_GF_DISABLE_MT
                                     }));
-#endif
+#endif // X39_GF_DISABLE_MT
                         }
                     }
                     keyboard_target.entity_interact(game_instance);
 #ifndef X39_GF_DISABLE_MT
                     for (auto&& result : results) { result.get(); }
-#endif
+#endif // X39_GF_DISABLE_MT
                     simulate = true;
 #ifndef X39_GF_DISABLE_MT
                     });
-#endif
-            }
-            else
-            {
-                simulate = true;
-            }
+#endif // X39_GF_DISABLE_MT
 
         }
         if (redraw && al_is_event_queue_empty(event_queue))

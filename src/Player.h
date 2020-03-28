@@ -58,8 +58,7 @@ namespace x39::goingfactory::entity
                      top_left,
                      translated_top_left,
                      translated_top_right,
-                     translated_bot_right,
-                     bot_right,
+                     translated_bot_right
                 };
             }
             // top left

@@ -172,7 +172,7 @@ namespace x39::goingfactory
                     vec2 p2 = (*points_1)[i + 1 >= points_1->size() ? 0 : i + 1];
                     // Find projected axis
                     auto vec = p2 - p1;
-                    auto axis = vec.perpendicular_clockwise();
+                    auto axis = vec.perpendicular_counter_clockwise();
 
                     // Get minimum & maximum for projected axis with line_1
                     float min_1 = INFINITY, max_1 = -INFINITY;

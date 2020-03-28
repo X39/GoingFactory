@@ -52,22 +52,18 @@ void x39::goingfactory::entity::Movable::simulate(GameInstance& game, float sim_
                         if (collidableComponent->intersects_with(*otherCollidableComponent, &offset))
                         {
                             float len = m_velocity.length();
-                            if (len != 0 && offset > 0)
+                            do
                             {
-                                float sim_coef2 = sim_coef;
-                                do
-                                {
-                                    sim_coef2 /= 2;
-                                    auto pos = original_pos;
-                                    pos.x += m_velocity.x * sim_coef2;
-                                    pos.y += m_velocity.y * sim_coef2;
-                                } while (collidableComponent->intersects_with(*otherCollidableComponent, &offset) && sim_coef2 != 0 && offset != 0);
-                                if (sim_coef2 == 0 || offset == 0)
-                                {
-                                    pos = original_pos;
-                                    velocity({});
-                                }
+                                m_sim_coef /= 2;
+                                auto pos = original_pos;
+                                pos.x += m_velocity.x * m_sim_coef;
+                                pos.y += m_velocity.y * m_sim_coef;
+                            } while (collidableComponent->intersects_with(*otherCollidableComponent, &offset) && offset > 0);
+                            if (m_sim_coef == 0 || offset == 0)
+                            {
+                                pos = original_pos;
                             }
+                            velocity({});
                         }
                     }
                 }
