@@ -1,17 +1,18 @@
 #pragma once
-#include "Movable.h"
 #include <cstdint>
+#include "Entity.h"
 
 namespace x39::goingfactory::entity
 {
-    class Player : public Movable,
+    class Player : public Entity,
         public RenderComponent,
+        public SimulateComponent,
+        public PositionComponent,
         public PlayerInteractibleComponent,
         public HealthComponent,
         public CollidableComponent
     {
     private:
-        static EntityRegister<Player> entityRegister;
         std::vector<size_t> m_textures;
         size_t m_texture_index;
 
@@ -19,10 +20,7 @@ namespace x39::goingfactory::entity
         double m_last_trigger_a = 0;
         double m_last_trigger_b = 0;
     public:
-        Player() : Movable(), m_textures(), m_texture_index(0) {}
-
-        virtual void render_init(GameInstance&) override;
-        virtual void render(GameInstance&, vec2) override;
+        Player();
         virtual void interact(GameInstance&, io::EPlayerInteraction) override;
 
         virtual std::string type_name() const override { return "Player"; }
@@ -37,7 +35,7 @@ namespace x39::goingfactory::entity
             vec2 top_right = top_left + vec2{ size, 0 };
             vec2 bot_left = top_left + vec2{ 0, size };
             vec2 bot_right = top_left + vec2{ size, size };
-            vec2 direction = m_velocity * m_sim_coef;
+            vec2 direction = velocity() * last_sim_coef();
             vec2 translated_top_left = top_left + direction;
             vec2 translated_top_right = top_right + direction;
             vec2 translated_bot_left = bot_left + direction;

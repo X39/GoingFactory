@@ -2,7 +2,6 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include "Entity.h"
-#include "Movable.h"
 #include "ResourceManager.h"
 #include "EntityManager.h"
 #include "FastNoise.h"
@@ -12,7 +11,7 @@ bool render_grayscale = false;
 bool render_chunks = false;
 bool render_background = true;
 bool render_collisions = false;
-bool render_movable_infos = false;
+bool render_position_component = false;
 int size = 16;
 x39::goingfactory::FastNoise generator(12030220512152);
 size_t grass1_texture_id = 0;
@@ -152,7 +151,7 @@ x39::goingfactory::World::World() : m_viewport_x(0), m_viewport_y(0), m_viewport
             render_chunks >>
             render_background >>
             render_collisions >>
-            render_movable_infos >>
+            render_position_component >>
             size;
         generator.SetFrequency(frequency);
     }
@@ -174,7 +173,7 @@ x39::goingfactory::World::~World()
             render_chunks << std::endl <<
             render_background << std::endl <<
             render_collisions << std::endl <<
-            render_movable_infos << std::endl <<
+            render_position_component << std::endl <<
             size << std::endl;
     }
 }
@@ -357,25 +356,25 @@ void x39::goingfactory::World::render(GameInstance& game)
                     1);
             }
         }
-        if (render_movable_infos)
+        if (render_position_component)
         {
-            auto movable = dynamic_cast<entity::Movable*>(*it);
-            if (movable)
+            auto positionComponent = (*it)->get_component<PositionComponent>();
+            if (positionComponent)
             {
                 al_draw_line(
-                    movable->position().x - top_left_viewport.x, movable->position().y - top_left_viewport.y,
-                    movable->position().x - top_left_viewport.x + movable->velocity().x, movable->position().y - top_left_viewport.y + movable->velocity().y,
+                    positionComponent->position().x - top_left_viewport.x, positionComponent->position().y - top_left_viewport.y,
+                    positionComponent->position().x - top_left_viewport.x + positionComponent->velocity().x, positionComponent->position().y - top_left_viewport.y + positionComponent->velocity().y,
                     green,
                     1);
 
                 al_draw_line(
-                    movable->position().x - top_left_viewport.x - 2, movable->position().y - top_left_viewport.y - 2,
-                    movable->position().x - top_left_viewport.x + 2, movable->position().y - top_left_viewport.y + 2,
+                    positionComponent->position().x - top_left_viewport.x - 2, positionComponent->position().y - top_left_viewport.y - 2,
+                    positionComponent->position().x - top_left_viewport.x + 2, positionComponent->position().y - top_left_viewport.y + 2,
                     green,
                     1);
                 al_draw_line(
-                    movable->position().x - top_left_viewport.x + 2, movable->position().y - top_left_viewport.y - 2,
-                    movable->position().x - top_left_viewport.x - 2, movable->position().y - top_left_viewport.y + 2,
+                    positionComponent->position().x - top_left_viewport.x + 2, positionComponent->position().y - top_left_viewport.y - 2,
+                    positionComponent->position().x - top_left_viewport.x - 2, positionComponent->position().y - top_left_viewport.y + 2,
                     green,
                     1);
             }
@@ -406,15 +405,15 @@ void x39::goingfactory::World::keydown(io::EKey key)
         render_collisions = !render_collisions;
         break;
     case io::EKey::PAD_5:
-        render_movable_infos = !render_movable_infos;
+        render_position_component = !render_position_component;
         break;
     case io::EKey::PAD_7:
-        store_a_player_pos = dynamic_cast<entity::Movable*>(m_player)->position();
-        store_a_player_vel = dynamic_cast<entity::Movable*>(m_player)->velocity();
+        store_a_player_pos = (m_player)->get_component<PositionComponent>()->position();
+        store_a_player_vel = (m_player)->get_component<PositionComponent>()->velocity();
         break;
     case io::EKey::PAD_8:
-        dynamic_cast<entity::Movable*>(m_player)->position(store_a_player_pos);
-        dynamic_cast<entity::Movable*>(m_player)->velocity(store_a_player_vel);
+        (m_player)->get_component<PositionComponent>()->position(store_a_player_pos);
+        (m_player)->get_component<PositionComponent>()->velocity(store_a_player_vel);
         break;
     case io::EKey::PAD_ASTERISK:
         render_chunks = !render_chunks;

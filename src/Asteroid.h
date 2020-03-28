@@ -1,18 +1,17 @@
 #pragma once
-#include "Movable.h"
+#include "Entity.h"
 #include <cstdint>
 
 namespace x39::goingfactory::entity
 {
-	class Asteroid : public Movable,
+	class Asteroid : public Entity,
+		public PositionComponent,
+		public SimulateComponent,
 		public RenderComponent,
 		public HealthComponent
 	{
-		static EntityRegister<Asteroid> entityRegister;
 	public:
-		Asteroid() : Movable() { m_velocity_modifier = 1; }
-		virtual void render(GameInstance&, vec2) override;
-		virtual void simulate(GameInstance& game, float sim_coef) override;
+		Asteroid();
 
 		virtual std::string type_name() const override { return "Asteroid"; }
 	};

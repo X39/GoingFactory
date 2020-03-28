@@ -1,39 +1,59 @@
 #include "Laser.h"
+#include "simulate-actors/move.h"
+#include "simulate-actors/collision.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 
 #include "EntityManager.h"
 
-x39::goingfactory::entity::EntityRegister<x39::goingfactory::entity::Laser> entityRegister("Laser",
-	[]() -> std::shared_ptr<x39::goingfactory::entity::Entity> { return std::make_shared<x39::goingfactory::entity::Laser>(); });
-void x39::goingfactory::entity::Laser::render(GameInstance& game, vec2 translate)
+class RenderActorCustom : public x39::goingfactory::RenderComponent::RenderActor
 {
-	auto pos = position() - translate;
-	auto vel = velocity();
-	vel.normalize();
-	vel *= 10;
-	al_draw_line(pos.x, pos.y, pos.x + vel.x, pos.y + vel.y, al_map_rgb(255, 0, 0), 1);
-}
-
-void x39::goingfactory::entity::Laser::simulate(GameInstance& game, float sim_coef)
-{
-	Movable::simulate(game, sim_coef);
-	vec2 topLeft = position() - 8;
-	vec2 botRight = position() + 8;
-	for (auto it = game.entity_manager.begin(position()); it != game.entity_manager.end(position()); it++)
+public:
+	// Inherited via RenderActor
+	virtual void render(x39::goingfactory::RenderComponent* component, x39::goingfactory::GameInstance& game_instance, x39::goingfactory::vec2 translate)
 	{
-		if ((*it) == m_owner || !(*it)->is_type(EComponent::Health)) { continue; }
-		auto position = (*it)->get_component<PositionComponent>()->position();
-		if (topLeft < position && position < botRight)
+		auto positionComponent = component->get_component<x39::goingfactory::PositionComponent>();
+		if (!positionComponent) { throw std::bad_cast(); }
+
+		auto pos = positionComponent->position() - translate;
+		auto vel = positionComponent->velocity();
+		vel.normalize();
+		vel *= 10;
+		al_draw_line(pos.x, pos.y, pos.x + vel.x, pos.y + vel.y, al_map_rgb(255, 0, 0), 1);
+	}
+};
+class SimulateActorCustom : public x39::goingfactory::SimulateComponent::SimulateActor
+{
+public:
+	// Inherited via SimulateActor
+	virtual void simulate(x39::goingfactory::SimulateComponent* component, x39::goingfactory::GameInstance& game_instance, float sim_coef) override
+	{
+		auto laser = static_cast<x39::goingfactory::entity::Laser*>(component);
+		if (laser->ttl-- < 0)
 		{
-			auto healthComponent = (*it)->get_component<HealthComponent>();
-			healthComponent->damage(0.25);
-			m_ttl = 0;
-			break;
+			game_instance.entity_manager.pool_destroy(laser);
 		}
 	}
-	if (m_ttl-- == 0)
-	{
-		game.entity_manager.pool_destroy(this);
-	}
+};
+x39::goingfactory::entity::Laser::Laser() :
+	Entity(),
+	ttl(200),
+	m_owner(nullptr),
+	RenderComponent({ new RenderActorCustom() }),
+	SimulateComponent({
+	new actors::simulate::collision([](CollidableComponent* self, CollidableComponent* other, GameInstance& game_instance, float sim_coef) ->
+	void {
+			game_instance.entity_manager.pool_destroy(dynamic_cast<Entity*>(self));
+			if (other->is_type(EComponent::Health))
+			{
+				auto healthComponent = other->get_component<HealthComponent>();
+				healthComponent->damage(0.25);
+			}
+			else
+			{
+				game_instance.entity_manager.pool_destroy(dynamic_cast<Entity*>(other));
+			}
+		}),
+		new actors::simulate::move() })
+{
 }

@@ -20,14 +20,9 @@ namespace x39::goingfactory
 			void raise_onDestroy() { EventArgs args; onDestroy.raise(*this, args); }
 		public:
 			Event<Entity> onDestroy;
-			static std::unordered_map<std::string, std::function<std::shared_ptr<x39::goingfactory::entity::Entity>()>>& registry();
 			Entity() : m_local_id(~0) { }
 			size_t local_id() { return m_local_id; }
 			virtual std::string type_name() const = 0;
-		};
-		template <typename T> struct EntityRegister
-		{
-			EntityRegister(const std::string& key, std::function<std::shared_ptr<Entity>()> func) { Entity::registry()[key] = func; }
 		};
 	}
 }

@@ -2,6 +2,7 @@
 #include <type_traits>
 #include <vector>
 #include <memory>
+#include <algorithm>
 #include <cmath>
 
 #include "Event.h"
@@ -47,6 +48,7 @@ namespace x39::goingfactory
         vec2 m_pos;
         chunk* m_chunk;
         EntityManager* m_entity_manager;
+        vec2 m_velocity;
     protected:
         virtual void position_changed() {};
     public:
@@ -63,25 +65,145 @@ namespace x39::goingfactory
                 m_new_pos(new_pos) {}
         };
         Event<PositionComponent, OnPositionChangingEventArgs> OnPositionChanging;
-        PositionComponent() : Component(), m_pos(0, 0), m_chunk(nullptr), m_entity_manager(nullptr) { push_component(type()); }
+        PositionComponent() : Component(), m_pos(0, 0), m_chunk(nullptr), m_entity_manager(nullptr), m_velocity(0, 0) { push_component(type()); }
         static EComponent type() { return EComponent::Position; }
         vec2 position() const { return m_pos; }
         void position(vec2);
+        vec2 velocity() const { return m_velocity; }
+        void velocity(vec2 pos) { m_velocity = pos; }
         const chunk* chunk() const { return m_chunk; }
     };
     class RenderComponent : virtual public Component
     {
     public:
-        RenderComponent() : Component() { push_component(EComponent::Render); }
-        virtual void render_init(GameInstance&) {}
-        virtual void render(GameInstance&, vec2) = 0;
+        class RenderActor
+        {
+        public:
+            virtual void render(RenderComponent* component, GameInstance& game_instance, vec2 translate) = 0;
+            virtual void render_init(GameInstance& game_instance) {}
+        };
+    private:
+        std::vector<RenderActor*> m_actors;
+        float m_width;
+        float m_height;
+    protected:
+        void width(float value) { m_width = value; }
+        void height(float value) { m_height = value; }
+    public:
+        float width() const { return m_width; }
+        float height() const { return m_height; }
+        RenderComponent() :
+            Component(),
+            m_actors(),
+            m_width(0),
+            m_height(0)
+        {
+            push_component(EComponent::Render);
+        }
+        RenderComponent(std::initializer_list<RenderActor*> initializer) :
+            Component(),
+            m_actors(initializer),
+            m_width(0),
+            m_height(0)
+        {
+            push_component(EComponent::Render);
+        }
+        ~RenderComponent()
+        {
+            for (auto actor : m_actors)
+            {
+                delete actor;
+            }
+        }
+        void render_init(GameInstance& game_instance)
+        {
+            for (auto actor : m_actors)
+            {
+                actor->render_init(game_instance);
+            }
+        }
+        void render(GameInstance& game_instance, vec2 translate)
+        {
+            for (auto actor : m_actors)
+            {
+                actor->render(this, game_instance, translate);
+            }
+        }
+        void push_back(RenderActor* actor)
+        {
+            m_actors.push_back(actor);
+        }
+        void erase(RenderActor* actor)
+        {
+            // Lookup using reverse iterator as most likely we
+            // want to remove temporary stuff, not permanent
+            auto it = std::find(m_actors.rbegin(), m_actors.rend(), actor);
+            if (it != m_actors.rend())
+            {
+                std::advance(it, 1);
+                m_actors.erase(it.base());
+            }
+        }
         static EComponent type() { return EComponent::Render; }
     };
     class SimulateComponent : virtual public Component
     {
     public:
-        SimulateComponent() : Component() { push_component(EComponent::Simulate); }
-        virtual void simulate(GameInstance& game, float sim_coef) = 0;
+        class SimulateActor
+        {
+        public:
+            virtual void simulate(SimulateComponent* component, GameInstance& game_instance, float sim_coef) = 0;
+        };
+    private:
+        std::vector<SimulateActor*> m_actors;
+        float m_sim_coef;
+    protected:
+        float last_sim_coef() const { return m_sim_coef; }
+    public:
+        SimulateComponent() :
+            Component(),
+            m_actors(),
+            m_sim_coef(0)
+        {
+            push_component(EComponent::Simulate);
+        }
+        SimulateComponent(std::initializer_list<SimulateActor*> initializer) :
+            Component(),
+            m_actors(initializer),
+            m_sim_coef(0)
+        {
+            push_component(EComponent::Simulate);
+        }
+        ~SimulateComponent()
+        {
+            for (auto actor : m_actors)
+            {
+                delete actor;
+            }
+        }
+        void simulate(GameInstance& game_instance, float sim_coef)
+        {
+            m_sim_coef = sim_coef;
+            for (auto actor : m_actors)
+            {
+                actor->simulate(this, game_instance, sim_coef);
+            }
+        }
+        void push_back(SimulateActor* actor)
+        {
+            m_actors.push_back(actor);
+        }
+        void erase(SimulateActor* actor)
+        {
+            // Lookup using reverse iterator as most likely we
+            // want to remove temporary stuff, not permanent
+            auto it = std::find(m_actors.rbegin(), m_actors.rend(), actor);
+            if (it != m_actors.rend())
+            {
+                std::advance(it, 1);
+                m_actors.erase(it.base());
+            }
+        }
         static EComponent type() { return EComponent::Simulate; }
     };
     class HealthComponent : virtual public Component
@@ -147,7 +269,7 @@ namespace x39::goingfactory
     {
     private:
         bool m_can_collide;
-        bool separating_axis_theorem(
+        bool separate_axis_theorem(
             const std::vector<vec2>& points_a,
             const std::vector<vec2>& points_b) const
         {
@@ -198,8 +320,48 @@ namespace x39::goingfactory
             }
             return true;
         }
-    protected:
-        virtual void collision_happened(CollidableComponent& other) {}
+
+        // not working
+        bool line_collisions(
+            const std::vector<vec2>& points_a,
+            const std::vector<vec2>& points_b)
+        {
+            for (size_t a = 0; a < points_a.size(); a++)
+            {
+                vec2 self_line_p1 = points_a[a];
+                vec2 self_line_p2 = points_a[a + 1 >= points_a.size() ? 0 : a + 1];
+                for (size_t b = 0; b < points_b.size(); b++)
+                {
+                    vec2 othr_line_p1 = points_b[b];
+                    vec2 othr_line_p2 = points_b[b + 1 >= points_b.size() ? 0 : b + 1];
+                    // Check if both lines have the same slope
+                    if ((self_line_p2.y - self_line_p1.y) / (self_line_p2.x - self_line_p1.x) == (othr_line_p2.y - othr_line_p1.y) / (othr_line_p2.x - othr_line_p1.x))
+                    { // lines are parallel
+                        // Check self_line p1 is outside of other_line
+                        if (self_line_p1.x <= othr_line_p1.x || self_line_p1.y <= othr_line_p1.y) { continue; }
+                        if (self_line_p1.x >= othr_line_p2.x || self_line_p1.y >= othr_line_p2.y) { continue; }
+                        // Check self_line p2 is outside of other_line
+                        if (self_line_p2.x <= othr_line_p1.x || self_line_p2.y <= othr_line_p1.y) { continue; }
+                        if (self_line_p2.x >= othr_line_p2.x || self_line_p2.y >= othr_line_p2.y) { continue; }
+                        // Ensure that self_line and othr_line have different base
+                        auto dir_a = (self_line_p2 - self_line_p1); dir_a.normalize();
+                        auto dir_b = (othr_line_p2 - othr_line_p1); dir_b.normalize();
+                        if (dir_a == dir_b) { continue; }
+                        // Lines are parallel & one point is inside the other & they do not have the same angle.
+                        return true;
+                    }
+                    else
+                    { // Lines are not parallel, find intersection
+                        auto cross = (self_line_p2 - self_line_p1).crossproduct((othr_line_p2 - othr_line_p1));
+                        // Check cross is outside of self_line
+                        if (cross <= self_line_p1.x) { continue; }
+                        if (cross >= self_line_p2.x) { continue; }
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     public:
         CollidableComponent() : m_can_collide(true) { push_component(type()); }
         static EComponent type() { return EComponent::Collidable; }
@@ -213,7 +375,7 @@ namespace x39::goingfactory
             {
                 return false;
             }
-            return separating_axis_theorem(polygon_points(), other.polygon_points());
+            return separate_axis_theorem(polygon_points(), other.polygon_points());
         }
     };
 }

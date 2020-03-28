@@ -1,5 +1,5 @@
 #pragma once
-#include "Movable.h"
+#include "Entity.h"
 #include <cstdint>
 
 namespace x39::goingfactory::entity
@@ -9,16 +9,12 @@ namespace x39::goingfactory::entity
 		public RenderComponent,
 		public CollidableComponent
 	{
-	private:
-		const int size = 16;
-	protected:
 	public:
-		Marker() {}
-		virtual void render(GameInstance&, vec2) override;
+		static const int size = 16;
+		Marker();
 		virtual std::string type_name() const override { return "Marker"; }
 
 		// Inherited via CollidableComponent
-		virtual vec2 collidable_root() const { return position(); }
 		virtual const std::vector<vec2> polygon_points() const override {
 			auto pos = position();
 			vec2 top_left = pos + vec2{ -(size / 2), -(size / 2) };

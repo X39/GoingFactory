@@ -188,16 +188,20 @@
   <ItemGroup>
     <ClCompile Include="src\Asteroid.cpp" />
     <ClCompile Include="src\Component.cpp" />
+    <ClCompile Include="src\Entry.cpp" />
     <ClCompile Include="src\KeyboardTarget.cpp" />
     <ClCompile Include="src\Laser.cpp" />
     <ClCompile Include="src\Marker.cpp" />
-    <ClCompile Include="src\Movable.cpp" />
     <ClCompile Include="src\FastNoise.cpp" />
     <ClCompile Include="src\Player.cpp" />
-    <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\EntityManager.cpp" />
-    <ClCompile Include="src\Entry.cpp" />
+    <ClCompile Include="src\render-actors\draw_bitmap.cpp" />
+    <ClCompile Include="src\render-actors\healthbar.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
+    <ClCompile Include="src\simulate-actors\collision.cpp" />
+    <ClCompile Include="src\simulate-actors\move.cpp" />
+    <ClCompile Include="src\simulate-actors\no_health_remove.cpp" />
+    <ClCompile Include="src\simulate-actors\slowdown.cpp" />
     <ClCompile Include="src\UXElement.cpp" />
     <ClCompile Include="src\UXPanel.cpp" />
     <ClCompile Include="src\World.cpp" />
@@ -216,7 +220,6 @@
     <ClInclude Include="src\Laser.h" />
     <ClInclude Include="src\Marker.h" />
     <ClInclude Include="src\matrix.h" />
-    <ClInclude Include="src\Movable.h" />
     <ClInclude Include="src\FastNoise.h" />
     <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\EKey.h" />
@@ -225,6 +228,12 @@
     <ClInclude Include="src\EntityManager.h" />
     <ClInclude Include="src\Event.h" />
     <ClInclude Include="src\PlayerInteraction.h" />
+    <ClInclude Include="src\render-actors\draw_bitmap.h" />
+    <ClInclude Include="src\render-actors\healthbar.h" />
+    <ClInclude Include="src\simulate-actors\collision.h" />
+    <ClInclude Include="src\simulate-actors\move.h" />
+    <ClInclude Include="src\simulate-actors\no_health_remove.h" />
+    <ClInclude Include="src\simulate-actors\slowdown.h" />
     <ClInclude Include="src\ThreadPool.h" />
     <ClInclude Include="src\UXElement.h" />
     <ClInclude Include="src\UXPanel.h" />

@@ -31,11 +31,20 @@
     <Filter Include="Source Files\io">
       <UniqueIdentifier>{75121cbd-f685-40e7-a9a4-d47edfb7f907}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\render actors">
+      <UniqueIdentifier>{4265fa4d-6975-4572-b5fd-ea80342e3fca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\simulate actors">
+      <UniqueIdentifier>{31d883c4-e9cb-4b7e-8320-8cdbc5cb1068}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\simulate actors">
+      <UniqueIdentifier>{8c4d8596-d1f1-431e-b31d-53446981ca0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\render actors">
+      <UniqueIdentifier>{ebeff57b-c1d7-42ff-9f35-502349907975}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Entry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\ResourceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -45,13 +54,7 @@
     <ClCompile Include="src\Component.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Entity.cpp">
-      <Filter>Source Files\entity</Filter>
-    </ClCompile>
     <ClCompile Include="src\Player.cpp">
-      <Filter>Source Files\entity</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Movable.cpp">
       <Filter>Source Files\entity</Filter>
     </ClCompile>
     <ClCompile Include="src\World.cpp">
@@ -77,6 +80,27 @@
     </ClCompile>
     <ClCompile Include="src\Marker.cpp">
       <Filter>Source Files\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="src\simulate-actors\move.cpp">
+      <Filter>Source Files\simulate actors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\simulate-actors\slowdown.cpp">
+      <Filter>Source Files\simulate actors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\simulate-actors\collision.cpp">
+      <Filter>Source Files\simulate actors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render-actors\healthbar.cpp">
+      <Filter>Source Files\render actors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\simulate-actors\no_health_remove.cpp">
+      <Filter>Source Files\simulate actors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Entry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render-actors\draw_bitmap.cpp">
+      <Filter>Source Files\render actors</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -112,9 +136,6 @@
     </ClInclude>
     <ClInclude Include="src\Entry.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Movable.h">
-      <Filter>Header Files\entity</Filter>
     </ClInclude>
     <ClInclude Include="src\GameInstance.h">
       <Filter>Header Files</Filter>
@@ -157,6 +178,24 @@
     </ClInclude>
     <ClInclude Include="src\matrix.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\simulate-actors\move.h">
+      <Filter>Header Files\simulate actors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\simulate-actors\slowdown.h">
+      <Filter>Header Files\simulate actors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\simulate-actors\collision.h">
+      <Filter>Header Files\simulate actors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render-actors\healthbar.h">
+      <Filter>Header Files\render actors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\simulate-actors\no_health_remove.h">
+      <Filter>Header Files\simulate actors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render-actors\draw_bitmap.h">
+      <Filter>Header Files\render actors</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
