@@ -149,16 +149,10 @@ namespace x39::goingfactory
         bool m_can_collide;
         bool separating_axis_theorem(
             const std::vector<vec2>& points_a,
-            const std::vector<vec2>& points_b,
-            float* overlap) const
+            const std::vector<vec2>& points_b) const
         {
             const std::vector<vec2>* points_1 = &points_a;
             const std::vector<vec2>* points_2 = &points_b;
-            vec2 outvec;
-            if (overlap)
-            {
-                *overlap = INFINITY;
-            }
             for (int i = 0; i <= 1; i++)
             {
                 if (i == 1)
@@ -200,14 +194,6 @@ namespace x39::goingfactory
                     { // No overlap, collission impossible. Return false.
                         return false;
                     }
-                    vec2 tmpvec = axis;
-                    tmpvec.normalize();
-                    tmpvec *= std::min(max_1, max_2) - std::max(min_1, min_2);
-                    outvec += tmpvec;
-                    if (overlap)
-                    {
-                        *overlap = std::min(std::min(max_1, max_2) - std::max(min_1, min_2), *overlap);
-                    }
                 }
             }
             return true;
@@ -221,13 +207,13 @@ namespace x39::goingfactory
         bool can_collide() { return m_can_collide; }
         void can_collide(bool flag) { m_can_collide = flag; }
 
-        bool intersects_with(CollidableComponent& other, float* distance)
+        bool intersects_with(CollidableComponent& other)
         {
             if (!m_can_collide || !other.m_can_collide)
             {
                 return false;
             }
-            return separating_axis_theorem(polygon_points(), other.polygon_points(), distance);
+            return separating_axis_theorem(polygon_points(), other.polygon_points());
         }
     };
 }

@@ -48,8 +48,7 @@ void x39::goingfactory::entity::Movable::simulate(GameInstance& game, float sim_
                     {
                         auto otherCollidableComponent = (*local_entity_it)->get_component<CollidableComponent>();
                         auto otherPositionComponent = (*local_entity_it)->get_component<PositionComponent>();
-                        float offset;
-                        if (collidableComponent->intersects_with(*otherCollidableComponent, &offset))
+                        if (collidableComponent->intersects_with(*otherCollidableComponent))
                         {
                             float len = m_velocity.length();
                             do
@@ -58,8 +57,8 @@ void x39::goingfactory::entity::Movable::simulate(GameInstance& game, float sim_
                                 auto pos = original_pos;
                                 pos.x += m_velocity.x * m_sim_coef;
                                 pos.y += m_velocity.y * m_sim_coef;
-                            } while (collidableComponent->intersects_with(*otherCollidableComponent, &offset) && offset > 0);
-                            if (m_sim_coef == 0 || offset == 0)
+                            } while (collidableComponent->intersects_with(*otherCollidableComponent));
+                            if (m_sim_coef == 0)
                             {
                                 pos = original_pos;
                             }
