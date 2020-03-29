@@ -268,6 +268,7 @@ namespace x39::goingfactory
     class CollidableComponent : virtual public Component
     {
     private:
+        std::vector<CollidableComponent*> m_no_collide;
         bool m_can_collide;
         bool separate_axis_theorem(
             const std::vector<vec2>& points_a,
@@ -369,9 +370,21 @@ namespace x39::goingfactory
         bool can_collide() { return m_can_collide; }
         void can_collide(bool flag) { m_can_collide = flag; }
 
+        void no_collide(CollidableComponent* ptr) { m_no_collide.push_back(ptr); }
+
         bool intersects_with(CollidableComponent& other)
         {
             if (!m_can_collide || !other.m_can_collide)
+            {
+                return false;
+            }
+            auto it = std::find(m_no_collide.begin(), m_no_collide.end(), &other);
+            if (it != m_no_collide.end())
+            {
+                return false;
+            }
+            it = std::find(other.m_no_collide.begin(), other.m_no_collide.end(), this);
+            if (it != other.m_no_collide.end())
             {
                 return false;
             }

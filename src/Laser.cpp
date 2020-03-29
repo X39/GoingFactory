@@ -6,7 +6,7 @@
 
 #include "EntityManager.h"
 
-class RenderActorCustom : public x39::goingfactory::RenderComponent::RenderActor
+class RenderActorLaserCustom : public x39::goingfactory::RenderComponent::RenderActor
 {
 public:
 	// Inherited via RenderActor
@@ -22,14 +22,14 @@ public:
 		al_draw_line(pos.x, pos.y, pos.x + vel.x, pos.y + vel.y, al_map_rgb(255, 0, 0), 1);
 	}
 };
-class SimulateActorCustom : public x39::goingfactory::SimulateComponent::SimulateActor
+class SimulateActorLaserCustom : public x39::goingfactory::SimulateComponent::SimulateActor
 {
 public:
 	// Inherited via SimulateActor
 	virtual void simulate(x39::goingfactory::SimulateComponent* component, x39::goingfactory::GameInstance& game_instance, float sim_coef) override
 	{
 		auto laser = static_cast<x39::goingfactory::entity::Laser*>(component);
-		if (laser->ttl-- < 0)
+		if (--laser->ttl == 0)
 		{
 			game_instance.entity_manager.pool_destroy(laser);
 		}
@@ -38,8 +38,7 @@ public:
 x39::goingfactory::entity::Laser::Laser() :
 	Entity(),
 	ttl(200),
-	m_owner(nullptr),
-	RenderComponent({ new RenderActorCustom() }),
+	RenderComponent({ new RenderActorLaserCustom() }),
 	SimulateComponent({
 	new actors::simulate::collision([](CollidableComponent* self, CollidableComponent* other, GameInstance& game_instance, float sim_coef) ->
 	void {
@@ -54,6 +53,6 @@ x39::goingfactory::entity::Laser::Laser() :
 				game_instance.entity_manager.pool_destroy(dynamic_cast<Entity*>(other));
 			}
 		}),
-		new actors::simulate::move() })
+		new actors::simulate::move(), new SimulateActorLaserCustom() })
 {
 }

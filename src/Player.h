@@ -16,7 +16,6 @@ namespace x39::goingfactory::entity
         std::vector<size_t> m_textures;
         size_t m_texture_index;
 
-        float m_prev_rad = 0;
         double m_last_trigger_a = 0;
         double m_last_trigger_b = 0;
     public:

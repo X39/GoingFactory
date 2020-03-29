@@ -3,7 +3,7 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 
-class RenderActorCustom : public x39::goingfactory::RenderComponent::RenderActor
+class RenderActorMarkerCustom : public x39::goingfactory::RenderComponent::RenderActor
 {
 public:
 	// Inherited via RenderActor
@@ -23,6 +23,6 @@ public:
 	}
 };
 
-x39::goingfactory::entity::Marker::Marker() : RenderComponent({ new RenderActorCustom() })
+x39::goingfactory::entity::Marker::Marker() : RenderComponent({ new RenderActorMarkerCustom() })
 {
 }

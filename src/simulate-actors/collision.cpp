@@ -14,34 +14,50 @@ void x39::goingfactory::actors::simulate::collision::simulate(SimulateComponent*
     if (collidableComponent->can_collide() && vel.length_squared() != 0)
     {
         // ToDo: Rework world collision to use actual points
-        if (!game_instance.world.get_tile(pos.x, pos.y).is_passable)
+        if (false)//(!game_instance.world.get_tile(pos.x, pos.y).is_passable)
         {
             positionComponent->velocity({});
             return;
         }
         else
         {
-            for (auto local_entity_it = game_instance.entity_manager.begin(pos); local_entity_it != game_instance.entity_manager.end(pos); local_entity_it++)
+            int32_t orig_chunk_coord_x = chunk::to_chunk_coordinate_x(pos);
+            int32_t orig_chunk_coord_y = chunk::to_chunk_coordinate_y(pos);
+
+            for (auto i = -1; i <= 1; i++)
             {
-                if ((*local_entity_it)->is_type(EComponent::Collidable) && (*local_entity_it)->is_type(EComponent::Position))
+                for (auto j = -1; j <= 1; j++)
                 {
-                    auto otherCollidableComponent = (*local_entity_it)->get_component<CollidableComponent>();
+                    int32_t chunk_coord_x = orig_chunk_coord_x + i;
+                    int32_t chunk_coord_y = orig_chunk_coord_y + j;
 
-                    // Check if we try to collide against ourself here
-                    if (otherCollidableComponent == collidableComponent) { continue; }
-
-                    auto otherPositionComponent = (*local_entity_it)->get_component<PositionComponent>();
-
-
-                    if (collidableComponent->intersects_with(*otherCollidableComponent))
+                    for (
+                        auto local_entity_it = game_instance.entity_manager.begin(chunk_coord_x, chunk_coord_y);
+                        local_entity_it != game_instance.entity_manager.end(chunk_coord_x, chunk_coord_y);
+                        local_entity_it++)
                     {
-                        positionComponent->velocity({});
-                        if (m_on_collision)
+                        if ((*local_entity_it)->is_type(EComponent::Collidable) && (*local_entity_it)->is_type(EComponent::Position))
                         {
-                            m_on_collision(collidableComponent, otherCollidableComponent, game_instance, sim_coef);
+                            auto otherCollidableComponent = (*local_entity_it)->get_component<CollidableComponent>();
+
+                            // Check if we try to collide against ourself here
+                            if (otherCollidableComponent == collidableComponent) { continue; }
+
+                            auto otherPositionComponent = (*local_entity_it)->get_component<PositionComponent>();
+
+
+                            if (collidableComponent->intersects_with(*otherCollidableComponent))
+                            {
+                                positionComponent->velocity({});
+                                if (m_on_collision)
+                                {
+                                    m_on_collision(collidableComponent, otherCollidableComponent, game_instance, sim_coef);
+                                }
+                                return;
+                            }
                         }
-                        return;
                     }
+
                 }
             }
         }

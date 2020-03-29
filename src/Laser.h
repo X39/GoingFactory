@@ -10,11 +10,9 @@ namespace x39::goingfactory::entity
 		public SimulateComponent,
 		public PositionComponent
 	{
-		Entity* m_owner;
 	public:
 		size_t ttl;
 		Laser();
-		void set_owner(Entity* owner) { m_owner = owner; }
 		virtual std::string type_name() const override { return "Laser"; }
 
 

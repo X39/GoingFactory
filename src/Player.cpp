@@ -18,21 +18,15 @@
 
 x39::goingfactory::entity::Player::Player() : Entity(), m_textures(), m_texture_index(0),
 SimulateComponent({
-new actors::simulate::collision([](CollidableComponent* self, CollidableComponent* other, GameInstance& game_instance, float sim_coef) ->
-void {
-        game_instance.entity_manager.pool_destroy(dynamic_cast<Entity*>(self));
-        if (other->is_type(EComponent::Health))
-        {
-            auto healthComponent = other->get_component<HealthComponent>();
-            healthComponent->damage(0.25);
-        }
-        else
-        {
-            game_instance.entity_manager.pool_destroy(dynamic_cast<Entity*>(other));
-        }
+    new actors::simulate::collision(),
+    new actors::simulate::move(),
+    new actors::simulate::no_health_remove(),
+    new actors::simulate::slowdown(0.9)
     }),
-    new actors::simulate::move(), new actors::simulate::no_health_remove(), new actors::simulate::slowdown(0.9) }),
-    RenderComponent({ new actors::render::healthbar(), new actors::render::draw_bitmap({ "Textures/Player.png" }) })
+    RenderComponent({
+    new actors::render::healthbar(),
+    new actors::render::draw_bitmap({ "Textures/Player.png" })
+        })
 {
     width(16);
     height(16);
@@ -63,12 +57,10 @@ void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayer
             m_last_trigger_a = d;
             auto laser = new Laser();
             laser->position(position());
-            laser->set_owner(this);
-            auto new_velocity = vec2::from_angle_radians(m_prev_rad - /* 90° */ 1.5708);
-            new_velocity.normalize();
             auto vel = velocity();
-            new_velocity *= (vel.length() + 600);
-            laser->velocity(new_velocity);
+            vel = vel * (vel.length() + 100);
+            laser->velocity(vel);
+            laser->no_collide(this);
             game.entity_manager.pool_create(laser);
         }
     }

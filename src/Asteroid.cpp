@@ -41,39 +41,6 @@ public:
 	}
 };
 
-//void x39::goingfactory::entity::Asteroid::render(GameInstance& game, vec2 translate)
-//{
-//	const float scale = 2.0f;
-//
-//
-//	// HP Bar
-//	auto hp = health();
-//	auto left = pos.x + (-4 * scale);
-//	auto right = pos.x + (5 * scale);
-//	auto right_reduction = (1 - hp) * (right - left);
-//	al_draw_line(left - 1, pos.y + 9, right + 1, pos.y + 9, al_map_rgb(0x32, 0x32, 0x32), 3);
-//	al_draw_line(left, pos.y + 9, right, pos.y + 9, al_map_rgb(127, 0, 0), 1);
-//	al_draw_line(left, pos.y + 9, right - right_reduction, pos.y + 9, al_map_rgb(0xff, 0x1e, 0x56), 1);
-//	if (health() == 0)
-//	{
-//		game.entity_manager.pool_destroy(this);
-//	}
-//}
-
-//void x39::goingfactory::entity::Asteroid::simulate(GameInstance& game, float sim_coef)
-//{
-//	Movable::simulate(game, sim_coef);
-//	vec2 topLeft = position() - 8;
-//	vec2 botRight = position() + 8;
-//	auto position = game.world.player()->get_component<PositionComponent>()->position();
-//	if (topLeft < position && position < botRight)
-//	{
-//		auto healthComponent = game.world.player()->get_component<HealthComponent>();
-//		healthComponent->damage(0.1);
-//		game.entity_manager.pool_destroy(this);
-//	}
-//}
-
 x39::goingfactory::entity::Asteroid::Asteroid() :
 	Entity(),
 	SimulateComponent({
