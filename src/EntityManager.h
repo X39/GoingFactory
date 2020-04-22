@@ -123,7 +123,7 @@ namespace x39::goingfactory
 			Iterator start for entities inside the provided chunk, determined via the chunk coordinates provided.
 		*/
 		std::vector<entity::Entity*>::const_iterator begin(int32_t x, int32_t y) const {
-			auto chunk_coord = chunk::to_chunk_coordinate(x, y);
+			auto chunk_coord = chunk::concat_chunk_coordinate(x, y);
 			if (!m_chunks.contains(chunk_coord))
 			{
 				return {};
@@ -164,7 +164,7 @@ namespace x39::goingfactory
 			Iterator end for entities inside the provided chunk, determined via the chunk coordinates provided.
 		*/
 		std::vector<entity::Entity*>::const_iterator end(int32_t x, int32_t y) const {
-			auto chunk_coord = chunk::to_chunk_coordinate(x, y);
+			auto chunk_coord = chunk::concat_chunk_coordinate(x, y);
 			if (!m_chunks.contains(chunk_coord))
 			{
 				return {};

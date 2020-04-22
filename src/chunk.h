@@ -47,25 +47,44 @@ namespace x39::goingfactory
 			const uint32_t max_halfed = max / 2;
 
 			float x_floored = std::floorf(pos.x / chunk_size);
-			return (int32_t)x_floored;
+			return max_halfed + (int32_t)x_floored;
 		}
 		static inline int32_t to_chunk_coordinate_y(const vec2& pos)
 		{
 			const uint32_t max = UINT32_MAX;
 			const uint32_t max_halfed = max / 2;
 
-			float x_floored = std::floorf(pos.x / chunk_size);
-			return (int32_t)x_floored;
+			float y_floored = std::floorf(pos.y / chunk_size);
+			return max_halfed + (int32_t)y_floored;
 		}
-		static inline int64_t to_chunk_coordinate(int32_t x, int32_t y)
+		static inline int64_t to_chunk_coordinate(float x, float y)
+		{
+			const uint32_t max = UINT32_MAX;
+			const uint32_t max_halfed = max / 2;
+
+			float x_floored = std::floorf(x / chunk_size);
+			uint32_t x_casted = max_halfed + (int32_t)x_floored;
+
+			float y_floored = std::floorf(y / chunk_size);
+			uint32_t y_casted = max_halfed + (int32_t)y_floored;
+
+			int64_t result = (((int64_t)x_casted) << 32) | y_casted;
+			return result;
+		}
+		static inline int64_t concat_chunk_coordinate(int32_t x, int32_t y)
+		{
+			int64_t result = (((int64_t)x) << 32) | ((uint32_t)y);
+			return result;
+		}
+		static inline int64_t as_chunk_coordinate(int32_t x, int32_t y)
 		{
 			const uint32_t max = UINT32_MAX;
 			const uint32_t max_halfed = max / 2;
 			uint32_t x_adjusted = max_halfed + x;
 			uint32_t y_adjusted = max_halfed + y;
-			int64_t result = ((int64_t)x_adjusted) << 32 | y_adjusted;
+			int64_t result = (((int64_t)x_adjusted) << 32) | y_adjusted;
 			return result;
 		}
-		int64_t coordinate() { return to_chunk_coordinate(m_index_x, m_index_y); }
+		int64_t coordinate() { return concat_chunk_coordinate(m_index_x, m_index_y); }
 	};
 }

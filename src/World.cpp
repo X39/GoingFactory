@@ -240,7 +240,14 @@ void x39::goingfactory::World::render(GameInstance& game)
     // Draw Chunks
     if (render_chunks)
     {
-        auto color = al_map_rgb(0, 0, 32);
+        auto playerpos = playerPositionComponent->position();
+        auto playerchunk = chunk::to_chunk_coordinate(playerpos);
+        auto playerchunk_x = chunk::to_chunk_coordinate_x(playerpos);
+        auto playerchunk_y = chunk::to_chunk_coordinate_y(playerpos);
+        auto color_chunk = al_map_rgb(0, 0, 255);
+        auto color_active = color_chunk;
+        auto color_player = al_map_rgb(255, 255, 255);
+        auto color_collission = al_map_rgb(255, 0, 255);
         for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % chunk::chunk_size - chunk::chunk_size; x < top_left_viewport.x + m_viewport_w; x += chunk::chunk_size)
         {
             for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % chunk::chunk_size - chunk::chunk_size; y < top_left_viewport.y + m_viewport_h; y += chunk::chunk_size)
@@ -249,43 +256,62 @@ void x39::goingfactory::World::render(GameInstance& game)
                 auto chunk = game.entity_manager.chunk_at(pos);
                 if (chunk)
                 {
+                    if (chunk->coordinate() == playerchunk)
+                    {
+                        color_active = color_player;
+                    }
+                    else
+                    {
+                        color_active = color_chunk;
+                        for (int x2 = -1; x2 <= 1; x2++)
+                        {
+                            for (int y2 = -1; y2 <= 1; y2++)
+                            {
+                                if (chunk->coordinate() == chunk::concat_chunk_coordinate(playerchunk_x + x2, playerchunk_y + y2))
+                                {
+                                    color_active = color_collission;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     pos -= top_left_viewport;
                     al_draw_line(
                         pos.x,
                         pos.y,
                         pos.x + chunk::chunk_size,
                         pos.y,
-                        color, 1);
+                        color_active, 1);
                     al_draw_line(
                         pos.x,
                         pos.y,
                         pos.x,
                         pos.y + chunk::chunk_size,
-                        color, 1);
+                        color_active, 1);
                     al_draw_line(
                         pos.x + chunk::chunk_size,
                         pos.y,
                         pos.x + chunk::chunk_size,
                         pos.y + chunk::chunk_size,
-                        color, 1);
+                        color_active, 1);
                     al_draw_line(
                         pos.x,
                         pos.y + chunk::chunk_size,
                         pos.x + chunk::chunk_size,
                         pos.y + chunk::chunk_size,
-                        color, 1);
+                        color_active, 1);
                     al_draw_line(
                         pos.x,
                         pos.y,
                         pos.x + chunk::chunk_size,
                         pos.y + chunk::chunk_size,
-                        color, 1);
+                        color_active, 1);
                     al_draw_line(
                         pos.x + chunk::chunk_size,
                         pos.y,
                         pos.x,
                         pos.y + chunk::chunk_size,
-                        color, 1);
+                        color_active, 1);
                 }
             }
         }
