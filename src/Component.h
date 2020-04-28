@@ -390,5 +390,22 @@ namespace x39::goingfactory
             }
             return separate_axis_theorem(polygon_points(), other.polygon_points());
         }
+        bool intersects_with(std::vector<vec2>& other)
+        {
+            if (!m_can_collide)
+            {
+                return false;
+            }
+            return separate_axis_theorem(polygon_points(), other);
+        }
+        template<size_t size>
+        bool intersects_with(std::array<vec2, size>& other)
+        {
+            if (!m_can_collide)
+            {
+                return false;
+            }
+            return separate_axis_theorem(polygon_points(), std::vector<vec2>(other.begin(), other.end()));
+        }
     };
 }

@@ -43,6 +43,7 @@ x39::goingfactory::entity::Laser::Laser() :
 	new actors::simulate::collision([](CollidableComponent* self, CollidableComponent* other, GameInstance& game_instance, float sim_coef) ->
 	void {
 			game_instance.entity_manager.pool_destroy(dynamic_cast<Entity*>(self));
+			if (!other) { return; }
 			if (other->is_type(EComponent::Health))
 			{
 				auto healthComponent = other->get_component<HealthComponent>();

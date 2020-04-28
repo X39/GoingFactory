@@ -16,7 +16,7 @@ namespace x39::goingfactory
 	class chunk
 	{
 	public:
-		static const int chunk_size = 100;
+		static const int chunk_size = 160;
 	private:
 		friend class EntityManager;
 		int32_t m_index_x;

@@ -58,7 +58,9 @@ void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayer
             auto laser = new Laser();
             laser->position(position());
             auto vel = velocity();
-            vel = vel * (vel.length() + 100);
+            auto len = vel.length();
+            vel.normalize();
+            vel *= 100 + len;
             laser->velocity(vel);
             laser->no_collide(this);
             game.entity_manager.pool_create(laser);

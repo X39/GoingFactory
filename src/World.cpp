@@ -12,7 +12,6 @@ bool render_chunks = false;
 bool render_background = true;
 bool render_collisions = false;
 bool render_position_component = false;
-int size = 16;
 x39::goingfactory::FastNoise generator(12030220512152);
 size_t grass1_texture_id = 0;
 size_t grass2_1_texture_id = 0;
@@ -54,7 +53,7 @@ x39::goingfactory::World::Tile x39::goingfactory::World::get_tile(int x, int y)
     for (int i = 0; i < tile_size; i++)
     {
         floats.push_back(std::fabsf(generator.GetPerlin(x + i, y + i)));
-        floats.push_back(std::fabsf(generator.GetPerlin(x + size - i, y + i)));
+        floats.push_back(std::fabsf(generator.GetPerlin(x + tile_size - i, y + i)));
     }
     RandomFromPerlin random(floats);
     
@@ -95,6 +94,44 @@ x39::goingfactory::World::Tile x39::goingfactory::World::get_tile(int x, int y)
 
     return tile;
 }
+std::vector<std::array<x39::goingfactory::vec2, 4>> x39::goingfactory::World::get_chunk_world_collision(int x, int y)
+{
+    std::vector<std::array<x39::goingfactory::vec2, 4>> vec;
+    for (int i = 0; i <= chunk::chunk_size; i += x39::goingfactory::World::tile_size)
+    {
+        for (int j = 0; j <= chunk::chunk_size; j += x39::goingfactory::World::tile_size)
+        {
+            auto tile = get_tile(x + i, y + j);
+            if (!tile.is_passable)
+            {
+                vec.push_back(std::array<x39::goingfactory::vec2, 4>
+                {
+                    vec2
+                    {
+                        (float)x + (i + x39::goingfactory::World::tile_size / 2) - x39::goingfactory::World::tile_size / 2,
+                        (float)y + (j + x39::goingfactory::World::tile_size / 2) - x39::goingfactory::World::tile_size / 2
+                    },
+                    vec2
+                    {
+                        (float)x + (i + x39::goingfactory::World::tile_size / 2) + x39::goingfactory::World::tile_size / 2,
+                        (float)y + (j + x39::goingfactory::World::tile_size / 2) - x39::goingfactory::World::tile_size / 2
+                    },
+                    vec2
+                    {
+                        (float)x + (i + x39::goingfactory::World::tile_size / 2) + x39::goingfactory::World::tile_size / 2,
+                        (float)y + (j + x39::goingfactory::World::tile_size / 2) + x39::goingfactory::World::tile_size / 2
+                    },
+                    vec2{
+                        (float)x + (i + x39::goingfactory::World::tile_size / 2) - x39::goingfactory::World::tile_size / 2,
+                        (float)y + (j + x39::goingfactory::World::tile_size / 2) + x39::goingfactory::World::tile_size / 2
+                    }
+                });
+            }
+        }
+    }
+    return vec;
+}
+
 void x39::goingfactory::World::draw_level(GameInstance& game)
 {
     if (!m_player || !m_player->is_type(EComponent::Position))
@@ -151,8 +188,7 @@ x39::goingfactory::World::World() : m_viewport_x(0), m_viewport_y(0), m_viewport
             render_chunks >>
             render_background >>
             render_collisions >>
-            render_position_component >>
-            size;
+            render_position_component;
         generator.SetFrequency(frequency);
     }
     else
@@ -173,8 +209,7 @@ x39::goingfactory::World::~World()
             render_chunks << std::endl <<
             render_background << std::endl <<
             render_collisions << std::endl <<
-            render_position_component << std::endl <<
-            size << std::endl;
+            render_position_component << std::endl;
     }
 }
 
@@ -195,32 +230,34 @@ void x39::goingfactory::World::render(GameInstance& game)
     auto playerPositionComponent = m_player->get_component<PositionComponent>();
     vec2 center = { m_viewport_w / 2 + m_viewport_x, m_viewport_h / 2 + m_viewport_y };
     vec2 top_left_viewport =  playerPositionComponent->position() - center;
+    auto yellow = al_map_rgb(255, 255, 0);
+    auto green = al_map_rgb(0, 255, 0);
 
 
     // Draw Level
     {
         if (render_grayscale && render_background)
         {
-            for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % size - size; x < top_left_viewport.x + m_viewport_w; x += size)
+            for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % tile_size - tile_size; x < top_left_viewport.x + m_viewport_w; x += tile_size)
             {
-                for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % size - size; y < top_left_viewport.y + m_viewport_h; y += size)
+                for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % tile_size - tile_size; y < top_left_viewport.y + m_viewport_h; y += tile_size)
                 {
                     vec2 pos = { x + (float)m_viewport_x, y + (float)m_viewport_y };
                     float f = 0;
-                    for (int i = 0; i < size; i++)
+                    for (int i = 0; i < tile_size; i++)
                     {
                         f += std::fabsf(generator.GetPerlin(pos.x + i, pos.y + i));
-                        f += std::fabsf(generator.GetPerlin(pos.x + size - i, pos.y + i));
+                        f += std::fabsf(generator.GetPerlin(pos.x + tile_size - i, pos.y + i));
                     }
-                    f = f / (size * 2);
+                    f = f / (tile_size * 2);
                     auto color = al_map_rgba((unsigned char)(f * 255), (unsigned char)(f * 255), (unsigned char)(f * 255), 255);
                     pos -= top_left_viewport;
                     // al_draw_pixel(pos.x - player_pos_centered.x + m_viewport_x, pos.y - player_pos_centered.y + m_viewport_y, color);
                     al_draw_filled_rectangle(
                         pos.x,
                         pos.y,
-                        pos.x + size ,
-                        pos.y + size,
+                        pos.x + tile_size,
+                        pos.y + tile_size,
                         color);
                     // al_draw_bitmap_region(
                     //   m_bitmap,
@@ -234,6 +271,29 @@ void x39::goingfactory::World::render(GameInstance& game)
         else if (render_background)
         {
             draw_level(game);
+        }
+        if (render_collisions)
+        {
+            for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % chunk::chunk_size - chunk::chunk_size; x < top_left_viewport.x + m_viewport_w; x += chunk::chunk_size)
+            {
+                for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % chunk::chunk_size - chunk::chunk_size; y < top_left_viewport.y + m_viewport_h; y += chunk::chunk_size)
+                {
+                    auto points_collection = get_chunk_world_collision(x, y);
+                    for (auto& points : points_collection)
+                    {
+                        for (size_t i = 0; i < points.size(); i++)
+                        {
+                            vec2 p1 = points[i];
+                            vec2 p2 = points[i + 1 >= points.size() ? 0 : i + 1];
+                            al_draw_line(
+                                p1.x - top_left_viewport.x, p1.y - top_left_viewport.y,
+                                p2.x - top_left_viewport.x, p2.y - top_left_viewport.y,
+                                yellow,
+                                1);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -346,8 +406,6 @@ void x39::goingfactory::World::render(GameInstance& game)
             color, 1);
         color = al_map_rgb(0, 0, 0);
     }
-    auto yellow = al_map_rgb(255, 255, 0);
-    auto green = al_map_rgb(0, 255, 0);
 
     for (auto it = game.entity_manager.begin(EComponent::Render); it != game.entity_manager.end(EComponent::Render); it++)
     {
@@ -450,16 +508,16 @@ void x39::goingfactory::World::keydown(io::EKey key)
     case io::EKey::PAD_SLASH:
         render_grayscale = !render_grayscale;
         break;
-    case io::EKey::PAD_DELETE:
-        size++;
-        break;
-    case io::EKey::PAD_0:
-        if (size - 1 <= 0)
-        {
-            break;
-        }
-        size--;
-        break;
+    //case io::EKey::PAD_DELETE:
+    //    size++;
+    //    break;
+    // case io::EKey::PAD_0:
+    //     if (size - 1 <= 0)
+    //     {
+    //         break;
+    //     }
+    //     size--;
+    //     break;
     }
 }
 

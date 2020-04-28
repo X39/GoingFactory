@@ -38,5 +38,6 @@ namespace x39::goingfactory
 		bool is_in_view(vec2 pos, int offset = 0);
 		Tile get_tile(vec2 vec) { return get_tile((int)vec.x, (int)vec.y); }
 		Tile get_tile(int x, int y);
+		std::vector<std::array<x39::goingfactory::vec2, 4>> get_chunk_world_collision(int x, int y);
 	};
 }
