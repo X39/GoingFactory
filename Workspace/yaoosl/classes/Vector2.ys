@@ -1,0 +1,13 @@
+prefix Yaoosl;
+prefix GoingFactory;
+
+class GoingFactory.Vector2
+{
+    public Double X;
+    public Double Y;
+    public Vector2(Double x, Double y)
+    {
+        this.X = x;
+        this.Y = y;
+    }
+}

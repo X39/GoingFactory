@@ -1,0 +1,26 @@
+prefix Yaoosl;
+prefix GoingFactory;
+
+class GoingFactory.Game
+{
+    private Entity Scripted;
+    private Int32 Counter;
+    
+    // Always has to have no args
+    public Game()
+    {
+        this.Scripted = new Entity(new Vector2(0, 0));
+        this.Counter = 0;
+    }
+    // Always needs to be 0, Always needs to have no args
+    public void GameLoop()
+    {
+        var pos = this.Scripted.Position;
+        pos.X = this.Counter++;
+        this.Scripted.Position = pos;
+        if (this.Counter > 500)
+        {
+            this.Counter = 0;
+        }
+    }
+}

@@ -12,12 +12,20 @@
 #include <sstream>
 #include <random>
 #include <iostream>
+#include <filesystem>
+#include <yaoosl.h>
+#include <yaoosl_code.h>
+#include <yaoosl_class.h>
+#include <yaoosl_instance.h>
+#include <yaoosl_util.h>
+#include <yaoosl_context.h>
 
 #include "ThreadPool.h"
 
 #include "ResourceManager.h"
 #include "EntityManager.h"
 #include "Entity.h"
+#include "ScriptedEntity.h"
 #include "Asteroid.h"
 #include "Player.h"
 #include "Marker.h"
@@ -97,6 +105,265 @@ int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_qu
     al_flip_display();
     return 0;
 }
+
+static int get_bom_skip(const char* ubuff)
+{
+    if (!ubuff)
+        return 0;
+    // We are comparing against unsigned
+    if (ubuff[0] == 0xEF && ubuff[1] == 0xBB && ubuff[2] == 0xBF)
+    {
+        //UTF-8
+        return 3;
+    }
+    else if (ubuff[0] == 0xFE && ubuff[1] == 0xFF)
+    {
+        //UTF-16 (BE)
+        return 2;
+    }
+    else if (ubuff[0] == 0xFE && ubuff[1] == 0xFE)
+    {
+        //UTF-16 (LE)
+        return 2;
+    }
+    else if (ubuff[0] == 0x00 && ubuff[1] == 0x00 && ubuff[2] == 0xFF && ubuff[3] == 0xFF)
+    {
+        //UTF-32 (BE)
+        return 2;
+    }
+    else if (ubuff[0] == 0xFF && ubuff[1] == 0xFF && ubuff[2] == 0x00 && ubuff[3] == 0x00)
+    {
+        //UTF-32 (LE)
+        return 2;
+    }
+    else if (ubuff[0] == 0x2B && ubuff[1] == 0x2F && ubuff[2] == 0x76 &&
+        (ubuff[3] == 0x38 || ubuff[3] == 0x39 || ubuff[3] == 0x2B || ubuff[3] == 0x2F))
+    {
+        //UTF-7
+        return 4;
+    }
+    else if (ubuff[0] == 0xF7 && ubuff[1] == 0x64 && ubuff[2] == 0x4C)
+    {
+        //UTF-1
+        return 3;
+    }
+    else if (ubuff[0] == 0xDD && ubuff[1] == 0x73 && ubuff[2] == 0x66 && ubuff[3] == 0x73)
+    {
+        //UTF-EBCDIC
+        return 3;
+    }
+    else if (ubuff[0] == 0x0E && ubuff[1] == 0xFE && ubuff[2] == 0xFF)
+    {
+        //SCSU
+        return 3;
+    }
+    else if (ubuff[0] == 0xFB && ubuff[1] == 0xEE && ubuff[2] == 0x28)
+    {
+        //BOCU-1
+        if (ubuff[3] == 0xFF)
+            return 4;
+        return 3;
+    }
+    else if (ubuff[0] == 0x84 && ubuff[1] == 0x31 && ubuff[2] == 0x95 && ubuff[3] == 0x33)
+    {
+        //GB 18030
+        return 3;
+    }
+    return 0;
+}
+static char* readFile(const char* filename)
+{
+    FILE* file = fopen(filename, "rb");
+    size_t file_size;
+    char* out;
+    int bom_skip, i;
+    if (!file)
+    {
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    if (!(out = new char[file_size + 1]))
+    {
+        fclose(file);
+        return NULL;
+    }
+    if (file_size > 5)
+    {
+        fread(out, sizeof(char), 5, file);
+        out[5] = '\0';
+        bom_skip = get_bom_skip(out);
+        for (i = bom_skip; i < 5; i++)
+        {
+            out[i - bom_skip] = out[i];
+        }
+        fread(out + 5 - bom_skip, sizeof(char), file_size - 5, file);
+    }
+    else
+    {
+        fread(out, sizeof(char), file_size, file);
+    }
+    out[file_size] = '\0';
+    fclose(file);
+
+    return out;
+}
+
+#pragma region Trim std::string
+// https://stackoverflow.com/a/217605/2684203
+// trim from start (in place)
+static inline void ltrim(std::string& s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+        return !std::isspace(ch);
+        }));
+}
+
+// trim from end (in place)
+static inline void rtrim(std::string& s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+        return !std::isspace(ch);
+        }).base(), s.end());
+}
+
+// trim from both ends (in place)
+static inline void trim(std::string& s) {
+    ltrim(s);
+    rtrim(s);
+}
+
+// trim from start (copying)
+static inline std::string ltrim_copy(std::string s) {
+    ltrim(s);
+    return s;
+}
+
+// trim from end (copying)
+static inline std::string rtrim_copy(std::string s) {
+    rtrim(s);
+    return s;
+}
+
+// trim from both ends (copying)
+static inline std::string trim_copy(std::string s) {
+    trim(s);
+    return s;
+}
+#pragma endregion
+
+static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstance& gameInstance)
+{
+    std::vector<std::string> classesnames;
+    std::vector<std::array<std::string, 2>> files;
+    std::filesystem::path path("yaoosl/classes");
+    path = std::filesystem::absolute(path);
+    if (!std::filesystem::exists(path))
+    {
+        std::cerr << "'" << path.string() << "' is not existing." << std::endl;
+        return -1;
+    }
+    for (auto file : std::filesystem::directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
+    {
+        if (file.is_directory())
+        {
+            std::cerr << "Skipping directory '" << file.path() << "'." << std::endl;
+            continue;
+        }
+        auto contents = readFile(file.path().string().c_str());
+        std::string str(contents);
+        files.push_back(std::array<std::string, 2> { file.path().string(), str });
+        delete[] contents;
+
+        auto classdef = str.find("class ") + std::strlen("class ");
+        auto end = str.find('\n', classdef);
+        auto classname = str.substr(classdef, end - classdef);
+        trim(classname);
+        classesnames.push_back(classname);
+    }
+    {
+#pragma region GoingFactory.Entity
+        {
+            auto classhandle = yaoosl_declare_class(runtime, "GoingFactory.Entity");
+            classhandle->callback_data = &gameInstance;
+            classhandle->callback_create = [](void* data, struct yaoosl_instance* instance) -> bool {
+                x39::goingfactory::GameInstance* gameInstance = static_cast<x39::goingfactory::GameInstance*>(data);
+                auto entity = new x39::goingfactory::entity::ScriptedEntity();
+                gameInstance->entity_manager.pool_create(entity);
+                instance->additional.ptr = entity;
+                return true;
+            };
+            classhandle->callback_destroy = [](void* data, struct yaoosl_instance* instance) -> void {
+                x39::goingfactory::GameInstance* gameInstance = static_cast<x39::goingfactory::GameInstance*>(data);
+                auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(instance->additional.ptr);
+                gameInstance->entity_manager.pool_destroy(entity);
+            };
+
+            auto position_getter_code = yaoosl_code_create2(
+                [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                {
+                    auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                    auto vector2 = yaoosl_instance_create(yaoosl_declare_class(vm, "GoingFactory.Vector2"));
+                    vector2->fields[0]->additional.d = entity->position().x;
+                    vector2->fields[1]->additional.d = entity->position().y;
+                    yaoosl_instance_inc_ref(vector2);
+                    yaoosl_context_push_value(context, vector2);
+                });
+            auto position_getter_method = yaoosl_method_create("get", yaoosl_declare_class(runtime, "GoingFactory.Vector2"), position_getter_code);
+            auto position_setter_code = yaoosl_code_create2(
+                [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                {
+                    auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                    yaooslinstancehandle vector2;
+                    if (!(vector2 = yaoosl_context_pop_value(context)))
+                    {
+                        yaoosl_util_throw_generic(vm, context, "No value found.");
+                        return;
+                    }
+                    if (vector2->type != yaoosl_declare_class(vm, "GoingFactory.Vector2"))
+                    {
+                        yaoosl_util_throw_generic(vm, context, "Value is no Vector2.");
+                        return;
+                    }
+                    entity->position({ vector2->fields[0]->additional.d, vector2->fields[1]->additional.d });
+                    yaoosl_instance_dec_ref(vector2);
+                });
+            auto position_setter_method = yaoosl_method_create("set", yaoosl_declare_class(runtime, "GoingFactory.Vector2"), position_setter_code);
+            auto propertyhandle = yaoosl_property_create2("Position", yaoosl_declare_class(runtime, "GoingFactory.Vector2"), position_getter_method, position_setter_method);
+            yaoosl_class_push_property(classhandle, propertyhandle);
+        }
+#pragma endregion
+    }
+    for (auto& classname : classesnames)
+    {
+        auto classhandle = yaoosl_declare_class(runtime, classname.c_str());
+        if (!classhandle)
+        {
+            std::cerr << "Failed to declare class '" << classname << "'. Aborting." << std::endl;
+            return -1;
+        }
+    }
+    for (auto& file : files)
+    {
+        auto code = yaoosl_code_parse_contents(file[1].c_str(), true, file[0].c_str());
+        if (code)
+        {
+            yaoosl_util_execute_code(runtime, code);
+        }
+        else
+        {
+            std::cerr << "Failed to parse '" << file[0] << "'. Aborting." << std::endl;
+            return -1;
+        }
+    }
+    return 0;
+}
+
+static bool yaoosl_error_handle(struct yaoosl* vm, struct yaoosl_context* context, const char* errmsg)
+{
+    printf("!!! FATAL ERROR !!!\n%s\n", errmsg);
+    return false;
+}
 int main()
 {
     ALLEGRO_DISPLAY* display;
@@ -133,6 +400,29 @@ int main()
                 renderComponent->render_init(game_instance);
             }
         });
+
+
+    yaooslhandle runtime = yaoosl_create_virtualmachine();
+    runtime->error_handle = yaoosl_error_handle;
+    if (!runtime)
+    {
+        fprintf(stderr, "Failed to create yaoosl runtime.\n");
+        return -1;
+    }
+    if (LoadYaooslClasses(runtime, game_instance))
+    {
+        return -1;
+    }
+    yaooslinstancehandle yaoosl_game = yaoosl_instance_create(yaoosl_declare_class(runtime, "GoingFactory.Game"));
+    yaoosl_instance_inc_ref(yaoosl_game);
+    { // Call yaoosl_game constructor
+        yaooslcontexthandle context = yaoosl_context_create();
+        yaoosl_call_method(runtime, context, yaoosl_game->type->constructor_method_group->methods[0], yaoosl_game);
+        yaoosl_execute(runtime, context);
+        yaoosl_context_destroy(context);
+    }
+
+
     auto player = new x39::goingfactory::entity::Player();
     world.set_player(player);
     const int viewport_offset = 32;
@@ -251,7 +541,12 @@ int main()
         }
         if (simulate)
         {
-
+            { // Call yaoosl_game GameLoop
+                yaooslcontexthandle context = yaoosl_context_create();
+                yaoosl_call_method(runtime, context, yaoosl_game->type->method_groups[0]->methods[0], yaoosl_game);
+                yaoosl_execute(runtime, context);
+                yaoosl_context_destroy(context);
+            }
             simulate = false;
             entity_manager.act_pools();
             auto new_time = al_get_time();

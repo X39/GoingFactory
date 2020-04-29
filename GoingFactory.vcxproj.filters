@@ -197,5 +197,8 @@
     <ClInclude Include="src\render-actors\draw_bitmap.h">
       <Filter>Header Files\render actors</Filter>
     </ClInclude>
+    <ClInclude Include="src\ScriptedEntity.h">
+      <Filter>Header Files\entity</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

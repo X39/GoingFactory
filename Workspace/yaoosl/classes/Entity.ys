@@ -1,0 +1,11 @@
+prefix Yaoosl;
+prefix GoingFactory;
+
+class GoingFactory.Entity
+{
+    // public Vector2 Position;
+    public Entity(Vector2 position)
+    {
+        this.Position = position;
+    }
+}
