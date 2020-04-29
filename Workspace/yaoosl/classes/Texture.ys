@@ -1,0 +1,7 @@
+prefix Yaoosl;
+prefix GoingFactory;
+
+class GoingFactory.Texture
+{
+    extern public Texture(String create);
+}

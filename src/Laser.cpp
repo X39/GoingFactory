@@ -6,7 +6,7 @@
 
 #include "EntityManager.h"
 
-class RenderActorLaserCustom : public x39::goingfactory::RenderComponent::RenderActor
+static class RenderActorLaserCustom : public x39::goingfactory::RenderComponent::RenderActor
 {
 public:
 	// Inherited via RenderActor
@@ -22,7 +22,7 @@ public:
 		al_draw_line(pos.x, pos.y, pos.x + vel.x, pos.y + vel.y, al_map_rgb(255, 0, 0), 1);
 	}
 };
-class SimulateActorLaserCustom : public x39::goingfactory::SimulateComponent::SimulateActor
+static class SimulateActorLaserCustom : public x39::goingfactory::SimulateComponent::SimulateActor
 {
 public:
 	// Inherited via SimulateActor

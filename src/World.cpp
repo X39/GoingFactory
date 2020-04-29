@@ -5,7 +5,10 @@
 #include "ResourceManager.h"
 #include "EntityManager.h"
 #include "FastNoise.h"
+
+
 #include <fstream>
+#include <unordered_map>
 
 bool render_grayscale = false;
 bool render_chunks = false;
@@ -14,12 +17,14 @@ bool render_collisions = false;
 bool render_position_component = false;
 x39::goingfactory::FastNoise generator(12030220512152);
 size_t grass1_texture_id = 0;
+size_t grass1_surroundings_texture_id = 0;
 size_t grass2_1_texture_id = 0;
 size_t grass2_2_texture_id = 0;
 size_t grass2_3_texture_id = 0;
 size_t tree_texture_id = 0;
 size_t dirt_texture_id = 0;
 size_t stone_texture_id = 0;
+size_t stone_surroundings_id = 0;
 // Get-/SetFrequency ~= Zoom
 
 x39::goingfactory::vec2 store_a_player_vel;
@@ -57,7 +62,7 @@ x39::goingfactory::World::Tile x39::goingfactory::World::get_tile(int x, int y)
     }
     RandomFromPerlin random(floats);
     
-    x39::goingfactory::World::Tile tile;
+    x39::goingfactory::World::Tile tile = { 0 };
     tile.has_tree = false;
     tile.is_passable = true;
     tile.tile_texture = dirt_texture_id;
@@ -76,7 +81,7 @@ x39::goingfactory::World::Tile x39::goingfactory::World::get_tile(int x, int y)
             tile.tile_texture = grass2_3_texture_id;
             break;
         }
-        if (random.next_int() % 5 == 0)
+        if (random.next_int() % 7 == 0)
         {
             tile.is_passable = false;
             tile.has_tree = true;
@@ -84,11 +89,13 @@ x39::goingfactory::World::Tile x39::goingfactory::World::get_tile(int x, int y)
     }
     else if (random.next_float() > 0.3)
     {
-        tile.tile_texture = grass1_texture_id;
+        // tile.tile_texture = grass1_texture_id;
+        tile.tile_texture_surrounding = grass1_surroundings_texture_id;
     }
     else if (random.next_float() < 0.1)
     {
         tile.tile_texture = stone_texture_id;
+        tile.tile_texture_surrounding = stone_surroundings_id;
         tile.is_passable = false;
     }
 
@@ -141,21 +148,64 @@ void x39::goingfactory::World::draw_level(GameInstance& game)
     auto playerPositionComponent = m_player->get_component<PositionComponent>();
     vec2 center = { m_viewport_w / 2 + m_viewport_x, m_viewport_h / 2 + m_viewport_y };
     vec2 top_left_viewport =  playerPositionComponent->position() - center;
+    struct texture_spot
+    {
+        size_t texture_id;
+        float sx, sy, sw, sh;
+        float dx, dy;
+    };
+    std::vector<std::vector<texture_spot>> textures;
 
     // Draw background
-    al_hold_bitmap_drawing(true);
     for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % tile_size - tile_size; x < top_left_viewport.x + m_viewport_w; x += tile_size)
     {
         for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % tile_size - tile_size; y < top_left_viewport.y + m_viewport_h; y += tile_size)
         {
             vec2 pos = { x + (float)m_viewport_x, y + (float)m_viewport_y };
             auto tile = get_tile(pos);
-            pos -= top_left_viewport;
-            al_draw_bitmap(game.resource_manager.get_bitmap(tile.tile_texture), pos.x, pos.y, 0);
+            if (tile.tile_texture != 0)
+            {
+                pos -= top_left_viewport;
+                al_draw_bitmap(game.resource_manager.get_bitmap(tile.tile_texture), pos.x, pos.y, 0);
+            }
+            if (tile.tile_texture_surrounding != 0)
+            {
+                int i = 0;
+                for (int32_t x2 = x - (int32_t)tile_size; x2 <= x + (int32_t)tile_size; x2 += (int32_t)tile_size)
+                {
+                    for (int32_t y2 = y - (int32_t)tile_size; y2 <= y + (int32_t)tile_size; y2 += (int32_t)tile_size)
+                    {
+                        i++;
+                        vec2 otherpos = { x2 + (float)m_viewport_x, y2 + (float)m_viewport_y };
+                        auto othertile = get_tile(otherpos);
+                        if (othertile.tile_texture != tile.tile_texture)
+                        {
+                            otherpos -= top_left_viewport;
+                            switch (i)
+                            {
+                            case 1: /* LEF TOP */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding),  0,  0, 16, 16, otherpos.x, otherpos.y, 0); break;
+                            case 2: /* LEF MID */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding),  0, 16, 16, 16, otherpos.x, otherpos.y, 0); break;
+                            case 3: /* LEF BOT */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding),  0, 32, 16, 16, otherpos.x, otherpos.y, 0); break;
+                            case 4: /* CEN TOP */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding), 16,  0, 16, 16, otherpos.x, otherpos.y, 0); break;
+                            case 5: /* CEN MID */ break;
+                            case 6: /* CEN BOT */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding), 16, 32, 16, 16, otherpos.x, otherpos.y, 0); break;
+                            case 7: /* RIG TOP */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding), 32,  0, 16, 16, otherpos.x, otherpos.y, 0); break;
+                            case 8: /* RIG MID */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding), 32, 16, 16, 16, otherpos.x, otherpos.y, 0); break;
+                            case 9: /* RIG BOT */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding), 32, 32, 16, 16, otherpos.x, otherpos.y, 0); break;
+                            }
+                        }
+                        else if (tile.tile_texture == 0 && x2 == x && y2 == y)
+                        {
+                            al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding), 16, 16, 16, 16, otherpos.x, otherpos.y, 0);
+                        }
+                    }
+                }
+            }
         }
     }
     al_hold_bitmap_drawing(false);
 
+    //std::vector<vec2> trees;
     // Draw specifics
     al_hold_bitmap_drawing(true);
     for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % tile_size - tile_size; x < top_left_viewport.x + m_viewport_w; x += tile_size)
@@ -166,12 +216,49 @@ void x39::goingfactory::World::draw_level(GameInstance& game)
             auto tile = get_tile(pos);
             if (tile.has_tree)
             {
-                pos -= top_left_viewport;
-                al_draw_bitmap(game.resource_manager.get_bitmap(tree_texture_id), pos.x - 8, pos.y - 16, 0);
+                vec2 treecoord = { pos.x - top_left_viewport.x - 8, pos.y - top_left_viewport.y };
+                al_draw_bitmap(game.resource_manager.get_bitmap(tree_texture_id), treecoord.x, treecoord.y, 0);
+                // trees.emplace_back(pos.x - top_left_viewport.x - 8, pos.y - top_left_viewport.y - 16);
             }
+            // else if (tile.tile_texture_surrounding != 0)
+            // {
+            //     int i = 0;
+            //     for (int32_t x2 = x - (int32_t)tile_size; x2 <= x + (int32_t)tile_size; x2 += (int32_t)tile_size)
+            //     {
+            //         for (int32_t y2 = y - (int32_t)tile_size; y2 <= y + (int32_t)tile_size; y2 += (int32_t)tile_size)
+            //         {
+            //             i++;
+            //             if (x2 == x && y2 == y) { continue; }
+            //             vec2 otherpos = { x2 + (float)m_viewport_x, y2 + (float)m_viewport_y };
+            //             auto othertile = get_tile(otherpos);
+            //             if (othertile.tile_texture != tile.tile_texture)
+            //             {
+            //                 otherpos -= top_left_viewport;
+            //                 switch (i)
+            //                 {
+            //                 case 1: /* LEF TOP */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding),  0,  0, 16, 16, otherpos.x, otherpos.y, 0); break;
+            //                 case 2: /* LEF MID */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding),  0, 16, 16, 16, otherpos.x, otherpos.y, 0); break;
+            //                 case 3: /* LEF BOT */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding),  0, 32, 16, 16, otherpos.x, otherpos.y, 0); break;
+            //                 case 4: /* CEN TOP */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding), 16,  0, 16, 16, otherpos.x, otherpos.y, 0); break;
+            //                 case 5: /* CEN MID */ break;
+            //                 case 6: /* CEN BOT */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding), 16, 32, 16, 16, otherpos.x, otherpos.y, 0); break;
+            //                 case 7: /* RIG TOP */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding), 32,  0, 16, 16, otherpos.x, otherpos.y, 0); break;
+            //                 case 8: /* RIG MID */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding), 32, 16, 16, 16, otherpos.x, otherpos.y, 0); break;
+            //                 case 9: /* RIG BOT */ al_draw_bitmap_region(game.resource_manager.get_bitmap(tile.tile_texture_surrounding), 32, 32, 16, 16, otherpos.x, otherpos.y, 0); break;
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
         }
     }
     al_hold_bitmap_drawing(false);
+    // al_hold_bitmap_drawing(true);
+    // for (auto& treecoord : trees)
+    // {
+    //     al_draw_bitmap(game.resource_manager.get_bitmap(tree_texture_id), treecoord.x, treecoord.y, 0);
+    // }
+    // al_hold_bitmap_drawing(false);
 }
 
 x39::goingfactory::World::World() : m_viewport_x(0), m_viewport_y(0), m_viewport_w(0), m_viewport_h(0), m_player()
@@ -216,11 +303,13 @@ x39::goingfactory::World::~World()
 void x39::goingfactory::World::render(GameInstance& game)
 {
     if (grass1_texture_id == 0) { grass1_texture_id = game.resource_manager.load_bitmap("Textures/Grass.png"); }
+    if (grass1_surroundings_texture_id == 0) { grass1_surroundings_texture_id = game.resource_manager.load_bitmap("Textures/GrassSurroundings.png"); }
     if (grass2_1_texture_id == 0) { grass2_1_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_1.png"); }
     if (grass2_2_texture_id == 0) { grass2_2_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_2.png"); }
     if (grass2_3_texture_id == 0) { grass2_3_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_3.png"); }
     if (dirt_texture_id == 0) { dirt_texture_id = game.resource_manager.load_bitmap("Textures/Dirt.png"); }
     if (stone_texture_id == 0) { stone_texture_id = game.resource_manager.load_bitmap("Textures/Stone.png"); }
+    if (stone_surroundings_id == 0) { stone_surroundings_id = game.resource_manager.load_bitmap("Textures/StoneSurroundings.png"); }
     if (tree_texture_id == 0) { tree_texture_id = game.resource_manager.load_bitmap("Textures/Tree.png"); }
 
     if (!m_player || !m_player->is_type(EComponent::Position))

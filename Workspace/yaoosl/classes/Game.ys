@@ -15,9 +15,7 @@ class GoingFactory.Game
     // Always needs to be 0, Always needs to have no args
     public void GameLoop()
     {
-        var pos = this.Scripted.Position;
-        pos.X = this.Counter++;
-        this.Scripted.Position = pos;
+        this.Scripted.PosX = this.Counter++;
         if (this.Counter > 500)
         {
             this.Counter = 0;

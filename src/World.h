@@ -17,6 +17,8 @@ namespace x39::goingfactory
 			bool is_passable;
 			bool has_tree;
 			size_t tile_texture;
+			size_t tile_texture_surrounding;
+			size_t texture_index;
 		};
 		static const size_t tile_size = 16;
 	private:

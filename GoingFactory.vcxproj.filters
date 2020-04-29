@@ -102,6 +102,12 @@
     <ClCompile Include="src\render-actors\draw_bitmap.cpp">
       <Filter>Source Files\render actors</Filter>
     </ClCompile>
+    <ClCompile Include="src\simulate-actors\velocitycap.cpp">
+      <Filter>Source Files\simulate actors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ScriptedEntity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -199,6 +205,9 @@
     </ClInclude>
     <ClInclude Include="src\ScriptedEntity.h">
       <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\simulate-actors\velocitycap.h">
+      <Filter>Header Files\simulate actors</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -12,6 +12,7 @@
 #include "render-actors/draw_bitmap.h"
 #include "simulate-actors/move.h"
 #include "simulate-actors/collision.h"
+#include "simulate-actors/velocitycap.h"
 #include "simulate-actors/slowdown.h"
 #include "simulate-actors/no_health_remove.h"
 
@@ -21,7 +22,8 @@ SimulateComponent({
     new actors::simulate::collision(),
     new actors::simulate::move(),
     new actors::simulate::no_health_remove(),
-    new actors::simulate::slowdown(0.9)
+    new actors::simulate::slowdown(10),
+    new actors::simulate::velocitycap(500),
     }),
     RenderComponent({
     new actors::render::healthbar(),
@@ -33,13 +35,13 @@ SimulateComponent({
 }
 void x39::goingfactory::entity::Player::interact(GameInstance& game, io::EPlayerInteraction playerInteraction)
 {
-    float move_coef = 60;
+    float move_coef = 100;
     auto vel = velocity();
     if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_a) != x39::goingfactory::io::EPlayerInteraction::empty)
     { move_coef *= 2; }
     if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_b) != x39::goingfactory::io::EPlayerInteraction::empty)
     //{ move_coef *= 0.125; }
-    { move_coef *= 0.05; }
+    { move_coef *= 0.5; }
     can_collide((playerInteraction & x39::goingfactory::io::EPlayerInteraction::mod_c) == x39::goingfactory::io::EPlayerInteraction::empty);
     if ((playerInteraction & x39::goingfactory::io::EPlayerInteraction::move_left) != x39::goingfactory::io::EPlayerInteraction::empty)
     { vel.x += -move_coef; }

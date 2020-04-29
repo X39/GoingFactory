@@ -210,10 +210,12 @@
     <ClCompile Include="src\render-actors\draw_bitmap.cpp" />
     <ClCompile Include="src\render-actors\healthbar.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
+    <ClCompile Include="src\ScriptedEntity.cpp" />
     <ClCompile Include="src\simulate-actors\collision.cpp" />
     <ClCompile Include="src\simulate-actors\move.cpp" />
     <ClCompile Include="src\simulate-actors\no_health_remove.cpp" />
     <ClCompile Include="src\simulate-actors\slowdown.cpp" />
+    <ClCompile Include="src\simulate-actors\velocitycap.cpp" />
     <ClCompile Include="src\UXElement.cpp" />
     <ClCompile Include="src\UXPanel.cpp" />
     <ClCompile Include="src\World.cpp" />
@@ -247,6 +249,7 @@
     <ClInclude Include="src\simulate-actors\move.h" />
     <ClInclude Include="src\simulate-actors\no_health_remove.h" />
     <ClInclude Include="src\simulate-actors\slowdown.h" />
+    <ClInclude Include="src\simulate-actors\velocitycap.h" />
     <ClInclude Include="src\ThreadPool.h" />
     <ClInclude Include="src\UXElement.h" />
     <ClInclude Include="src\UXPanel.h" />

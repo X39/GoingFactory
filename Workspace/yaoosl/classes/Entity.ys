@@ -3,9 +3,48 @@ prefix GoingFactory;
 
 class GoingFactory.Entity
 {
-    // public Vector2 Position;
+    // Following Properties are Engine-Defined
+    extern public Double PosX;
+    extern public Double PosY;
+    extern public Double VelX;
+    extern public Double VelY;
+    extern public Texture Texture;
+    extern public Double TextureCenterX;
+    extern public Double TextureCenterY;
+    extern public Boolean CanCollide;
+    
+    public Vector2 Position
+    {
+        get { return new Vector2(this.PosX, this.PosY); }
+        set { this.PosX = value.X; this.PosY = value.Y; }
+    }
+    public Vector2 Velocity
+    {
+        get { return new Vector2(this.VelX, this.VelY); }
+        set { this.VelX = value.X; this.VelY = value.Y; }
+    }
     public Entity(Vector2 position)
     {
         this.Position = position;
+        this.VelX = 0;
+        this.VelY = 0;
+        this.Texture = new Texture("Textures/NotAvailable.png");
+        this.CanCollide = false;
+    }
+    public Entity(Vector2 position, Vector2 velocity)
+    {
+        this.Position = position;
+        this.Velocity = position;
+        this.Texture = new Texture("Textures/NotAvailable.png");
+        this.CanCollide = false;
+    }
+    public Entity()
+    {
+        this.PosX = 0;
+        this.PosY = 0;
+        this.VelX = 0;
+        this.VelY = 0;
+        this.Texture = new Texture("Textures/NotAvailable.png");
+        this.CanCollide = false;
     }
 }

@@ -19,6 +19,7 @@
 #include <yaoosl_instance.h>
 #include <yaoosl_util.h>
 #include <yaoosl_context.h>
+#include <chrono>
 
 #include "ThreadPool.h"
 
@@ -48,6 +49,7 @@ const float RENDER_FPS = 30;
 #else
 const float RENDER_FPS = 60;
 #endif
+const int SIMULATION_TARGET_FPS = 60;
 int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer, ALLEGRO_FONT*& font)
 {
     if (!al_init())
@@ -299,38 +301,319 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 gameInstance->entity_manager.pool_destroy(entity);
             };
 
-            auto position_getter_code = yaoosl_code_create2(
+
+            /* GoingFactory.Entity.PosX */ { 
+                auto posx_getter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
+                        d->additional.d = entity->position().x;
+                        yaoosl_instance_inc_ref(d);
+                        yaoosl_context_push_value(context, d);
+                    });
+                auto posx_getter_method = yaoosl_method_create("get", runtime->classes[DOUBLE], posx_getter_code);
+                auto posx_setter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        yaooslinstancehandle d;
+                        if (!(d = yaoosl_context_pop_value(context)))
+                        {
+                            yaoosl_util_throw_generic(vm, context, "No value found.");
+                            return;
+                        }
+                        if (d->type != vm->classes[DOUBLE])
+                        {
+                            yaoosl_util_throw_generic(vm, context, "Value is no Double.");
+                            return;
+                        }
+                        entity->position({ d->additional.d, entity->position().y });
+                        yaoosl_instance_dec_ref(d);
+                    });
+                auto posx_setter_method = yaoosl_method_create("set", nullptr, posx_setter_code);
+                auto posx_property = yaoosl_property_create2("PosX", runtime->classes[DOUBLE], posx_getter_method, posx_setter_method);
+                yaoosl_class_push_property(classhandle, posx_property);
+            }
+            /* GoingFactory.Entity.PosY */ {
+                auto posy_getter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
+                        d->additional.d = entity->position().y;
+                        yaoosl_instance_inc_ref(d);
+                        yaoosl_context_push_value(context, d);
+                    });
+                auto posy_getter_method = yaoosl_method_create("get", runtime->classes[DOUBLE], posy_getter_code);
+                auto posy_setter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        yaooslinstancehandle d;
+                        if (!(d = yaoosl_context_pop_value(context)))
+                        {
+                            yaoosl_util_throw_generic(vm, context, "No value found.");
+                            return;
+                        }
+                        if (d->type != vm->classes[DOUBLE])
+                        {
+                            yaoosl_util_throw_generic(vm, context, "Value is no Double.");
+                            return;
+                        }
+                        entity->position({ entity->position().x, d->additional.d });
+                        yaoosl_instance_dec_ref(d);
+                    });
+                auto posy_setter_method = yaoosl_method_create("set", nullptr, posy_setter_code);
+                auto posy_property = yaoosl_property_create2("PosY", runtime->classes[DOUBLE], posy_getter_method, posy_setter_method);
+                yaoosl_class_push_property(classhandle, posy_property);
+            }
+
+            /* GoingFactory.Entity.VelX */ {
+                auto velx_getter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
+                        d->additional.d = entity->velocity().x;
+                        yaoosl_instance_inc_ref(d);
+                        yaoosl_context_push_value(context, d);
+                    });
+                auto velx_getter_method = yaoosl_method_create("get", runtime->classes[DOUBLE], velx_getter_code);
+                auto velx_setter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        yaooslinstancehandle d;
+                        if (!(d = yaoosl_context_pop_value(context)))
+                        {
+                            yaoosl_util_throw_generic(vm, context, "No value found.");
+                            return;
+                        }
+                        if (d->type != vm->classes[DOUBLE])
+                        {
+                            yaoosl_util_throw_generic(vm, context, "Value is no Double.");
+                            return;
+                        }
+                        entity->velocity({ d->additional.d, entity->velocity().y });
+                        yaoosl_instance_dec_ref(d);
+                    });
+                auto velx_setter_method = yaoosl_method_create("set", nullptr, velx_setter_code);
+                auto velx_property = yaoosl_property_create2("VelX", runtime->classes[DOUBLE], velx_getter_method, velx_setter_method);
+                yaoosl_class_push_property(classhandle, velx_property);
+            }
+            /* GoingFactory.Entity.VelY */ {
+                auto vely_getter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
+                        d->additional.d = entity->velocity().y;
+                        yaoosl_instance_inc_ref(d);
+                        yaoosl_context_push_value(context, d);
+                    });
+                auto vely_getter_method = yaoosl_method_create("get", runtime->classes[DOUBLE], vely_getter_code);
+                auto vely_setter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        yaooslinstancehandle d;
+                        if (!(d = yaoosl_context_pop_value(context)))
+                        {
+                            yaoosl_util_throw_generic(vm, context, "No value found.");
+                            return;
+                        }
+                        if (d->type != vm->classes[DOUBLE])
+                        {
+                            yaoosl_util_throw_generic(vm, context, "Value is no Double.");
+                            return;
+                        }
+                        entity->velocity({ entity->velocity().x, d->additional.d });
+                        yaoosl_instance_dec_ref(d);
+                    });
+                auto vely_setter_method = yaoosl_method_create("set", nullptr, vely_setter_code);
+                auto vely_property = yaoosl_property_create2("VelY", runtime->classes[DOUBLE], vely_getter_method, vely_setter_method);
+                yaoosl_class_push_property(classhandle, vely_property);
+            }
+
+            /* GoingFactory.Entity.Texture */ {
+                auto texture_getter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto texture = yaoosl_instance_create(yaoosl_declare_class(vm, "GoingFactory.Texture"));
+                        texture->additional.uint64 = entity->texture();
+                        yaoosl_instance_inc_ref(texture);
+                        yaoosl_context_push_value(context, texture);
+                    });
+                auto texture_getter_method = yaoosl_method_create("get", yaoosl_declare_class(runtime, "GoingFactory.Texture"), texture_getter_code);
+                auto texture_setter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        yaooslinstancehandle texture;
+                        if (!(texture = yaoosl_context_pop_value(context)))
+                        {
+                            yaoosl_util_throw_generic(vm, context, "No value found.");
+                            return;
+                        }
+                        if (texture->type != yaoosl_declare_class(vm, "GoingFactory.Texture"))
+                        {
+                            yaoosl_util_throw_generic(vm, context, "Value is no GoingFactory.Texture.");
+                            return;
+                        }
+                        entity->texture(texture->additional.uint64);
+                        yaoosl_instance_dec_ref(texture);
+                    });
+                auto texture_setter_method = yaoosl_method_create("set", nullptr, texture_setter_code);
+                auto texture_property = yaoosl_property_create2("Texture", yaoosl_declare_class(runtime, "GoingFactory.Texture"), texture_getter_method, texture_setter_method);
+                yaoosl_class_push_property(classhandle, texture_property);
+            }
+
+            /* GoingFactory.Entity.TextureCenterX */ {
+                auto texturecenterx_getter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
+                        d->additional.d = entity->texture_center().x;
+                        yaoosl_instance_inc_ref(d);
+                        yaoosl_context_push_value(context, d);
+                    });
+                auto texturecenterx_getter_method = yaoosl_method_create("get", runtime->classes[DOUBLE], texturecenterx_getter_code);
+                auto texturecenterx_setter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        yaooslinstancehandle d;
+                        if (!(d = yaoosl_context_pop_value(context)))
+                        {
+                            yaoosl_util_throw_generic(vm, context, "No value found.");
+                            return;
+                        }
+                        if (d->type != vm->classes[DOUBLE])
+                        {
+                            yaoosl_util_throw_generic(vm, context, "Value is no Double.");
+                            return;
+                        }
+                        entity->texture_center({ d->additional.d, entity->texture_center().y });
+                        yaoosl_instance_dec_ref(d);
+                    });
+                auto texturecenterx_setter_method = yaoosl_method_create("set", nullptr, texturecenterx_setter_code);
+                auto texturecenterx_property = yaoosl_property_create2("TextureCenterX", runtime->classes[DOUBLE], texturecenterx_getter_method, texturecenterx_setter_method);
+                yaoosl_class_push_property(classhandle, texturecenterx_property);
+            }
+            /* GoingFactory.Entity.TextureCenterY */ {
+                auto texturecenterx_getter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
+                        d->additional.d = entity->texture_center().y;
+                        yaoosl_instance_inc_ref(d);
+                        yaoosl_context_push_value(context, d);
+                    });
+                auto texturecenterx_getter_method = yaoosl_method_create("get", runtime->classes[DOUBLE], texturecenterx_getter_code);
+                auto texturecenterx_setter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        yaooslinstancehandle d;
+                        if (!(d = yaoosl_context_pop_value(context)))
+                        {
+                            yaoosl_util_throw_generic(vm, context, "No value found.");
+                            return;
+                        }
+                        if (d->type != vm->classes[DOUBLE])
+                        {
+                            yaoosl_util_throw_generic(vm, context, "Value is no Double.");
+                            return;
+                        }
+                        entity->texture_center({ entity->texture_center().x, d->additional.d });
+                        yaoosl_instance_dec_ref(d);
+                    });
+                auto texturecenterx_setter_method = yaoosl_method_create("set", nullptr, texturecenterx_setter_code);
+                auto texturecenterx_property = yaoosl_property_create2("TextureCenterY", runtime->classes[DOUBLE], texturecenterx_getter_method, texturecenterx_setter_method);
+                yaoosl_class_push_property(classhandle, texturecenterx_property);
+            }
+
+            /* GoingFactory.Entity.CanCollide */ {
+                auto cancollide_getter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto flag = yaoosl_instance_create(vm->classes[BOOLEAN]);
+                        flag->additional.flag = entity->can_collide();
+                        yaoosl_instance_inc_ref(flag);
+                        yaoosl_context_push_value(context, flag);
+                    });
+                auto cancollide_getter_method = yaoosl_method_create("get", runtime->classes[DOUBLE], cancollide_getter_code);
+                auto cancollide_setter_code = yaoosl_code_create2(
+                    [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
+                    {
+                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        yaooslinstancehandle flag;
+                        if (!(flag = yaoosl_context_pop_value(context)))
+                        {
+                            yaoosl_util_throw_generic(vm, context, "No value found.");
+                            return;
+                        }
+                        if (flag->type != vm->classes[BOOLEAN])
+                        {
+                            yaoosl_util_throw_generic(vm, context, "Value is no Boolean.");
+                            return;
+                        }
+                        entity->can_collide(flag->additional.flag);
+                        yaoosl_instance_dec_ref(flag);
+                    });
+                auto cancollide_setter_method = yaoosl_method_create("set", nullptr, cancollide_setter_code);
+                auto cancollide_property = yaoosl_property_create2("CanCollide", runtime->classes[BOOLEAN], cancollide_getter_method, cancollide_setter_method);
+                yaoosl_class_push_property(classhandle, cancollide_property);
+            }
+        }
+#pragma endregion
+#pragma region GoingFactory.Texture
+        {
+        auto classhandle = yaoosl_declare_class(runtime, "GoingFactory.Texture");
+        classhandle->callback_data = &gameInstance;
+
+
+        auto constructor_methodgroup = yaoosl_method_group_create("Texture");
+        classhandle->constructor_method_group = constructor_methodgroup;
+
+        /* GoingFactory.Texture.Texture(String path) */ {
+            auto constructor_string_code = yaoosl_code_create2(
                 [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                 {
-                    auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
-                    auto vector2 = yaoosl_instance_create(yaoosl_declare_class(vm, "GoingFactory.Vector2"));
-                    vector2->fields[0]->additional.d = entity->position().x;
-                    vector2->fields[1]->additional.d = entity->position().y;
-                    yaoosl_instance_inc_ref(vector2);
-                    yaoosl_context_push_value(context, vector2);
-                });
-            auto position_getter_method = yaoosl_method_create("get", yaoosl_declare_class(runtime, "GoingFactory.Vector2"), position_getter_code);
-            auto position_setter_code = yaoosl_code_create2(
-                [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
-                {
-                    auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
-                    yaooslinstancehandle vector2;
-                    if (!(vector2 = yaoosl_context_pop_value(context)))
+                    x39::goingfactory::GameInstance* gameInstance = static_cast<x39::goingfactory::GameInstance*>(self->type->callback_data);
+                    yaooslinstancehandle str;
+                    if (!(str = yaoosl_context_pop_value(context)))
                     {
                         yaoosl_util_throw_generic(vm, context, "No value found.");
                         return;
                     }
-                    if (vector2->type != yaoosl_declare_class(vm, "GoingFactory.Vector2"))
+                    if (str->type != vm->classes[STRING])
                     {
-                        yaoosl_util_throw_generic(vm, context, "Value is no Vector2.");
+                        yaoosl_util_throw_generic(vm, context, "Value is no String.");
                         return;
                     }
-                    entity->position({ vector2->fields[0]->additional.d, vector2->fields[1]->additional.d });
-                    yaoosl_instance_dec_ref(vector2);
+                    if (!str->additional.str || str->additional.str[0] == '\0')
+                    {
+                        yaoosl_util_throw_generic(vm, context, "String is empty.");
+                        return;
+                    }
+                    auto val = gameInstance->resource_manager.load_bitmap(str->additional.str);
+                    self->additional.uint64 = val;
+                    yaoosl_instance_dec_ref(str);
+
+                    yaoosl_instance_inc_ref(self);
+                    yaoosl_context_push_value(context, self);
                 });
-            auto position_setter_method = yaoosl_method_create("set", yaoosl_declare_class(runtime, "GoingFactory.Vector2"), position_setter_code);
-            auto propertyhandle = yaoosl_property_create2("Position", yaoosl_declare_class(runtime, "GoingFactory.Vector2"), position_getter_method, position_setter_method);
-            yaoosl_class_push_property(classhandle, propertyhandle);
+            auto constructor_string_path_arg = yaoosl_arg_create("path", runtime->classes[STRING]);
+            auto constructor_string_method = yaoosl_method_create("Texture", classhandle, constructor_string_code);
+            yaoosl_method_push_arg(constructor_string_method, constructor_string_path_arg);
+            yaoosl_method_group_push_back(constructor_methodgroup, constructor_string_method);
+        }
         }
 #pragma endregion
     }
@@ -460,9 +743,9 @@ int main()
 
     entity_manager.act_pools();
 
-    auto old_frame_time = al_get_time();
-    auto old_sim_time = al_get_time();
-    int last_sim_fps = 0;
+    auto sim_time = std::chrono::steady_clock::now();
+    auto render_time = std::chrono::steady_clock::now();
+    int sim_fps = 0;
     bool redraw = false;
     bool simulate = true;
     bool mouseDown = false;
@@ -541,18 +824,25 @@ int main()
         }
         if (simulate)
         {
-            { // Call yaoosl_game GameLoop
-                yaooslcontexthandle context = yaoosl_context_create();
-                yaoosl_call_method(runtime, context, yaoosl_game->type->method_groups[0]->methods[0], yaoosl_game);
-                yaoosl_execute(runtime, context);
-                yaoosl_context_destroy(context);
-            }
-            simulate = false;
-            entity_manager.act_pools();
-            auto new_time = al_get_time();
-            float sim_delta = (float)(new_time - old_sim_time);
-            last_sim_fps = sim_delta >= 1 ? 0 : (int)(1 / sim_delta);
-            old_sim_time = new_time;
+
+
+            auto sim_time_new = std::chrono::steady_clock::now();
+            auto sim_time_delta = (sim_time_new - sim_time);
+            float sim_coef = 1.0 / (std::chrono::seconds(1) / sim_time_delta);
+            auto temp = std::chrono::seconds(1) / sim_time_delta;
+            if (temp < SIMULATION_TARGET_FPS)
+            {
+                { // Call yaoosl_game GameLoop
+                    yaooslcontexthandle context = yaoosl_context_create();
+                    yaoosl_call_method(runtime, context, yaoosl_game->type->method_groups[0]->methods[0], yaoosl_game);
+                    yaoosl_execute(runtime, context);
+                    yaoosl_context_destroy(context);
+                }
+                entity_manager.act_pools();
+
+                sim_fps = temp;
+                simulate = false;
+                sim_time = sim_time_new;
 #ifndef X39_GF_DISABLE_MT
                 game_instance.thread_pool().enqueue([&] {
                     std::vector<std::future<void>> results;
@@ -576,7 +866,7 @@ int main()
                                     {
                                         auto it = start + i;
                                         auto simulateComponent = (*it)->get_component<x39::goingfactory::SimulateComponent>();
-                                        simulateComponent->simulate(game_instance, sim_delta);
+                                        simulateComponent->simulate(game_instance, sim_coef);
                                     }
 #ifndef X39_GF_DISABLE_MT
                                     }));
@@ -591,7 +881,7 @@ int main()
 #ifndef X39_GF_DISABLE_MT
                     });
 #endif // X39_GF_DISABLE_MT
-
+            }
         }
         if (redraw && al_is_event_queue_empty(event_queue))
         {
@@ -603,8 +893,8 @@ int main()
             al_draw_filled_rectangle(0, DISPLAY_HEIGHT - viewport_offset, DISPLAY_WIDTH, DISPLAY_HEIGHT, color);
             al_draw_filled_rectangle(DISPLAY_WIDTH - viewport_offset, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, color);
 
-            auto new_time = al_get_time();
-            auto fps = (int)(1 / (new_time - old_frame_time));
+            auto render_time_new = std::chrono::steady_clock::now();
+            auto fps = (int)(std::chrono::seconds(1) / (render_time_new - render_time));
             std::stringstream sstream;
 
 
@@ -625,7 +915,7 @@ int main()
             al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 3, 0, sstream.str().c_str());
             sstream.str("");
 
-            sstream << "Simulation-FPS: " << last_sim_fps;
+            sstream << "Simulation-FPS: " << sim_fps;
             al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 2, 0, sstream.str().c_str());
             sstream.str("");
 
@@ -669,7 +959,7 @@ int main()
             //     }
             // }
 
-            old_frame_time = new_time;
+            render_time = render_time_new;
 
             al_flip_display();
             al_clear_to_color(al_map_rgb(0, 0, 0));
