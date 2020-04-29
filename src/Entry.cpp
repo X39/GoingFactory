@@ -36,21 +36,26 @@
 #include "World.h"
 #include "KeyboardTarget.h"
 
+#include <crtdbg.h>
 
-#define X39_GF_DISABLE_MT
-#define X39_GF_SKIP_SIM 20
+
+// #define X39_GF_DISABLE_MT
 
 
 int DISPLAY_WIDTH;
 int DISPLAY_HEIGHT;
+size_t render_fps = 0;
+size_t simulation_fps = 0;
+std::deque<size_t> render_fps_deque;
+std::deque<size_t> simulation_fps_deque;
 
 #if _DEBUG
 const float RENDER_FPS = 30;
 #else
 const float RENDER_FPS = 60;
 #endif
-const int SIMULATION_TARGET_FPS = 60;
-int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer, ALLEGRO_FONT*& font)
+const int SIMULATION_TARGET_FPS = 120;
+int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer)
 {
     if (!al_init())
     {
@@ -85,13 +90,6 @@ int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_qu
     {
         fprintf(stderr, "failed to create render_timer!\n");
         return -1;
-    }
-
-    font = al_load_ttf_font("arial.ttf", 72, 0);
-    if (!font)
-    {
-        fprintf(stderr, "Could not load 'arial.ttf'.\n");
-        font = al_create_builtin_font(); //Load fallback
     }
 
     al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -652,8 +650,7 @@ int main()
     ALLEGRO_DISPLAY* display;
     ALLEGRO_EVENT_QUEUE* event_queue;
     ALLEGRO_TIMER* render_timer;
-    ALLEGRO_FONT* font;
-    int init_res = initialize_allegro(display, event_queue, render_timer, font);
+    int init_res = initialize_allegro(display, event_queue, render_timer);
     if (init_res)
     {
         return init_res;
@@ -745,14 +742,10 @@ int main()
 
     auto sim_time = std::chrono::steady_clock::now();
     auto render_time = std::chrono::steady_clock::now();
-    int sim_fps = 0;
     bool redraw = false;
     bool simulate = true;
     bool mouseDown = false;
     bool halt_simulation = true;
-#ifdef X39_GF_SKIP_SIM
-    int _x39_gf_skip_sim = 0;
-#endif // X39_GF_SKIP_SIM
     while (true)
     {
         ALLEGRO_EVENT ev;
@@ -840,7 +833,12 @@ int main()
                 }
                 entity_manager.act_pools();
 
-                sim_fps = temp;
+                simulation_fps = temp;
+                simulation_fps_deque.push_back(simulation_fps);
+                if (simulation_fps_deque.size() > FPS_DEQUE_MAX)
+                {
+                    simulation_fps_deque.pop_front();
+                }
                 simulate = false;
                 sim_time = sim_time_new;
 #ifndef X39_GF_DISABLE_MT
@@ -860,7 +858,7 @@ int main()
                             auto range_end = tasks * handle_amount;
 #ifndef X39_GF_DISABLE_MT
                             results.emplace_back(
-                                game_instance.thread_pool().enqueue([sim_delta, &start, range_start, range_end, &game_instance, range] {
+                                game_instance.thread_pool().enqueue([sim_coef, &start, range_start, range_end, &game_instance, range] {
 #endif // X39_GF_DISABLE_MT
                                     for (auto i = range_start; i != range_end && i != range; i++)
                                     {
@@ -885,6 +883,15 @@ int main()
         }
         if (redraw && al_is_event_queue_empty(event_queue))
         {
+            auto render_time_new = std::chrono::steady_clock::now();
+            render_fps = (int)(std::chrono::seconds(1) / (render_time_new - render_time));
+            std::stringstream sstream;
+            render_fps_deque.push_back(render_fps);
+            if (render_fps_deque.size() > FPS_DEQUE_MAX)
+            {
+                render_fps_deque.pop_front();
+            }
+
             world.render(game_instance);
             // world.set_viewport(viewport_offset, viewport_offset, DISPLAY_WIDTH - viewport_offset * 2, DISPLAY_HEIGHT - viewport_offset * 2);
             auto color = al_map_rgba(0, 0, 0, 200);
@@ -893,30 +900,18 @@ int main()
             al_draw_filled_rectangle(0, DISPLAY_HEIGHT - viewport_offset, DISPLAY_WIDTH, DISPLAY_HEIGHT, color);
             al_draw_filled_rectangle(DISPLAY_WIDTH - viewport_offset, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, color);
 
-            auto render_time_new = std::chrono::steady_clock::now();
-            auto fps = (int)(std::chrono::seconds(1) / (render_time_new - render_time));
-            std::stringstream sstream;
 
 
             sstream << "Controls:";
-            al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 0, 0, sstream.str().c_str());
+            al_draw_text(resources_manager.font(), al_map_rgb(0, 127, 0), 1, 1 + 10 * 0, 0, sstream.str().c_str());
             sstream.str("");
 
             sstream << "Up (W) | Left (A) | Down (S) | Right (D) | Trigger (Space|Alt) | Fast (LShift) | Slow (LCTRL)";
-            al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 1, 0, sstream.str().c_str());
+            al_draw_text(resources_manager.font(), al_map_rgb(0, 127, 0), 1, 1 + 10 * 1, 0, sstream.str().c_str());
             sstream.str("");
 
             sstream << "Note that all numpad buttons (but enter) also have a meaning.";
-            al_draw_text(font, al_map_rgb(0, 127, 0), 1, 1 + 10 * 2, 0, sstream.str().c_str());
-            sstream.str("");
-
-
-            sstream << "Render-FPS: " << fps;
-            al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 3, 0, sstream.str().c_str());
-            sstream.str("");
-
-            sstream << "Simulation-FPS: " << sim_fps;
-            al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 2, 0, sstream.str().c_str());
+            al_draw_text(resources_manager.font(), al_map_rgb(0, 127, 0), 1, 1 + 10 * 2, 0, sstream.str().c_str());
             sstream.str("");
 
             size_t count = 0;
@@ -925,16 +920,16 @@ int main()
                 if (it) { count++; }
             }
             sstream << "Entity Manager Info: alive: " << count << "; size: " << entity_manager.size() << "; capacity: " << entity_manager.capacity();
-            al_draw_text(font, al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 1, 0, sstream.str().c_str());
+            al_draw_text(resources_manager.font(), al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 1, 0, sstream.str().c_str());
             sstream.str("");
 
 
             sstream << "Player Position: { " << player->position().x << ", " << player->position().y << " }";
-            al_draw_text(font, al_map_rgb(255, 255, 0), DISPLAY_WIDTH / 2 + 1, DISPLAY_HEIGHT - 1 - 10 * 3, 0, sstream.str().c_str());
+            al_draw_text(resources_manager.font(), al_map_rgb(255, 255, 0), DISPLAY_WIDTH / 2 + 1, DISPLAY_HEIGHT - 1 - 10 * 3, 0, sstream.str().c_str());
             sstream.str("");
 
             sstream << "Player Chunk: { " << player->chunk()->index_x() << ", " << player->chunk()->index_y() << "}";
-            al_draw_text(font, al_map_rgb(255, 255, 0), DISPLAY_WIDTH / 2 + 1, DISPLAY_HEIGHT - 1 - 10 * 2, 0, sstream.str().c_str());
+            al_draw_text(resources_manager.font(), al_map_rgb(255, 255, 0), DISPLAY_WIDTH / 2 + 1, DISPLAY_HEIGHT - 1 - 10 * 2, 0, sstream.str().c_str());
             sstream.str("");
 
             int v_off = 5;
@@ -967,10 +962,11 @@ int main()
         }
     }
 
-    al_destroy_font(font);
     al_destroy_timer(render_timer);
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
-
+    yaoosl_instance_dec_ref(yaoosl_game);
+    yaoosl_destroy_virtualmachine(runtime);
+    _CrtMemDumpAllObjectsSince(NULL);
     return 0;
 }

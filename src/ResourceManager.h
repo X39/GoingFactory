@@ -5,6 +5,7 @@
 #include <mutex>
 
 struct ALLEGRO_BITMAP;
+struct ALLEGRO_FONT;
 namespace x39::goingfactory
 {
 	class ResourceManager
@@ -13,10 +14,13 @@ namespace x39::goingfactory
 		std::vector<struct ALLEGRO_BITMAP*> m_bitmaps;
 		std::unordered_map<std::string, size_t> m_bitmaps_path;
 		std::mutex m_mutex;
+		ALLEGRO_FONT* m_font;
 	public:
-		ResourceManager() {}
+		ResourceManager();
 		ResourceManager(const ResourceManager&) = delete;
 		~ResourceManager();
+
+		ALLEGRO_FONT* font() { return m_font; }
 
 		size_t load_bitmap(std::string path);
 		struct ALLEGRO_BITMAP* get_bitmap(size_t id)

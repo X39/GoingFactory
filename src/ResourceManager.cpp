@@ -1,6 +1,18 @@
 #include "ResourceManager.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
+
+x39::goingfactory::ResourceManager::ResourceManager()
+{
+	m_font = al_load_ttf_font("arial.ttf", 72, 0);
+	if (!m_font)
+	{
+		fprintf(stderr, "Could not load 'arial.ttf'.\n");
+		m_font = al_create_builtin_font(); //Load fallback
+	}
+}
 
 x39::goingfactory::ResourceManager::~ResourceManager()
 {
@@ -8,6 +20,7 @@ x39::goingfactory::ResourceManager::~ResourceManager()
 	{
 		al_destroy_bitmap(it);
 	}
+	al_destroy_font(m_font);
 }
 
 size_t x39::goingfactory::ResourceManager::load_bitmap(std::string path)
