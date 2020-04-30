@@ -25,6 +25,7 @@ namespace x39::goingfactory
 		size_t load_bitmap(std::string path);
 		struct ALLEGRO_BITMAP* get_bitmap(size_t id)
 		{
+			if (id == 0 || m_bitmaps.size() < id) { return m_bitmaps[0]; }
 			std::lock_guard<std::mutex> lock(m_mutex);
 			return m_bitmaps[id - 1];
 		}

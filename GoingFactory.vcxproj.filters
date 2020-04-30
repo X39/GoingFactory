@@ -108,6 +108,12 @@
     <ClCompile Include="src\ScriptedEntity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\UXHandler.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameInstance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -173,9 +179,6 @@
     <ClInclude Include="src\FastNoise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\UXPanel.h">
-      <Filter>Header Files\ui</Filter>
-    </ClInclude>
     <ClInclude Include="src\UXElement.h">
       <Filter>Header Files\ui</Filter>
     </ClInclude>
@@ -208,6 +211,15 @@
     </ClInclude>
     <ClInclude Include="src\simulate-actors\velocitycap.h">
       <Filter>Header Files\simulate actors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UXPanel.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UXHandler.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EMouseButton.h">
+      <Filter>Header Files\ui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
 #include "Entity.h"
 #include <cstdint>
 
+extern "C" struct yaoosl_instance;
 namespace x39::goingfactory::entity
 {
 	class ScriptedEntity : public Entity,

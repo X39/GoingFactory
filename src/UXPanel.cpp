@@ -1,42 +1,11 @@
 #include "UXPanel.h"
 #include "UXElement.h"
+#include "ResourceManager.h"
+#include "GameInstance.h"
+#include "UXHandler.h"
 
-x39::goingfactory::ui::UXPanel::UXPanel() : m_key_pressed(), m_modifier(io::EModifier::EMPTY), m_uxelements()
+void x39::goingfactory::ux::UXPanel::render(GameInstance& game)
 {
+	game.uxhandler.draw_panel(game, x, y, w, h);
 }
 
-x39::goingfactory::ui::UXPanel::~UXPanel()
-{
-	for (auto it : m_uxelements)
-	{
-		delete it;
-	}
-}
-
-void x39::goingfactory::ui::UXPanel::key_down(GameInstance& game, io::EKey key, io::EModifier mod)
-{
-	m_modifier = mod;
-	m_key_pressed[key] = true;
-}
-
-void x39::goingfactory::ui::UXPanel::key_up(GameInstance& game, io::EKey key, io::EModifier mod)
-{
-	m_modifier = mod;
-	m_key_pressed[key] = false;
-}
-
-void x39::goingfactory::ui::UXPanel::tick(GameInstance& game)
-{
-	for (auto it : m_uxelements)
-	{
-		it->tick(game);
-	}
-}
-
-void x39::goingfactory::ui::UXPanel::render(GameInstance& game)
-{
-	for (auto it : m_uxelements)
-	{
-		it->render(game);
-	}
-}

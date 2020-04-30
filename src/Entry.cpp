@@ -35,6 +35,8 @@
 #include "GameInstance.h"
 #include "World.h"
 #include "KeyboardTarget.h"
+#include "UXPanel.h"
+#include "UXHandler.h"
 
 #include <crtdbg.h>
 
@@ -68,7 +70,7 @@ int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_qu
     al_init_image_addon();
     al_install_mouse();
     al_install_keyboard();
-    DISPLAY_WIDTH = 780;
+    DISPLAY_WIDTH = 780 + 192;
     DISPLAY_HEIGHT = 780;
     display = al_create_display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
     if (!display)
@@ -660,6 +662,7 @@ int main()
     x39::goingfactory::EntityManager entity_manager;
     x39::goingfactory::io::KeyboardTarget keyboard_target;
     x39::goingfactory::World world;
+    x39::goingfactory::ux::UXHandler uxhandler(resources_manager);
     al_set_target_backbuffer(display);
     keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_up, x39::goingfactory::io::EKey::W);
     keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_left, x39::goingfactory::io::EKey::A);
@@ -671,7 +674,7 @@ int main()
     keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_d, x39::goingfactory::io::EKey::RCTRL);
     keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::trigger_a, x39::goingfactory::io::EKey::SPACE);
     keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::trigger_b, x39::goingfactory::io::EKey::ALT);
-    x39::goingfactory::GameInstance game_instance(entity_manager, resources_manager, world);
+    x39::goingfactory::GameInstance game_instance(entity_manager, resources_manager, world, uxhandler);
     entity_manager.onEntityAdded.subscribe([&game_instance](
         x39::goingfactory::EntityManager& entity_manager, x39::goingfactory::EntityManager::EntityAddedEventArgs args) -> void {
             if (args.entity->is_type(x39::goingfactory::EComponent::Render))
@@ -702,50 +705,23 @@ int main()
         yaoosl_context_destroy(context);
     }
 
-
     auto player = new x39::goingfactory::entity::Player();
     world.set_player(player);
-    const int viewport_offset = 32;
-    world.set_viewport(viewport_offset, viewport_offset, DISPLAY_WIDTH - viewport_offset * 2, DISPLAY_HEIGHT - viewport_offset * 2);
+    world.set_viewport(1, 1, DISPLAY_WIDTH - 192, DISPLAY_HEIGHT);
     const int level_size = 50000;
-    /*
-    m_pos
-    {x=-299.819855 y=-198.473175 }
-    x: -299.819855
-    y: -198.473175
-    m_velocity
-    {x=48.4052124 y=-58.0977020 }
-        x: 48.4052124
-        y: -58.0977020
-    */
-    //player->position({ -299.819855, -198.473175 });
-    //x39::goingfactory::vec2 player_vel = { 48.4052124, -58.0977020 };
-    //player->velocity(player_vel);
     entity_manager.pool_create(player);
-    auto marker = new x39::goingfactory::entity::Marker();
-    //auto player_vel_len = player_vel.length();
-    //player_vel.normalize();
-    //player_vel *= player_vel_len * 0.6666;
-    //marker->position(player->position() + player_vel);
-    marker->position({ 32, 8 });
-    entity_manager.pool_create(marker);
-
-    for (int i = 0; i < 0; i++)
-    {
-        auto asteroid = new x39::goingfactory::entity::Asteroid();
-        asteroid->position({ (rand() % level_size - level_size / 2), (rand() % level_size - level_size / 2) });
-        asteroid->velocity({ ((rand() % 20) / 20.0f) * 60, ((rand() % 20) / 20.0f) * 60 });
-        entity_manager.pool_create(asteroid);
-    }
-
     entity_manager.act_pools();
 
     auto sim_time = std::chrono::steady_clock::now();
     auto render_time = std::chrono::steady_clock::now();
     bool redraw = false;
     bool simulate = true;
-    bool mouseDown = false;
     bool halt_simulation = true;
+
+
+    auto menu = x39::goingfactory::ux::UXPanel(game_instance, DISPLAY_WIDTH - 192, 0, 192, DISPLAY_HEIGHT);
+    uxhandler.push_back(&menu);
+
     while (true)
     {
         ALLEGRO_EVENT ev;
@@ -763,15 +739,15 @@ int main()
         }
         else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
         {
-            mouseDown = true;
+            uxhandler.mouse_button(game_instance, ev.mouse.x, ev.mouse.y, (x39::goingfactory::ux::EMouseButton)ev.mouse.button, true);
         }
         else if (ev.type == ALLEGRO_EVENT_MOUSE_AXES)
         {
-
+            uxhandler.mouse_move(game_instance, ev.mouse.x, ev.mouse.y, ev.mouse.dx, ev.mouse.dy);
         }
         else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
         {
-            mouseDown = false;
+            uxhandler.mouse_button(game_instance, ev.mouse.x, ev.mouse.y, (x39::goingfactory::ux::EMouseButton)ev.mouse.button, false);
         }
         else if (ev.type == ALLEGRO_EVENT_KEY_DOWN)
         {
@@ -792,6 +768,7 @@ int main()
             }
             keyboard_target.key_down(key, modifier);
             world.keydown(key);
+            uxhandler.key_down(game_instance, key, modifier);
         }
         else if (ev.type == ALLEGRO_EVENT_KEY_UP)
         {
@@ -807,6 +784,7 @@ int main()
                 }
             }
             keyboard_target.key_up(key, modifier);
+            uxhandler.key_up(game_instance, key, modifier);
         }
         else if (ev.type == ALLEGRO_EVENT_TIMER)
         {
@@ -822,6 +800,10 @@ int main()
             auto sim_time_new = std::chrono::steady_clock::now();
             auto sim_time_delta = (sim_time_new - sim_time);
             float sim_coef = 1.0 / (std::chrono::seconds(1) / sim_time_delta);
+            if (std::isinf(sim_coef))
+            {
+                sim_coef = 1;
+            }
             auto temp = std::chrono::seconds(1) / sim_time_delta;
             if (temp < SIMULATION_TARGET_FPS)
             {
@@ -893,12 +875,7 @@ int main()
             }
 
             world.render(game_instance);
-            // world.set_viewport(viewport_offset, viewport_offset, DISPLAY_WIDTH - viewport_offset * 2, DISPLAY_HEIGHT - viewport_offset * 2);
-            auto color = al_map_rgba(0, 0, 0, 200);
-            al_draw_filled_rectangle(0, 0, DISPLAY_WIDTH, viewport_offset, color);
-            al_draw_filled_rectangle(0, 0, viewport_offset, DISPLAY_HEIGHT, color);
-            al_draw_filled_rectangle(0, DISPLAY_HEIGHT - viewport_offset, DISPLAY_WIDTH, DISPLAY_HEIGHT, color);
-            al_draw_filled_rectangle(DISPLAY_WIDTH - viewport_offset, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, color);
+            uxhandler.render(game_instance);
 
 
 

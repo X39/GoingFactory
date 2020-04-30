@@ -1,0 +1,51 @@
+#pragma once
+
+namespace x39::goingfactory::ux
+{
+	enum class EMouseButton
+	{
+		NA,
+		LeftMouseButton,
+		Button_01 = LeftMouseButton,
+		RightMouseButton,
+		Button_02 = RightMouseButton,
+		MiddleMouseButton,
+		Button_03 = MiddleMouseButton,
+		Button_04,
+		Button_05,
+		Button_06,
+		Button_07,
+		Button_08,
+		Button_09,
+		Button_10,
+		Button_11,
+		Button_12,
+		Button_13,
+		Button_14,
+		Button_15,
+		Button_16,
+		Button_17,
+		Button_18,
+		Button_19,
+		Button_20,
+		Button_21,
+		Button_22,
+		Button_23,
+		Button_24,
+		Button_25,
+		Button_26,
+		Button_27,
+		Button_28,
+		Button_29,
+		Button_30,
+		Button_31,
+		Button_32,
+		Button_33,
+		Button_34,
+		Button_35,
+		Button_36,
+		Button_37,
+		Button_38,
+		Button_39
+	};
+}

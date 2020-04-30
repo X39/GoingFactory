@@ -39,6 +39,8 @@ namespace x39::goingfactory
 
 		// If false, Skips rendering the level
 		bool m_rf_level;
+		// If false, Skips rendering surroundings of tiles where it is available
+		bool m_rf_level_surroundings;
 		// If true, Skips rendering the tiles and uses a
 		// grayscale instead.
 		bool m_rf_level_simple;
@@ -60,52 +62,55 @@ namespace x39::goingfactory
 		bool m_rf_graph_simulation_fps;
 
 		size_t m_selected_option;
-		const size_t selected_option_max = 10;
+		const size_t selected_option_max = 11;
 		std::chrono::time_point<std::chrono::system_clock> m_selected_last;
 
 		void next_option() { if (++m_selected_option >= selected_option_max) { m_selected_option = 1; } m_selected_last = std::chrono::system_clock::now(); }
 		void switch_option(uint8_t option) {
 			switch (option)
 			{
-			case 1: m_rf_level = !m_rf_level; break;
-			case 2: m_rf_level_simple = !m_rf_level_simple; break;
-			case 3: m_rf_chunks = !m_rf_chunks; break;
-			case 4: m_rf_entities = !m_rf_entities; break;
-			case 5: m_rf_entities_positioncomponent = !m_rf_entities_positioncomponent; break;
-			case 6: m_rf_entities_collision_boxes = !m_rf_entities_collision_boxes; break;
-			case 7: m_rf_graph = !m_rf_graph; break;
-			case 8: m_rf_graph_render_fps = !m_rf_graph_render_fps; break;
-			case 9: m_rf_graph_simulation_fps = !m_rf_graph_simulation_fps; break;
+			case  1: m_rf_level = !m_rf_level; break;
+			case  2: m_rf_level_surroundings = !m_rf_level_surroundings; break;
+			case  3: m_rf_level_simple = !m_rf_level_simple; break;
+			case  4: m_rf_chunks = !m_rf_chunks; break;
+			case  5: m_rf_entities = !m_rf_entities; break;
+			case  6: m_rf_entities_positioncomponent = !m_rf_entities_positioncomponent; break;
+			case  7: m_rf_entities_collision_boxes = !m_rf_entities_collision_boxes; break;
+			case  8: m_rf_graph = !m_rf_graph; break;
+			case  9: m_rf_graph_render_fps = !m_rf_graph_render_fps; break;
+			case 10: m_rf_graph_simulation_fps = !m_rf_graph_simulation_fps; break;
 			}
 			m_selected_last = std::chrono::system_clock::now();
 		}
 		bool value_option(uint8_t option) {
 			switch (option)
 			{
-			case 1: return m_rf_level;
-			case 2: return m_rf_level_simple;
-			case 3: return m_rf_chunks;
-			case 4: return m_rf_entities;
-			case 5: return m_rf_entities_positioncomponent;
-			case 6: return m_rf_entities_collision_boxes;
-			case 7: return m_rf_graph;
-			case 8: return m_rf_graph_render_fps;
-			case 9: return m_rf_graph_simulation_fps;
+			case  1: return m_rf_level;
+			case  2: return m_rf_level_surroundings;
+			case  3: return m_rf_level_simple;
+			case  4: return m_rf_chunks;
+			case  5: return m_rf_entities;
+			case  6: return m_rf_entities_positioncomponent;
+			case  7: return m_rf_entities_collision_boxes;
+			case  8: return m_rf_graph;
+			case  9: return m_rf_graph_render_fps;
+			case 10: return m_rf_graph_simulation_fps;
 			default: return false;
 			}
 		}
 		std::string name_option(uint8_t option) {
 			switch (option)
 			{
-			case 1: return "level";
-			case 2: return "level_simple";
-			case 3: return "chunks";
-			case 4: return "entities";
-			case 5: return "entities_positioncomponent";
-			case 6: return "entities_collision_boxes";
-			case 7: return "graph";
-			case 8: return "graph_render_fps";
-			case 9: return "graph_simulation_fps";
+			case  1: return "level";
+			case  2: return "level_surroundings";
+			case  3: return "level_simple";
+			case  4: return "chunks";
+			case  5: return "entities";
+			case  6: return "entities_positioncomponent";
+			case  7: return "entities_collision_boxes";
+			case  8: return "graph";
+			case  9: return "graph_render_fps";
+			case 10: return "graph_simulation_fps";
 			default: return "";
 			}
 		}

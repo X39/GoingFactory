@@ -1,8 +1,10 @@
 #include "ResourceManager.h"
+#include "GameInstance.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
+#include <filesystem>
 
 x39::goingfactory::ResourceManager::ResourceManager()
 {
@@ -11,6 +13,11 @@ x39::goingfactory::ResourceManager::ResourceManager()
 	{
 		fprintf(stderr, "Could not load 'arial.ttf'.\n");
 		m_font = al_create_builtin_font(); //Load fallback
+	}
+	load_bitmap("textures/missing.png");
+	if (m_bitmaps.size() == 0)
+	{
+		throw std::runtime_error("Failed to load fallback texture.");
 	}
 }
 
@@ -29,7 +36,7 @@ size_t x39::goingfactory::ResourceManager::load_bitmap(std::string path)
 	auto existing = m_bitmaps_path.find(path.data());
 	if (existing != m_bitmaps_path.end())
 	{
-		return existing->second;
+		return existing->second + 1;
 	}
 	size_t index = m_bitmaps.size();
 
@@ -38,7 +45,10 @@ size_t x39::goingfactory::ResourceManager::load_bitmap(std::string path)
 	bitmap = al_load_bitmap(path.c_str());
 	if (!bitmap)
 	{
-		throw std::runtime_error("Failed to load resource.");
+		auto p = std::filesystem::path(path);
+		p = std::filesystem::absolute(p);
+		GameInstance::Log("Failed to load resource '" + p.string() + "'.");
+		return 1;
 	}
 	m_bitmaps.push_back(bitmap);
 	m_bitmaps_path[path] = index;
