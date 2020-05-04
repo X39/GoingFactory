@@ -28,14 +28,14 @@ class GoingFactory.Entity
         this.Position = position;
         this.VelX = 0;
         this.VelY = 0;
-        this.Texture = new Texture("Textures/NotAvailable.png");
+        this.Texture = new Texture("textures/missing.png");
         this.CanCollide = false;
     }
     public Entity(Vector2 position, Vector2 velocity)
     {
         this.Position = position;
         this.Velocity = position;
-        this.Texture = new Texture("Textures/NotAvailable.png");
+        this.Texture = new Texture("textures/missing.png");
         this.CanCollide = false;
     }
     public Entity()
@@ -44,7 +44,7 @@ class GoingFactory.Entity
         this.PosY = 0;
         this.VelX = 0;
         this.VelY = 0;
-        this.Texture = new Texture("Textures/NotAvailable.png");
+        this.Texture = new Texture("textures/missing.png");
         this.CanCollide = false;
     }
 }
