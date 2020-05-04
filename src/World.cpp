@@ -545,6 +545,7 @@ x39::goingfactory::World::World() :
     m_rf_entities(true),
     m_rf_entities_positioncomponent(false),
     m_rf_entities_collision_boxes(false),
+    m_rf_ux(true),
     m_rf_graph(false),
     m_rf_graph_render_fps(true),
     m_rf_graph_simulation_fps(true),
@@ -566,6 +567,7 @@ x39::goingfactory::World::World() :
             m_rf_entities >>
             m_rf_entities_positioncomponent >>
             m_rf_entities_collision_boxes >>
+            m_rf_ux >>
             m_rf_graph >>
             m_rf_graph_render_fps >>
             m_rf_graph_simulation_fps;
@@ -592,6 +594,7 @@ x39::goingfactory::World::~World()
             m_rf_entities << std::endl <<
             m_rf_entities_positioncomponent << std::endl <<
             m_rf_entities_collision_boxes << std::endl <<
+            m_rf_ux << std::endl <<
             m_rf_graph << std::endl <<
             m_rf_graph_render_fps << std::endl <<
             m_rf_graph_simulation_fps << std::endl;
@@ -655,6 +658,10 @@ void x39::goingfactory::World::render(GameInstance& game)
             m_viewport_y + m_viewport_h,
             color, 1);
         color = al_map_rgb(0, 0, 0);
+    }
+    if (m_rf_ux)
+    {
+        game.uxhandler.render(game);
     }
 
     if (m_selected_option != 0)

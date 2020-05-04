@@ -37,6 +37,7 @@
 #include "KeyboardTarget.h"
 #include "UXPanel.h"
 #include "UXHandler.h"
+#include "UXPlaceable.h"
 
 #include <crtdbg.h>
 
@@ -56,7 +57,7 @@ const float RENDER_FPS = 30;
 #else
 const float RENDER_FPS = 60;
 #endif
-const int SIMULATION_TARGET_FPS = 120;
+const int SIMULATION_TARGET_FPS = RENDER_FPS;
 int initialize_allegro(ALLEGRO_DISPLAY*& display, ALLEGRO_EVENT_QUEUE*& event_queue, ALLEGRO_TIMER*& render_timer)
 {
     if (!al_init())
@@ -722,6 +723,9 @@ int main()
     auto menu = x39::goingfactory::ux::UXPanel(game_instance, DISPLAY_WIDTH - 192, 0, 192, DISPLAY_HEIGHT);
     uxhandler.push_back(&menu);
 
+
+    auto build_test = new x39::goingfactory::ux::UXPlaceable(game_instance, menu.x + 4, menu.y + 4, 32, 32);
+    menu.push_back(build_test);
     while (true)
     {
         ALLEGRO_EVENT ev;
@@ -805,7 +809,7 @@ int main()
                 sim_coef = 1;
             }
             auto temp = std::chrono::seconds(1) / sim_time_delta;
-            if (temp < SIMULATION_TARGET_FPS)
+            if (temp <= SIMULATION_TARGET_FPS || redraw)
             {
                 { // Call yaoosl_game GameLoop
                     yaooslcontexthandle context = yaoosl_context_create();
@@ -857,6 +861,7 @@ int main()
 #ifndef X39_GF_DISABLE_MT
                     for (auto&& result : results) { result.get(); }
 #endif // X39_GF_DISABLE_MT
+                    uxhandler.tick(game_instance);
                     simulate = true;
 #ifndef X39_GF_DISABLE_MT
                     });
@@ -875,7 +880,6 @@ int main()
             }
 
             world.render(game_instance);
-            uxhandler.render(game_instance);
 
 
 

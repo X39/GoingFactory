@@ -54,6 +54,8 @@ namespace x39::goingfactory
 		// If true, renders the collision models
 		// of objects inheriting from CollidableComponent
 		bool m_rf_entities_collision_boxes;
+		// If true, renders UX-Related stuff
+		bool m_rf_ux;
 		// Enables or disables various graph renderings.
 		bool m_rf_graph;
 		// If true, displays a graph for render FPS.
@@ -62,7 +64,7 @@ namespace x39::goingfactory
 		bool m_rf_graph_simulation_fps;
 
 		size_t m_selected_option;
-		const size_t selected_option_max = 11;
+		const size_t selected_option_max = 12;
 		std::chrono::time_point<std::chrono::system_clock> m_selected_last;
 
 		void next_option() { if (++m_selected_option >= selected_option_max) { m_selected_option = 1; } m_selected_last = std::chrono::system_clock::now(); }
@@ -76,9 +78,10 @@ namespace x39::goingfactory
 			case  5: m_rf_entities = !m_rf_entities; break;
 			case  6: m_rf_entities_positioncomponent = !m_rf_entities_positioncomponent; break;
 			case  7: m_rf_entities_collision_boxes = !m_rf_entities_collision_boxes; break;
-			case  8: m_rf_graph = !m_rf_graph; break;
-			case  9: m_rf_graph_render_fps = !m_rf_graph_render_fps; break;
-			case 10: m_rf_graph_simulation_fps = !m_rf_graph_simulation_fps; break;
+			case  8: m_rf_ux = !m_rf_ux; break;
+			case  9: m_rf_graph = !m_rf_graph; break;
+			case 10: m_rf_graph_render_fps = !m_rf_graph_render_fps; break;
+			case 11: m_rf_graph_simulation_fps = !m_rf_graph_simulation_fps; break;
 			}
 			m_selected_last = std::chrono::system_clock::now();
 		}
@@ -92,9 +95,10 @@ namespace x39::goingfactory
 			case  5: return m_rf_entities;
 			case  6: return m_rf_entities_positioncomponent;
 			case  7: return m_rf_entities_collision_boxes;
-			case  8: return m_rf_graph;
-			case  9: return m_rf_graph_render_fps;
-			case 10: return m_rf_graph_simulation_fps;
+			case  8: return m_rf_ux;
+			case  9: return m_rf_graph;
+			case 10: return m_rf_graph_render_fps;
+			case 11: return m_rf_graph_simulation_fps;
 			default: return false;
 			}
 		}
@@ -108,9 +112,10 @@ namespace x39::goingfactory
 			case  5: return "entities";
 			case  6: return "entities_positioncomponent";
 			case  7: return "entities_collision_boxes";
-			case  8: return "graph";
-			case  9: return "graph_render_fps";
-			case 10: return "graph_simulation_fps";
+			case  8: return "ux";
+			case  9: return "graph";
+			case 10: return "graph_render_fps";
+			case 11: return "graph_simulation_fps";
 			default: return "";
 			}
 		}

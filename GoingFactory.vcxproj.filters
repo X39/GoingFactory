@@ -114,6 +114,9 @@
     <ClCompile Include="src\GameInstance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\UXPlaceable.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -219,6 +222,9 @@
       <Filter>Header Files\ui</Filter>
     </ClInclude>
     <ClInclude Include="src\EMouseButton.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UXPlaceable.h">
       <Filter>Header Files\ui</Filter>
     </ClInclude>
   </ItemGroup>

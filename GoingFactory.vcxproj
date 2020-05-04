@@ -220,6 +220,7 @@
     <ClCompile Include="src\UXElement.cpp" />
     <ClCompile Include="src\UXHandler.cpp" />
     <ClCompile Include="src\UXPanel.cpp" />
+    <ClCompile Include="src\UXPlaceable.cpp" />
     <ClCompile Include="src\World.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -257,6 +258,7 @@
     <ClInclude Include="src\UXElement.h" />
     <ClInclude Include="src\UXHandler.h" />
     <ClInclude Include="src\UXPanel.h" />
+    <ClInclude Include="src\UXPlaceable.h" />
     <ClInclude Include="src\vec2.h" />
     <ClInclude Include="src\ResourceManager.h" />
     <ClInclude Include="src\World.h" />

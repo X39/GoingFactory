@@ -26,7 +26,7 @@ namespace x39::goingfactory
 			{
 				for (auto uxelement : m_uxelements)
 				{
-					uxelement->tick(game);
+					uxelement->handle_tick(game);
 				}
 			}
 			void render(GameInstance& game)

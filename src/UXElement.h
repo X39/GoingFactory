@@ -10,8 +10,8 @@ namespace x39::goingfactory::ux
 	{
 	private:
 		bool m_mouse_inside;
+		std::vector<UXElement*> m_uxelements;
 	public:
-		std::vector<UXElement*> uxelements;
 		int x;
 		int y;
 		int w;
@@ -51,6 +51,13 @@ namespace x39::goingfactory::ux
 		{
 			if (m_mouse_inside)
 			{
+				for (auto uxelement : m_uxelements)
+				{
+					if (uxelement->handle_mouse_button(game, px, py, button, pressed))
+					{
+						return true;
+					}
+				}
 				if (pressed)
 				{
 					if (mouse_button_down(game, px, py, button))
@@ -61,13 +68,6 @@ namespace x39::goingfactory::ux
 				else
 				{
 					if (mouse_button_up(game, px, py, button))
-					{
-						return true;
-					}
-				}
-				for (auto uxelement : uxelements)
-				{
-					if (handle_mouse_button(game, px, py, button, pressed))
 					{
 						return true;
 					}
@@ -99,7 +99,7 @@ namespace x39::goingfactory::ux
 			}
 			if (act_children)
 			{
-				for (auto uxelement : uxelements)
+				for (auto uxelement : m_uxelements)
 				{
 					uxelement->handle_mouse_move(game, px, py, dx, dy);
 				}
@@ -108,7 +108,7 @@ namespace x39::goingfactory::ux
 		void handle_render(GameInstance& game)
 		{
 			render(game);
-			for (auto uxelement : uxelements)
+			for (auto uxelement : m_uxelements)
 			{
 				uxelement->handle_render(game);
 			}
@@ -116,10 +116,15 @@ namespace x39::goingfactory::ux
 		void handle_tick(GameInstance& game)
 		{
 			tick(game);
-			for (auto uxelement : uxelements)
+			for (auto uxelement : m_uxelements)
 			{
 				uxelement->handle_tick(game);
 			}
 		}
+
+
+		void push_back(ux::UXElement* el) { m_uxelements.push_back(el); }
+		std::vector<ux::UXElement*>::iterator uxelements_begin() { return m_uxelements.begin(); }
+		std::vector<ux::UXElement*>::iterator uxelements_end() { return m_uxelements.end(); }
 	};
 }
