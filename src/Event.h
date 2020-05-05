@@ -7,6 +7,9 @@
 namespace x39::goingfactory
 {
 	struct EventArgs { };
+	struct CancelableEventArgs : public EventArgs {
+		bool cancel = false;
+	};
 	template <class TSource, typename TArg = EventArgs>
 	class Event
 	{
@@ -26,6 +29,19 @@ namespace x39::goingfactory
 			std::lock_guard<std::mutex> lock(m_mutex);
 			m_event_id_top = 0;
 			m_events.clear();
+		}
+		template<typename TCancelableArg>
+		void raise(TSource& source, TCancelableArg& arg)
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			for (auto& it : m_events)
+			{
+				it.func(source, arg);
+				if (arg.cancel)
+				{
+					return;
+				}
+			}
 		}
 		void raise(TSource& source, TArg& arg)
 		{

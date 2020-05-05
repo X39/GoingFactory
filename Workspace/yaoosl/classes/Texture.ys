@@ -3,5 +3,7 @@ prefix GoingFactory;
 
 class GoingFactory.Texture
 {
+    public Double Width;
+    public Double Height;
     extern public Texture(String create);
 }

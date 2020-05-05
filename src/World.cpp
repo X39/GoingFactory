@@ -16,15 +16,15 @@
 #include <unordered_map>
 
 x39::goingfactory::FastNoise generator(12030220512152);
-size_t grass1_texture_id = 0;
-size_t grass1_surroundings_texture_id = 0;
-size_t grass2_1_texture_id = 0;
-size_t grass2_2_texture_id = 0;
-size_t grass2_3_texture_id = 0;
-size_t tree_texture_id = 0;
-size_t dirt_texture_id = 0;
-size_t stonea_texture_id = 0;
-size_t stoneb_texture_id = 0;
+x39::goingfactory::texture grass1_texture_id = {};
+x39::goingfactory::texture grass1_surroundings_texture_id = {};
+x39::goingfactory::texture grass2_1_texture_id = {};
+x39::goingfactory::texture grass2_2_texture_id = {};
+x39::goingfactory::texture grass2_3_texture_id = {};
+x39::goingfactory::texture tree_texture_id = {};
+x39::goingfactory::texture dirt_texture_id = {};
+x39::goingfactory::texture stonea_texture_id = {};
+x39::goingfactory::texture stoneb_texture_id = {};
 // Get-/SetFrequency ~= Zoom
 
 x39::goingfactory::vec2 store_a_player_vel;
@@ -73,14 +73,12 @@ x39::goingfactory::World::Tile x39::goingfactory::World::get_tile(int x, int y)
         floats.push_back(std::fabsf(generator.GetPerlin(x + tile_size - i, y + i)));
     }
     RandomFromPerlin random(floats);
-    
     x39::goingfactory::World::Tile tile = { 0 };
-    tile.has_tree = false;
-    tile.is_passable = true;
-    tile.tile_texture = dirt_texture_id;
-    tile.index = TextureIndex::Dirt;
     if (random.next_float() > 0.5)
     {
+        tile.index = TextureIndex::GrassAnimated;
+        tile.is_passable = true;
+
         auto t = (int)(al_get_time() * 3);
         switch ((t + random.next_int()) % 3)
         {
@@ -99,33 +97,32 @@ x39::goingfactory::World::Tile x39::goingfactory::World::get_tile(int x, int y)
             tile.is_passable = false;
             tile.has_tree = true;
         }
-        tile.index = TextureIndex::GrassAnimated;
     }
     else if (random.next_float() > 0.3)
     {
-        tile.tile_texture = 0;
         tile.tile_texture_surrounding = grass1_surroundings_texture_id;
         tile.index = TextureIndex::Grass;
+        tile.is_passable = true;
     }
     else if ((f = random.next_float()) < 0.1)
     {
         if (f < 0.02)
         {
-            tile.tile_texture = 0;
             tile.tile_texture_surrounding = stoneb_texture_id;
-            tile.is_passable = false;
             tile.index = TextureIndex::StoneB;
         }
         else
         {
-            tile.tile_texture = 0;
             tile.tile_texture_surrounding = stonea_texture_id;
-            tile.is_passable = false;
             tile.index = TextureIndex::StoneA;
         }
     }
-
-
+    else
+    {
+        tile.is_passable = true;
+        tile.tile_texture = dirt_texture_id;
+        tile.index = TextureIndex::Dirt;
+    }
     return tile;
 }
 std::vector<std::array<x39::goingfactory::vec2, 4>> x39::goingfactory::World::get_chunk_world_collision(int x, int y)
@@ -170,12 +167,12 @@ void x39::goingfactory::World::draw_level(GameInstance& game, vec2 top_left_view
 {
     struct texture_spot
     {
-        size_t texture_id;
+        texture tx;
         float sx, sy, sw, sh;
         float dx, dy;
 
-        texture_spot(size_t texture_id, float sx, float sy, float sw, float sh, float dx, float dy) :
-            texture_id(texture_id),
+        texture_spot(texture tx, float sx, float sy, float sw, float sh, float dx, float dy) :
+            tx(tx),
             sx(sx),
             sy(sy),
             sw(sw),
@@ -185,8 +182,8 @@ void x39::goingfactory::World::draw_level(GameInstance& game, vec2 top_left_view
         {
         }
     };
-    std::vector<std::vector<texture_spot>> textures;
-    textures.resize(TextureIndex::__SIZE);
+    std::vector<std::vector<texture_spot>> texture_spots_vec;
+    texture_spots_vec.resize(TextureIndex::__SIZE);
 
     // Draw background
     for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % tile_size - tile_size; x < top_left_viewport.x + m_viewport_w; x += tile_size)
@@ -197,18 +194,18 @@ void x39::goingfactory::World::draw_level(GameInstance& game, vec2 top_left_view
             auto tile = get_tile(pos);
             if (tile.has_tree)
             {
-                textures[TextureIndex::Tree].emplace_back(tree_texture_id, 0, 0, 32, 32, pos.x - top_left_viewport.x - 8, pos.y - top_left_viewport.y - 16);
+                texture_spots_vec[TextureIndex::Tree].emplace_back(tree_texture_id, 0, 0, 32, 32, pos.x - top_left_viewport.x - 8, pos.y - top_left_viewport.y - 16);
             }
-            if (tile.tile_texture != 0)
+            if (tile.tile_texture.is_valid())
             {
                 pos -= top_left_viewport;
-                textures[tile.index].emplace_back(tile.tile_texture, 0, 0, 16, 16, pos.x, pos.y);
+                texture_spots_vec[tile.index].emplace_back(tile.tile_texture, 0, 0, 16, 16, pos.x, pos.y);
             }
-            if (tile.tile_texture_surrounding != 0)
+            if (tile.tile_texture_surrounding.is_valid())
             {
-                if (tile.tile_texture == 0)
+                if (!tile.tile_texture.is_valid())
                 {
-                    textures[tile.index].emplace_back(tile.tile_texture_surrounding, 16, 16, 16, 16, pos.x - top_left_viewport.x, pos.y - top_left_viewport.y);
+                    texture_spots_vec[tile.index].emplace_back(tile.tile_texture_surrounding, 16, 16, 16, 16, pos.x - top_left_viewport.x, pos.y - top_left_viewport.y);
                 }
                 if (m_rf_level_surroundings)
                 {
@@ -225,15 +222,15 @@ void x39::goingfactory::World::draw_level(GameInstance& game, vec2 top_left_view
                                 otherpos -= top_left_viewport;
                                 switch (i)
                                 {
-                                case 1: /* LEF TOP */ textures[tile.index].emplace_back(tile.tile_texture_surrounding, 0, 0, 16, 16, otherpos.x, otherpos.y); break;
-                                case 2: /* LEF MID */ textures[tile.index].emplace_back(tile.tile_texture_surrounding, 0, 16, 16, 16, otherpos.x, otherpos.y); break;
-                                case 3: /* LEF BOT */ textures[tile.index].emplace_back(tile.tile_texture_surrounding, 0, 32, 16, 16, otherpos.x, otherpos.y); break;
-                                case 4: /* CEN TOP */ textures[tile.index].emplace_back(tile.tile_texture_surrounding, 16, 0, 16, 16, otherpos.x, otherpos.y); break;
+                                case 1: /* LEF TOP */ texture_spots_vec[tile.index].emplace_back(tile.tile_texture_surrounding, 0, 0, 16, 16, otherpos.x, otherpos.y); break;
+                                case 2: /* LEF MID */ texture_spots_vec[tile.index].emplace_back(tile.tile_texture_surrounding, 0, 16, 16, 16, otherpos.x, otherpos.y); break;
+                                case 3: /* LEF BOT */ texture_spots_vec[tile.index].emplace_back(tile.tile_texture_surrounding, 0, 32, 16, 16, otherpos.x, otherpos.y); break;
+                                case 4: /* CEN TOP */ texture_spots_vec[tile.index].emplace_back(tile.tile_texture_surrounding, 16, 0, 16, 16, otherpos.x, otherpos.y); break;
                                 case 5: /* CEN MID */ break;
-                                case 6: /* CEN BOT */ textures[tile.index].emplace_back(tile.tile_texture_surrounding, 16, 32, 16, 16, otherpos.x, otherpos.y); break;
-                                case 7: /* RIG TOP */ textures[tile.index].emplace_back(tile.tile_texture_surrounding, 32, 0, 16, 16, otherpos.x, otherpos.y); break;
-                                case 8: /* RIG MID */ textures[tile.index].emplace_back(tile.tile_texture_surrounding, 32, 16, 16, 16, otherpos.x, otherpos.y); break;
-                                case 9: /* RIG BOT */ textures[tile.index].emplace_back(tile.tile_texture_surrounding, 32, 32, 16, 16, otherpos.x, otherpos.y); break;
+                                case 6: /* CEN BOT */ texture_spots_vec[tile.index].emplace_back(tile.tile_texture_surrounding, 16, 32, 16, 16, otherpos.x, otherpos.y); break;
+                                case 7: /* RIG TOP */ texture_spots_vec[tile.index].emplace_back(tile.tile_texture_surrounding, 32, 0, 16, 16, otherpos.x, otherpos.y); break;
+                                case 8: /* RIG MID */ texture_spots_vec[tile.index].emplace_back(tile.tile_texture_surrounding, 32, 16, 16, 16, otherpos.x, otherpos.y); break;
+                                case 9: /* RIG BOT */ texture_spots_vec[tile.index].emplace_back(tile.tile_texture_surrounding, 32, 32, 16, 16, otherpos.x, otherpos.y); break;
                                 }
                             }
                         }
@@ -243,12 +240,12 @@ void x39::goingfactory::World::draw_level(GameInstance& game, vec2 top_left_view
         }
     }
 
-    for (auto& it : textures)
+    for (auto& texture_spots : texture_spots_vec)
     {
         al_hold_bitmap_drawing(true);
-        for (auto& texture : it)
+        for (auto& texture_spot : texture_spots)
         {
-            al_draw_bitmap_region(game.resource_manager.get_bitmap(texture.texture_id), texture.sx, texture.sy, texture.sh, texture.sw, texture.dx, texture.dy, 0);
+            al_draw_bitmap_region(texture_spot.tx.bitmap(), texture_spot.sx, texture_spot.sy, texture_spot.sh, texture_spot.sw, texture_spot.dx, texture_spot.dy, 0);
         }
         al_hold_bitmap_drawing(false);
     }
@@ -604,14 +601,14 @@ x39::goingfactory::World::~World()
 void x39::goingfactory::World::render(GameInstance& game)
 {
     // if (grass1_texture_id == 0) { grass1_texture_id = game.resource_manager.load_bitmap("Textures/Grass.png"); }
-    if (grass1_surroundings_texture_id == 0) { grass1_surroundings_texture_id = game.resource_manager.load_bitmap("Textures/GrassSurroundings.png"); }
-    if (grass2_1_texture_id == 0) { grass2_1_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_1.png"); }
-    if (grass2_2_texture_id == 0) { grass2_2_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_2.png"); }
-    if (grass2_3_texture_id == 0) { grass2_3_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_3.png"); }
-    if (dirt_texture_id == 0) { dirt_texture_id = game.resource_manager.load_bitmap("Textures/Dirt.png"); }
-    if (stonea_texture_id == 0) { stonea_texture_id = game.resource_manager.load_bitmap("Textures/StoneA.png"); }
-    if (stoneb_texture_id == 0) { stoneb_texture_id = game.resource_manager.load_bitmap("Textures/StoneB.png"); }
-    if (tree_texture_id == 0) { tree_texture_id = game.resource_manager.load_bitmap("Textures/Tree.png"); }
+    if (!grass1_surroundings_texture_id.is_valid()) { grass1_surroundings_texture_id = game.resource_manager.load_bitmap("Textures/GrassSurroundings.png"); }
+    if (!grass2_1_texture_id.is_valid()) { grass2_1_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_1.png"); }
+    if (!grass2_2_texture_id.is_valid()) { grass2_2_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_2.png"); }
+    if (!grass2_3_texture_id.is_valid()) { grass2_3_texture_id = game.resource_manager.load_bitmap("Textures/Grass2_3.png"); }
+    if (!dirt_texture_id.is_valid()) { dirt_texture_id = game.resource_manager.load_bitmap("Textures/Dirt.png"); }
+    if (!stonea_texture_id.is_valid()) { stonea_texture_id = game.resource_manager.load_bitmap("Textures/StoneA.png"); }
+    if (!stoneb_texture_id.is_valid()) { stoneb_texture_id = game.resource_manager.load_bitmap("Textures/StoneB.png"); }
+    if (!tree_texture_id.is_valid()) { tree_texture_id = game.resource_manager.load_bitmap("Textures/Tree.png"); }
 
     if (!m_player || !m_player->is_type(EComponent::Position))
     {
@@ -619,17 +616,17 @@ void x39::goingfactory::World::render(GameInstance& game)
     }
     auto playerPositionComponent = m_player->get_component<PositionComponent>();
     vec2 center = { m_viewport_w / 2 + m_viewport_x, m_viewport_h / 2 + m_viewport_y };
-    vec2 top_left_viewport =  playerPositionComponent->position() - center;
+    m_top_left =  playerPositionComponent->position() - center;
 
     if (m_rf_level)
     {
-        if (m_rf_level_simple) { draw_level_simple(game, top_left_viewport); }
-        else { draw_level(game, top_left_viewport); }
+        if (m_rf_level_simple) { draw_level_simple(game, m_top_left); }
+        else { draw_level(game, m_top_left); }
     }
-    if (m_rf_entities_collision_boxes) { draw_collision_boxes(game, top_left_viewport); }
-    if (m_rf_chunks) { draw_chunks(game, top_left_viewport); }
-    if (m_rf_entities) { draw_entities(game, top_left_viewport); }
-    if (m_rf_graph) { draw_graph(game, top_left_viewport); }
+    if (m_rf_entities_collision_boxes) { draw_collision_boxes(game, m_top_left); }
+    if (m_rf_chunks) { draw_chunks(game, m_top_left); }
+    if (m_rf_entities) { draw_entities(game, m_top_left); }
+    if (m_rf_graph) { draw_graph(game, m_top_left); }
     // Draw Viewport
     {
         auto color = al_map_rgb(0, 127, 0);

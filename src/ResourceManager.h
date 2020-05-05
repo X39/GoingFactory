@@ -1,4 +1,7 @@
 #pragma once
+#include "texture.h"
+
+
 #include <unordered_map>
 #include <vector>
 #include <string>
@@ -11,8 +14,8 @@ namespace x39::goingfactory
 	class ResourceManager
 	{
 	private:
-		std::vector<struct ALLEGRO_BITMAP*> m_bitmaps;
-		std::unordered_map<std::string, size_t> m_bitmaps_path;
+		std::vector<texture> m_bitmaps;
+		std::unordered_map<std::string, texture> m_bitmaps_path;
 		std::mutex m_mutex;
 		ALLEGRO_FONT* m_font;
 	public:
@@ -22,12 +25,7 @@ namespace x39::goingfactory
 
 		ALLEGRO_FONT* font() { return m_font; }
 
-		size_t load_bitmap(std::string path);
-		struct ALLEGRO_BITMAP* get_bitmap(size_t id)
-		{
-			if (id == 0 || m_bitmaps.size() < id) { return m_bitmaps[0]; }
-			std::lock_guard<std::mutex> lock(m_mutex);
-			return m_bitmaps[id - 1];
-		}
+		texture from_index(size_t index) { return m_bitmaps[index]; }
+		texture load_bitmap(std::string path);
 	};
 }

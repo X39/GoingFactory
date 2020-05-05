@@ -11,13 +11,16 @@ namespace x39::goingfactory::ux
 	private:
 		bool m_mouse_inside;
 		std::vector<UXElement*> m_uxelements;
+		UXElement* m_parent;
+	protected:
+		UXElement* parent() { return m_parent; }
 	public:
 		int x;
 		int y;
 		int w;
 		int h;
-		UXElement(GameInstance& game) : x(0), y(0), w(0), h(0), m_mouse_inside(false) {}
-		UXElement(GameInstance& game, int x, int y, int w, int h) : x(x), y(y), w(w), h(h), m_mouse_inside(false) {}
+		UXElement(GameInstance& game) : x(0), y(0), w(0), h(0), m_mouse_inside(false), m_parent(nullptr) {}
+		UXElement(GameInstance& game, int x, int y, int w, int h) : x(x), y(y), w(w), h(h), m_mouse_inside(false), m_parent(nullptr) {}
 
 		virtual void render(GameInstance& game) = 0;
 
@@ -49,6 +52,7 @@ namespace x39::goingfactory::ux
 		bool mouse_inside() { return m_mouse_inside; }
 		bool handle_mouse_button(GameInstance& game, int px, int py, EMouseButton button, bool pressed)
 		{
+			auto mouse_inside = (px >= x && px <= x + w) && (py >= y && py <= y + h);
 			if (m_mouse_inside)
 			{
 				for (auto uxelement : m_uxelements)
@@ -123,7 +127,7 @@ namespace x39::goingfactory::ux
 		}
 
 
-		void push_back(ux::UXElement* el) { m_uxelements.push_back(el); }
+		void push_back(ux::UXElement* el) { el->m_parent = this; m_uxelements.push_back(el); }
 		std::vector<ux::UXElement*>::iterator uxelements_begin() { return m_uxelements.begin(); }
 		std::vector<ux::UXElement*>::iterator uxelements_end() { return m_uxelements.end(); }
 	};

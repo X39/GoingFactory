@@ -1,5 +1,6 @@
 #pragma once
 #include "Entity.h"
+#include "texture.h"
 #include <cstdint>
 
 extern "C" struct yaoosl_instance;
@@ -12,14 +13,14 @@ namespace x39::goingfactory::entity
 		public CollidableComponent
 	{
 	private:
-		size_t m_texture;
+		texture m_texture;
 		vec2 m_texture_center;
 	public:
 		static const int size = 16;
 		ScriptedEntity();
 
-		void texture(size_t val) { m_texture = val; }
-		size_t texture() { return m_texture; }
+		void texture(texture val) { m_texture = val; }
+		x39::goingfactory::texture texture() { return m_texture; }
 
 		void texture_center(vec2 val) { m_texture_center = val; }
 		vec2 texture_center() { return m_texture_center; }

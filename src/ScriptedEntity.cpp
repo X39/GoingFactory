@@ -30,17 +30,16 @@ public:
 		auto pos = position - translate;
 
 		auto scriptedEntity = dynamic_cast<x39::goingfactory::entity::ScriptedEntity*>(component);
-		if (scriptedEntity->texture() != 0)
+		if (scriptedEntity->texture().is_valid())
 		{
 			auto center = scriptedEntity->texture_center();
-			auto bitmap = game_instance.resource_manager.get_bitmap(scriptedEntity->texture());
-			al_draw_rotated_bitmap(bitmap, center.x, center.y, pos.x, pos.y, m_prev_rad, NULL);
+			al_draw_rotated_bitmap(scriptedEntity->texture().bitmap(), center.x, center.y, pos.x, pos.y, m_prev_rad, NULL);
 		}
 	}
 };
 
 x39::goingfactory::entity::ScriptedEntity::ScriptedEntity() :
-	m_texture(0),
+	m_texture({ }),
 	m_texture_center(8, 8),
 	Entity(),
 	RenderComponent({ new draw_bitmap() }),

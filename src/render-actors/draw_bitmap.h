@@ -1,5 +1,6 @@
 #pragma once
 #include "../Component.h"
+#include "../texture.h"
 
 #include <string>
 #include <initializer_list>
@@ -11,7 +12,7 @@ namespace x39::goingfactory::actors::render
 	{
 	private:
 		std::vector<std::string> m_textures_tmp;
-		std::vector<size_t> m_textures;
+		std::vector<texture> m_textures;
 		size_t m_texture_index;
 		float m_prev_rad;
 	public:

@@ -21,7 +21,7 @@ void x39::goingfactory::actors::render::draw_bitmap::render(RenderComponent* com
 
 	auto velocity = positionComponent->velocity();
 	auto position = positionComponent->position();
-	auto bitmap = game_instance.resource_manager.get_bitmap(m_textures[m_texture_index]);
+	auto bitmap = m_textures[m_texture_index].bitmap();
 	float angle = velocity.angle_radians() + /* 90° */ 1.5708;
 	m_prev_rad = velocity.x == 0 && velocity.y == 0 ? m_prev_rad : angle;
 	auto pos = position - translate;

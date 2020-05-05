@@ -2,6 +2,7 @@
 #include "GameInstance.h"
 #include "EKey.h"
 #include "vec2.h"
+#include "texture.h"
 #include <string>
 #include <chrono>
 
@@ -19,17 +20,17 @@ namespace x39::goingfactory
 		{
 			bool is_passable;
 			bool has_tree;
-			size_t tile_texture;
-			size_t tile_texture_surrounding;
+			texture	tile_texture;
+			texture tile_texture_surrounding;
 			size_t index;
 		};
 		static const size_t tile_size = 16;
 	private:
 		entity::Entity* m_player;
-		size_t m_viewport_x;
-		size_t m_viewport_y;
-		size_t m_viewport_w;
-		size_t m_viewport_h;
+		int m_viewport_x;
+		int m_viewport_y;
+		int m_viewport_w;
+		int m_viewport_h;
 		void draw_level(GameInstance&, vec2 top_left_viewport);
 		void draw_level_simple(GameInstance&, vec2 top_left_viewport);
 		void draw_collision_boxes(GameInstance&, vec2 top_left_viewport);
@@ -66,6 +67,8 @@ namespace x39::goingfactory
 		size_t m_selected_option;
 		const size_t selected_option_max = 12;
 		std::chrono::time_point<std::chrono::system_clock> m_selected_last;
+		// Top Left edge of the viewport in world position
+		vec2 m_top_left;
 
 		void next_option() { if (++m_selected_option >= selected_option_max) { m_selected_option = 1; } m_selected_last = std::chrono::system_clock::now(); }
 		void switch_option(uint8_t option) {
@@ -124,7 +127,7 @@ namespace x39::goingfactory
 		World();
 		~World();
 		entity::Entity* player() { return m_player; }
-		void set_viewport(size_t x, size_t y, size_t w, size_t h) { m_viewport_x = x; m_viewport_y = y; m_viewport_w = w; m_viewport_h = h; }
+		void set_viewport(int x, int y, int w, int h) { m_viewport_x = x; m_viewport_y = y; m_viewport_w = w; m_viewport_h = h; }
 		void set_player(entity::Entity* player) { m_player = player; }
 		void render(GameInstance&);
 
@@ -132,6 +135,9 @@ namespace x39::goingfactory
 		bool is_in_view(vec2 pos, int offset = 0);
 		Tile get_tile(vec2 vec) { return get_tile((int)vec.x, (int)vec.y); }
 		Tile get_tile(int x, int y);
+		vec2 top_left_world_pos() { return m_top_left; }
+		vec2 screen_to_world(vec2 v) { return { v.x + m_viewport_x + m_top_left.x, v.y + m_viewport_y + m_top_left.y }; }
+		vec2 world_to_screen(vec2 v) { return { v.x - m_top_left.x - m_viewport_x, v.y - m_top_left.y - m_viewport_y }; }
 		std::vector<std::array<x39::goingfactory::vec2, 4>> get_chunk_world_collision(int x, int y);
 	};
 }

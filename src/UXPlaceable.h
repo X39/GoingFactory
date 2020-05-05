@@ -3,6 +3,8 @@
 #include "EModifier.h"
 #include "GameInstance.h"
 #include "UXElement.h"
+#include "texture.h"
+
 #include <vector>
 #include <chrono>
 
@@ -11,9 +13,9 @@ namespace x39::goingfactory::ux
 	class UXPlaceable : public UXElement
 	{
 	private:
-		size_t m_tx_placeable_display;
-		size_t m_tx_placeable_display_highlight;
-		size_t m_tx_placeable_render_preview;
+		texture m_tx_placeable_display;
+		texture m_tx_placeable_display_highlight;
+		texture m_tx_placeable_render_preview;
 		size_t m_placeable_width;
 		size_t m_placeable_height;
 		size_t m_queue_done;
@@ -27,23 +29,6 @@ namespace x39::goingfactory::ux
 		virtual void render(GameInstance&) override;
 		virtual void tick(GameInstance&) override;
 
-		virtual bool mouse_button_down(GameInstance& game, int px, int py, EMouseButton button) override
-		{
-			if (m_queue_left + m_queue_done < m_queue_max)
-			{
-				if (m_queue_left == 0)
-				{
-					m_build_start = std::chrono::steady_clock::now();
-				}
-				m_queue_left++;
-			}
-			return true;
-		}
-		virtual void mouse_enter(GameInstance& game) override
-		{
-		}
-		virtual void mouse_leave(GameInstance& game) override
-		{
-		}
+		virtual bool mouse_button_down(GameInstance& game, int px, int py, EMouseButton button) override;
 	};
 }

@@ -292,6 +292,9 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
             classhandle->callback_create = [](void* data, struct yaoosl_instance* instance) -> bool {
                 x39::goingfactory::GameInstance* gameInstance = static_cast<x39::goingfactory::GameInstance*>(data);
                 auto entity = new x39::goingfactory::entity::ScriptedEntity();
+                // entity->onDestroy.subscribe([instance](x39::goingfactory::entity::Entity& sender, x39::goingfactory::EventArgs& e) -> void {
+                //     
+                // });
                 gameInstance->entity_manager.pool_create(entity);
                 instance->additional.ptr = entity;
                 return true;
@@ -443,7 +446,9 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                     {
                         auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
                         auto texture = yaoosl_instance_create(yaoosl_declare_class(vm, "GoingFactory.Texture"));
-                        texture->additional.uint64 = entity->texture();
+                        texture->additional.uint64 = entity->texture().index();
+                        texture->fields[0]->additional.d = entity->texture().width();
+                        texture->fields[1]->additional.d = entity->texture().height();
                         yaoosl_instance_inc_ref(texture);
                         yaoosl_context_push_value(context, texture);
                     });
@@ -451,6 +456,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto texture_setter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
+                        x39::goingfactory::GameInstance* gameInstance = static_cast<x39::goingfactory::GameInstance*>(self->type->callback_data);
                         auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
                         yaooslinstancehandle texture;
                         if (!(texture = yaoosl_context_pop_value(context)))
@@ -463,7 +469,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                             yaoosl_util_throw_generic(vm, context, "Value is no GoingFactory.Texture.");
                             return;
                         }
-                        entity->texture(texture->additional.uint64);
+                        entity->texture(gameInstance->resource_manager.from_index(texture->additional.uint64));
                         yaoosl_instance_dec_ref(texture);
                     });
                 auto texture_setter_method = yaoosl_method_create("set", nullptr, texture_setter_code);
@@ -604,7 +610,9 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                         return;
                     }
                     auto val = gameInstance->resource_manager.load_bitmap(str->additional.str);
-                    self->additional.uint64 = val;
+                    self->additional.uint64 = val.index();
+                    self->fields[0]->additional.d = val.width();
+                    self->fields[1]->additional.d = val.height();
                     yaoosl_instance_dec_ref(str);
 
                     yaoosl_instance_inc_ref(self);

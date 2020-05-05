@@ -105,9 +105,6 @@
     <ClCompile Include="src\simulate-actors\velocitycap.cpp">
       <Filter>Source Files\simulate actors</Filter>
     </ClCompile>
-    <ClCompile Include="src\ScriptedEntity.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\UXHandler.cpp">
       <Filter>Source Files\ui</Filter>
     </ClCompile>
@@ -115,6 +112,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\UXPlaceable.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ScriptedEntity.cpp">
+      <Filter>Source Files\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UXEntityPlacer.cpp">
       <Filter>Source Files\ui</Filter>
     </ClCompile>
   </ItemGroup>
@@ -226,6 +229,12 @@
     </ClInclude>
     <ClInclude Include="src\UXPlaceable.h">
       <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UXEntityPlacer.h">
+      <Filter>Header Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\texture.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

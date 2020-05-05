@@ -7,8 +7,7 @@
 
 x39::goingfactory::ux::UXHandler::UXHandler(ResourceManager& resource_manager) :
 	m_uxelements(),
-	m_focused(nullptr),
-	m_tx_panel_base(0)
+	m_focused(nullptr)
 {
 	m_tx_panel_base = resource_manager.load_bitmap("textures/ui/back.png");
 }
@@ -20,7 +19,7 @@ void x39::goingfactory::ux::UXHandler::draw_panel(GameInstance& game, size_t px,
 	// al_draw_line(px, py, px, py + pw, al_map_rgb(255, 255, 0), 1);
 	// al_draw_line(px + pw, py + pw, px + pw, py, al_map_rgb(255, 255, 0), 1);
 	// al_draw_line(px + pw, py + pw, px, py + pw, al_map_rgb(255, 255, 0), 1);
-	auto texture = game.resource_manager.get_bitmap(m_tx_panel_base);
+	auto texture = m_tx_panel_base.bitmap();
 
 	al_hold_bitmap_drawing(true);
 	al_draw_tinted_scaled_rotated_bitmap_region(

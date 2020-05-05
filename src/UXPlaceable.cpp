@@ -2,14 +2,17 @@
 #include "GameInstance.h"
 #include "ResourceManager.h"
 #include "UXHandler.h"
+#include "UXEntityPlacer.h"
+#include "ScriptedEntity.h"
+
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
 
 
 x39::goingfactory::ux::UXPlaceable::UXPlaceable(GameInstance& game, int x, int y, int w, int h) :
 	UXElement(game, x, y, w, h),
-	m_tx_placeable_display(0),
-	m_tx_placeable_render_preview(0),
+	m_tx_placeable_display({}),
+	m_tx_placeable_render_preview({}),
 	m_placeable_width(0),
 	m_placeable_height(0),
 	m_queue_left(0),
@@ -21,9 +24,10 @@ x39::goingfactory::ux::UXPlaceable::UXPlaceable(GameInstance& game, int x, int y
 	m_tx_placeable_render_preview = game.resource_manager.load_bitmap("textures/tesla_generator/preview.png");
 	m_tx_placeable_display = game.resource_manager.load_bitmap("textures/tesla_generator/icon.png");
 	m_tx_placeable_display_highlight = game.resource_manager.load_bitmap("textures/tesla_generator/icon_highlight.png");
-	m_placeable_height = m_placeable_width = 32;
+	m_placeable_height = m_tx_placeable_render_preview.height();
+	m_placeable_width = m_tx_placeable_render_preview.width();
 
-	m_build_time = std::chrono::seconds(10);
+	m_build_time = std::chrono::seconds(1);
 }
 
 void x39::goingfactory::ux::UXPlaceable::render(GameInstance& game)
@@ -31,7 +35,7 @@ void x39::goingfactory::ux::UXPlaceable::render(GameInstance& game)
 	if (mouse_inside())
 	{
 		al_draw_tinted_scaled_rotated_bitmap(
-			game.resource_manager.get_bitmap(m_tx_placeable_display_highlight),
+			m_tx_placeable_display_highlight.bitmap(),
 			al_map_rgb(255, 255, 255),
 			0, 0,
 			x, y,
@@ -42,7 +46,7 @@ void x39::goingfactory::ux::UXPlaceable::render(GameInstance& game)
 	else
 	{
 		al_draw_tinted_scaled_rotated_bitmap(
-			game.resource_manager.get_bitmap(m_tx_placeable_display),
+			m_tx_placeable_display.bitmap(),
 			al_map_rgb(255, 255, 255),
 			0, 0,
 			x, y,
@@ -86,5 +90,43 @@ void x39::goingfactory::ux::UXPlaceable::tick(GameInstance& game)
 				m_build_start = std::chrono::steady_clock::now();
 			}
 		}
+	}
+}
+
+bool x39::goingfactory::ux::UXPlaceable::mouse_button_down(GameInstance& game, int px, int py, EMouseButton button)
+{
+	if (button == EMouseButton::LeftMouseButton)
+	{
+		if (m_queue_done > 0)
+		{
+			game.uxhandler.push_back(UXEntityPlacer::create(game, [&](vec2 position) -> entity::Entity* {
+				auto entity = new entity::ScriptedEntity();
+				entity->texture(m_tx_placeable_display);
+				entity->texture_center({ m_tx_placeable_display.width() / 2, m_tx_placeable_display.height() / 2 });
+				entity->position(position);
+				return entity;
+			}, m_tx_placeable_render_preview));
+		}
+		else if (m_queue_left + m_queue_done < m_queue_max)
+		{
+			if (m_queue_left == 0)
+			{
+				m_build_start = std::chrono::steady_clock::now();
+			}
+			m_queue_left++;
+		}
+		return true;
+	}
+	else if (button == EMouseButton::RightMouseButton)
+	{
+		if (m_queue_left > 0)
+		{
+			m_queue_left--;
+		}
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
