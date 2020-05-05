@@ -2,7 +2,9 @@
 
 #include "EntityManager.h"
 
-void x39::goingfactory::PositionComponent::position(vec2 newpos)
+using namespace x39::goingfactory;
+using namespace x39::goingfactory::entity;
+void PositionComponent::position(vec2 newpos)
 {
 	OnPositionChangingEventArgs args(m_pos, newpos);
 	OnPositionChanging.raise(*this, args);
@@ -12,7 +14,7 @@ void x39::goingfactory::PositionComponent::position(vec2 newpos)
 	}
 	else
 	{
-		auto coord = chunk::to_chunk_coordinate(newpos);
+		auto coord = EntityChunk::to_chunk_coordinate(newpos);
 		if (coord != m_chunk->coordinate())
 		{
 			m_entity_manager->pool_chunk_update(this);

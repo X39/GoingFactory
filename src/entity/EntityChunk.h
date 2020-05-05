@@ -4,16 +4,13 @@
 #include <array>
 #include <vector>
 #include <cctype>
-#include "vec2.h"
+#include "../vec2.h"
 
-namespace x39::goingfactory
+namespace x39::goingfactory::entity
 {
-	namespace entity
-	{
-		class Entity;
-	}
 	class EntityManager;
-	class chunk
+	class Entity;
+	class EntityChunk
 	{
 	public:
 		static const int chunk_size = 160;
@@ -22,8 +19,8 @@ namespace x39::goingfactory
 		int32_t m_index_x;
 		int32_t m_index_y;
 		std::vector<x39::goingfactory::entity::Entity*> m_entities;
-		chunk(int64_t chunk_coordinate) : m_index_x((int32_t)(chunk_coordinate >> 32)), m_index_y((int32_t)chunk_coordinate) {}
-		chunk(int x, int y) : m_index_x(x), m_index_y(y) {}
+		EntityChunk(int64_t chunk_coordinate) : m_index_x((int32_t)(chunk_coordinate >> 32)), m_index_y((int32_t)chunk_coordinate) {}
+		EntityChunk(int x, int y) : m_index_x(x), m_index_y(y) {}
 	public:
 		int32_t index_x() const { return m_index_x; }
 		int32_t index_y() const { return m_index_y; }
@@ -66,6 +63,20 @@ namespace x39::goingfactory
 			uint32_t x_casted = max_halfed + (int32_t)x_floored;
 
 			float y_floored = std::floorf(y / chunk_size);
+			uint32_t y_casted = max_halfed + (int32_t)y_floored;
+
+			int64_t result = (((int64_t)x_casted) << 32) | y_casted;
+			return result;
+		}
+		static inline int64_t to_chunk_coordinate(int32_t x, int32_t y)
+		{
+			const uint32_t max = UINT32_MAX;
+			const uint32_t max_halfed = max / 2;
+
+			int32_t x_floored = x / chunk_size;
+			uint32_t x_casted = max_halfed + (int32_t)x_floored;
+
+			int32_t y_floored = y / chunk_size;
 			uint32_t y_casted = max_halfed + (int32_t)y_floored;
 
 			int64_t result = (((int64_t)x_casted) << 32) | y_casted;

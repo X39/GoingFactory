@@ -1,15 +1,17 @@
 #include "Marker.h"
-#include "render-actors/HealthBar.h"
+#include "../render-actors/HealthBar.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 
-class RenderActorMarkerCustom : public x39::goingfactory::RenderComponent::RenderActor
+using namespace x39::goingfactory;
+using namespace x39::goingfactory::entity;
+class RenderActorMarkerCustom : public RenderComponent::RenderActor
 {
 public:
 	// Inherited via RenderActor
-	virtual void render(x39::goingfactory::RenderComponent* component, x39::goingfactory::GameInstance& game_instance, x39::goingfactory::vec2 translate)
+	virtual void render(RenderComponent* component, x39::goingfactory::GameInstance& game_instance, x39::goingfactory::vec2 translate)
 	{
-		auto positionComponent = component->get_component<x39::goingfactory::PositionComponent>();
+		auto positionComponent = component->get_component<PositionComponent>();
 		if (!positionComponent) { throw std::bad_cast(); }
 		auto pos = positionComponent->position() - translate - x39::goingfactory::entity::Marker::size / 2;
 		al_draw_line(

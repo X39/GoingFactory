@@ -5,16 +5,16 @@
 #include <algorithm>
 #include <cmath>
 
-#include "Event.h"
-#include "EKey.h"
-#include "vec2.h"
-#include "chunk.h"
-#include "EModifier.h"
-#include "GameInstance.h"
-#include "PlayerInteraction.h"
+#include "../Event.h"
+#include "../EKey.h"
+#include "../vec2.h"
+#include "EntityChunk.h"
+#include "../EModifier.h"
+#include "../GameInstance.h"
+#include "../PlayerInteraction.h"
 #include "EComponent.h"
 
-namespace x39::goingfactory
+namespace x39::goingfactory::entity
 {
     class Component
     {
@@ -46,13 +46,13 @@ namespace x39::goingfactory
     private:
         friend class EntityManager;
         vec2 m_pos;
-        chunk* m_chunk;
+        EntityChunk* m_chunk;
         EntityManager* m_entity_manager;
         vec2 m_velocity;
     protected:
         virtual void position_changed() {};
     public:
-        struct OnPositionChangingEventArgs : public EventArgs {
+        struct OnPositionChangingEventArgs : public util::EventArgs {
         private:
             vec2 m_old_pos;
             vec2 m_new_pos;
@@ -64,14 +64,14 @@ namespace x39::goingfactory
                 m_old_pos(old_pos),
                 m_new_pos(new_pos) {}
         };
-        Event<PositionComponent, OnPositionChangingEventArgs> OnPositionChanging;
+        util::Event<PositionComponent, OnPositionChangingEventArgs> OnPositionChanging;
         PositionComponent() : Component(), m_pos(0, 0), m_chunk(nullptr), m_entity_manager(nullptr), m_velocity(0, 0) { push_component(type()); }
         static EComponent type() { return EComponent::Position; }
         vec2 position() const { return m_pos; }
         void position(vec2);
         vec2 velocity() const { return m_velocity; }
         void velocity(vec2 pos) { m_velocity = pos; }
-        const chunk* chunk() const { return m_chunk; }
+        const EntityChunk* chunk() const { return m_chunk; }
     };
     class RenderComponent : virtual public Component
     {
@@ -213,7 +213,7 @@ namespace x39::goingfactory
         bool m_allow_damage;
     public:
 
-        struct OnHealthChangedEventArgs : public EventArgs {
+        struct OnHealthChangedEventArgs : public util::EventArgs {
         private:
             float m_health;
             float m_change;
@@ -227,7 +227,7 @@ namespace x39::goingfactory
                 m_change(change),
                 result_health(health + change) {}
         };
-        Event<HealthComponent, OnHealthChangedEventArgs> onHealthChanged;
+        util::Event<HealthComponent, OnHealthChangedEventArgs> onHealthChanged;
 
         HealthComponent() : Component(), m_health(1), m_allow_damage(true) { push_component(EComponent::Health); }
         float health() { return m_health; };

@@ -1,10 +1,10 @@
 #include "no_health_remove.h"
-#include "../EntityManager.h"
-#include "../Entity.h"
+#include "../entity/EntityManager.h"
+#include "../entity/Entity.h"
 
-void x39::goingfactory::actors::simulate::no_health_remove::simulate(SimulateComponent* component, GameInstance& game_instance, float sim_coef)
+void x39::goingfactory::actors::simulate::no_health_remove::simulate(entity::SimulateComponent* component, GameInstance& game_instance, float sim_coef)
 {
-    auto healthComponent = component->get_component<HealthComponent>();
+    auto healthComponent = component->get_component<entity::HealthComponent>();
     if (!healthComponent) { throw std::bad_cast(); }
 
     if (healthComponent->health() == 0)

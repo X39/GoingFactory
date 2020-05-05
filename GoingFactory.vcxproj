@@ -198,20 +198,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Asteroid.cpp" />
-    <ClCompile Include="src\Component.cpp" />
+    <ClCompile Include="src\entity\Asteroid.cpp" />
+    <ClCompile Include="src\entity\Component.cpp" />
+    <ClCompile Include="src\entity\EntityManager.cpp" />
+    <ClCompile Include="src\entity\Laser.cpp" />
+    <ClCompile Include="src\entity\Marker.cpp" />
+    <ClCompile Include="src\entity\Player.cpp" />
+    <ClCompile Include="src\entity\ScriptedEntity.cpp" />
     <ClCompile Include="src\Entry.cpp" />
     <ClCompile Include="src\GameInstance.cpp" />
     <ClCompile Include="src\KeyboardTarget.cpp" />
-    <ClCompile Include="src\Laser.cpp" />
-    <ClCompile Include="src\Marker.cpp" />
     <ClCompile Include="src\FastNoise.cpp" />
-    <ClCompile Include="src\Player.cpp" />
-    <ClCompile Include="src\EntityManager.cpp" />
     <ClCompile Include="src\render-actors\draw_bitmap.cpp" />
     <ClCompile Include="src\render-actors\healthbar.cpp" />
     <ClCompile Include="src\ResourceManager.cpp" />
-    <ClCompile Include="src\ScriptedEntity.cpp" />
     <ClCompile Include="src\simulate-actors\collision.cpp" />
     <ClCompile Include="src\simulate-actors\move.cpp" />
     <ClCompile Include="src\simulate-actors\no_health_remove.cpp" />
@@ -228,28 +228,28 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Asteroid.h" />
-    <ClInclude Include="src\chunk.h" />
-    <ClInclude Include="src\Component.h" />
-    <ClInclude Include="src\EComponent.h" />
     <ClInclude Include="src\EMouseButton.h" />
+    <ClInclude Include="src\entity\Asteroid.h" />
+    <ClInclude Include="src\entity\Component.h" />
+    <ClInclude Include="src\entity\EComponent.h" />
+    <ClInclude Include="src\entity\Entity.h" />
+    <ClInclude Include="src\entity\EntityChunk.h" />
+    <ClInclude Include="src\entity\EntityManager.h" />
+    <ClInclude Include="src\entity\Laser.h" />
+    <ClInclude Include="src\entity\Marker.h" />
+    <ClInclude Include="src\entity\Player.h" />
+    <ClInclude Include="src\entity\ScriptedEntity.h" />
     <ClInclude Include="src\Entry.h" />
     <ClInclude Include="src\GameInstance.h" />
     <ClInclude Include="src\KeyboardTarget.h" />
-    <ClInclude Include="src\Laser.h" />
-    <ClInclude Include="src\Marker.h" />
     <ClInclude Include="src\matrix.h" />
     <ClInclude Include="src\FastNoise.h" />
-    <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\EKey.h" />
     <ClInclude Include="src\EModifier.h" />
-    <ClInclude Include="src\Entity.h" />
-    <ClInclude Include="src\EntityManager.h" />
     <ClInclude Include="src\Event.h" />
     <ClInclude Include="src\PlayerInteraction.h" />
     <ClInclude Include="src\render-actors\draw_bitmap.h" />
     <ClInclude Include="src\render-actors\healthbar.h" />
-    <ClInclude Include="src\ScriptedEntity.h" />
     <ClInclude Include="src\simulate-actors\collision.h" />
     <ClInclude Include="src\simulate-actors\move.h" />
     <ClInclude Include="src\simulate-actors\no_health_remove.h" />

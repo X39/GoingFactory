@@ -1,9 +1,11 @@
 #include "collision.h"
-#include "../EntityManager.h"
+#include "../entity/EntityManager.h"
 #include "../World.h"
-#include "../Entity.h"
+#include "../entity/Entity.h"
 
-void x39::goingfactory::actors::simulate::collision::simulate(SimulateComponent* component, GameInstance& game_instance, float sim_coef)
+using namespace x39::goingfactory;
+using namespace x39::goingfactory::entity;
+void actors::simulate::collision::simulate(SimulateComponent* component, GameInstance& game_instance, float sim_coef)
 {
     auto collidableComponent = component->get_component<CollidableComponent>();
     auto positionComponent = component->get_component<PositionComponent>();
@@ -13,8 +15,8 @@ void x39::goingfactory::actors::simulate::collision::simulate(SimulateComponent*
 
     if (collidableComponent->can_collide() && vel.length_squared() != 0)
     {
-        int32_t orig_chunk_coord_x = chunk::to_chunk_coordinate_x(pos);
-        int32_t orig_chunk_coord_y = chunk::to_chunk_coordinate_y(pos);
+        int32_t orig_chunk_coord_x = EntityChunk::to_chunk_coordinate_x(pos);
+        int32_t orig_chunk_coord_y = EntityChunk::to_chunk_coordinate_y(pos);
 
         for (auto i = -1; i <= 1; i++)
         {
@@ -23,7 +25,7 @@ void x39::goingfactory::actors::simulate::collision::simulate(SimulateComponent*
                 int32_t chunk_coord_x = orig_chunk_coord_x + i;
                 int32_t chunk_coord_y = orig_chunk_coord_y + j;
 
-                auto collisions = game_instance.world.get_chunk_world_collision(chunk_coord_x * chunk::chunk_size, chunk_coord_y * chunk::chunk_size);
+                auto collisions = game_instance.world.get_chunk_world_collision(chunk_coord_x * EntityChunk::chunk_size, chunk_coord_y * EntityChunk::chunk_size);
                 for (auto& collision : collisions)
                 {
                     if (collidableComponent->intersects_with(collision))

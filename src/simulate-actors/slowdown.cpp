@@ -2,9 +2,9 @@
 #include <typeinfo>
 #include <cmath>
 
-void x39::goingfactory::actors::simulate::slowdown::simulate(SimulateComponent* component, GameInstance& game_instance, float sim_coef)
+void x39::goingfactory::actors::simulate::slowdown::simulate(entity::SimulateComponent* component, GameInstance& game_instance, float sim_coef)
 {
-    auto positionComponent = component->get_component<PositionComponent>();
+    auto positionComponent = component->get_component<entity::PositionComponent>();
     if (!positionComponent) { throw std::bad_cast(); }
     auto vel = positionComponent->velocity();
     float slowdown;

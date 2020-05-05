@@ -56,8 +56,8 @@ namespace x39::goingfactory
 			int m_mouse_x;
 			int m_mouse_y;
 		public:
-			Event<UXHandler, MouseButtonEventArgs> onMouseButton;
-			Event<UXHandler, MouseMoveEventArgs> onMouseMove;
+			util::Event<UXHandler, MouseButtonEventArgs> onMouseButton;
+			util::Event<UXHandler, MouseMoveEventArgs> onMouseMove;
 			UXHandler(ResourceManager& resource_manager);
 			void tick(GameInstance& game)
 			{

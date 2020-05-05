@@ -43,28 +43,16 @@
     <Filter Include="Source Files\render actors">
       <UniqueIdentifier>{ebeff57b-c1d7-42ff-9f35-502349907975}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\util">
+      <UniqueIdentifier>{7a87e4b9-7c7d-4941-a184-fd9e272d2ba4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ResourceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EntityManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Component.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Player.cpp">
-      <Filter>Source Files\entity</Filter>
-    </ClCompile>
     <ClCompile Include="src\World.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Asteroid.cpp">
-      <Filter>Source Files\entity</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Laser.cpp">
-      <Filter>Source Files\entity</Filter>
     </ClCompile>
     <ClCompile Include="src\FastNoise.cpp">
       <Filter>Source Files</Filter>
@@ -77,9 +65,6 @@
     </ClCompile>
     <ClCompile Include="src\KeyboardTarget.cpp">
       <Filter>Source Files\io</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Marker.cpp">
-      <Filter>Source Files\entity</Filter>
     </ClCompile>
     <ClCompile Include="src\simulate-actors\move.cpp">
       <Filter>Source Files\simulate actors</Filter>
@@ -114,11 +99,29 @@
     <ClCompile Include="src\UXPlaceable.cpp">
       <Filter>Source Files\ui</Filter>
     </ClCompile>
-    <ClCompile Include="src\ScriptedEntity.cpp">
-      <Filter>Source Files\entity</Filter>
-    </ClCompile>
     <ClCompile Include="src\UXEntityPlacer.cpp">
       <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entity\Asteroid.cpp">
+      <Filter>Source Files\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entity\Component.cpp">
+      <Filter>Source Files\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entity\EntityManager.cpp">
+      <Filter>Source Files\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entity\Laser.cpp">
+      <Filter>Source Files\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entity\Marker.cpp">
+      <Filter>Source Files\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entity\Player.cpp">
+      <Filter>Source Files\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entity\ScriptedEntity.cpp">
+      <Filter>Source Files\entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -128,13 +131,7 @@
     <ClInclude Include="src\ResourceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EntityManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Event.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Component.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\EModifier.h">
@@ -142,12 +139,6 @@
     </ClInclude>
     <ClInclude Include="src\EKey.h">
       <Filter>Header Files\io</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Entity.h">
-      <Filter>Header Files\entity</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Player.h">
-      <Filter>Header Files\entity</Filter>
     </ClInclude>
     <ClInclude Include="src\vec2.h">
       <Filter>Header Files</Filter>
@@ -167,18 +158,6 @@
     <ClInclude Include="src\World.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Asteroid.h">
-      <Filter>Header Files\entity</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Laser.h">
-      <Filter>Header Files\entity</Filter>
-    </ClInclude>
-    <ClInclude Include="src\chunk.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\EComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\ThreadPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -187,9 +166,6 @@
     </ClInclude>
     <ClInclude Include="src\UXElement.h">
       <Filter>Header Files\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Marker.h">
-      <Filter>Header Files\entity</Filter>
     </ClInclude>
     <ClInclude Include="src\matrix.h">
       <Filter>Header Files</Filter>
@@ -212,9 +188,6 @@
     <ClInclude Include="src\render-actors\draw_bitmap.h">
       <Filter>Header Files\render actors</Filter>
     </ClInclude>
-    <ClInclude Include="src\ScriptedEntity.h">
-      <Filter>Header Files\entity</Filter>
-    </ClInclude>
     <ClInclude Include="src\simulate-actors\velocitycap.h">
       <Filter>Header Files\simulate actors</Filter>
     </ClInclude>
@@ -235,6 +208,36 @@
     </ClInclude>
     <ClInclude Include="src\texture.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entity\EComponent.h">
+      <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entity\Entity.h">
+      <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entity\EntityChunk.h">
+      <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entity\EntityManager.h">
+      <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entity\Laser.h">
+      <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entity\Marker.h">
+      <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entity\Player.h">
+      <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entity\ScriptedEntity.h">
+      <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entity\Asteroid.h">
+      <Filter>Header Files\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entity\Component.h">
+      <Filter>Header Files\entity</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

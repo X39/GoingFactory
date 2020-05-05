@@ -3,7 +3,7 @@
 #include "ResourceManager.h"
 #include "UXHandler.h"
 #include "UXEntityPlacer.h"
-#include "ScriptedEntity.h"
+#include "entity/ScriptedEntity.h"
 
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
@@ -104,6 +104,7 @@ bool x39::goingfactory::ux::UXPlaceable::mouse_button_down(GameInstance& game, i
 				entity->texture(m_tx_placeable_display);
 				entity->texture_center({ m_tx_placeable_display.width() / 2, m_tx_placeable_display.height() / 2 });
 				entity->position(position);
+				m_queue_done--;
 				return entity;
 			}, m_tx_placeable_render_preview));
 		}

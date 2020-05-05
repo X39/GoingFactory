@@ -1,6 +1,6 @@
 #pragma once
 #include "Entity.h"
-#include "texture.h"
+#include "../texture.h"
 #include <cstdint>
 
 extern "C" struct yaoosl_instance;

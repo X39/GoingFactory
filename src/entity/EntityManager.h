@@ -5,24 +5,21 @@
 #include <unordered_map>
 #include <type_traits>
 
-#include "Event.h"
-#include "vec2.h"
-#include "chunk.h"
+#include "../Event.h"
+#include "../vec2.h"
+#include "EntityChunk.h"
 #include "Component.h"
 
-namespace x39::goingfactory
+namespace x39::goingfactory::entity
 {
-	namespace entity
-	{
-		class Entity;
-	}
-	class chunk;
+	class Entity;
+	class EntityChunk;
 	class EntityManager
 	{
 	private:
 		std::vector<entity::Entity*> m_all_entities;
 		std::unordered_map<EComponent, std::vector<entity::Entity*>> m_specialized_entities;
-		std::unordered_map<int64_t, chunk*> m_chunks;
+		std::unordered_map<int64_t, EntityChunk*> m_chunks;
 
 		std::mutex m_pool_create;
 		std::vector<entity::Entity*> m_create_pool;
@@ -32,10 +29,10 @@ namespace x39::goingfactory
 		std::vector<PositionComponent*> m_chunk_update_pool;
 		void do_act_pools();
 	public:
-		struct EntityAddedEventArgs : public EventArgs { entity::Entity* entity; EntityAddedEventArgs(entity::Entity* entity) : entity(entity) {} };
-		Event<EntityManager, EntityAddedEventArgs> onEntityAdded;
-		struct EntityRemovedEventArgs : public EventArgs { entity::Entity* entity; EntityRemovedEventArgs(entity::Entity* entity) : entity(entity) {} };
-		Event<EntityManager, EntityRemovedEventArgs> onEntityRemoved;
+		struct EntityAddedEventArgs : public util::EventArgs { entity::Entity* entity; EntityAddedEventArgs(entity::Entity* entity) : entity(entity) {} };
+		util::Event<EntityManager, EntityAddedEventArgs> onEntityAdded;
+		struct EntityRemovedEventArgs : public util::EventArgs { entity::Entity* entity; EntityRemovedEventArgs(entity::Entity* entity) : entity(entity) {} };
+		util::Event<EntityManager, EntityRemovedEventArgs> onEntityRemoved;
 
 
 		EntityManager() :
@@ -73,18 +70,18 @@ namespace x39::goingfactory
 		}
 
 
-		chunk* chunk_at(vec2 pos)
+		EntityChunk* chunk_at(vec2 pos)
 		{
-			auto coordinate = chunk::to_chunk_coordinate(pos);
+			auto coordinate = EntityChunk::to_chunk_coordinate(pos);
 			if (m_chunks.contains(coordinate))
 			{
 				return m_chunks[coordinate];
 			}
 			return nullptr;
 		}
-		chunk* chunk_at(int32_t x, int32_t y)
+		EntityChunk* chunk_at(int32_t x, int32_t y)
 		{
-			auto coordinate = chunk::to_chunk_coordinate(x, y);
+			auto coordinate = EntityChunk::to_chunk_coordinate(x, y);
 			if (m_chunks.contains(coordinate))
 			{
 				return m_chunks[coordinate];
@@ -112,7 +109,7 @@ namespace x39::goingfactory
 			World position will be transformed into chunk position and the entities in that given chunk are returned.
 		*/
 		std::vector<entity::Entity*>::const_iterator begin(vec2 vec) const {
-			auto chunk_coord = chunk::to_chunk_coordinate(vec);
+			auto chunk_coord = EntityChunk::to_chunk_coordinate(vec);
 			if (!m_chunks.contains(chunk_coord))
 			{
 				return {};
@@ -123,7 +120,7 @@ namespace x39::goingfactory
 			Iterator start for entities inside the provided chunk, determined via the chunk coordinates provided.
 		*/
 		std::vector<entity::Entity*>::const_iterator begin(int32_t x, int32_t y) const {
-			auto chunk_coord = chunk::concat_chunk_coordinate(x, y);
+			auto chunk_coord = EntityChunk::concat_chunk_coordinate(x, y);
 			if (!m_chunks.contains(chunk_coord))
 			{
 				return {};
@@ -153,7 +150,7 @@ namespace x39::goingfactory
 			World position will be transformed into chunk position and the entities in that given chunk are returned.
 		*/
 		std::vector<entity::Entity*>::const_iterator end(vec2 vec) const {
-			auto chunk_coord = chunk::to_chunk_coordinate(vec);
+			auto chunk_coord = EntityChunk::to_chunk_coordinate(vec);
 			if (!m_chunks.contains(chunk_coord))
 			{
 				return {};
@@ -164,7 +161,7 @@ namespace x39::goingfactory
 			Iterator end for entities inside the provided chunk, determined via the chunk coordinates provided.
 		*/
 		std::vector<entity::Entity*>::const_iterator end(int32_t x, int32_t y) const {
-			auto chunk_coord = chunk::concat_chunk_coordinate(x, y);
+			auto chunk_coord = EntityChunk::concat_chunk_coordinate(x, y);
 			if (!m_chunks.contains(chunk_coord))
 			{
 				return {};

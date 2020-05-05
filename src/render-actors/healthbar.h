@@ -1,14 +1,14 @@
 #pragma once
-#include "../Component.h"
+#include "../entity/Component.h"
 
 
 namespace x39::goingfactory::actors::render
 {
-	class healthbar : public RenderComponent::RenderActor
+	class healthbar : public entity::RenderComponent::RenderActor
 	{
 	public:
 
 		// Inherited via RenderActor
-		virtual void render(RenderComponent* component, GameInstance& game_instance, vec2 translate) override;
+		virtual void render(entity::RenderComponent* component, GameInstance& game_instance, vec2 translate) override;
 	};
 }

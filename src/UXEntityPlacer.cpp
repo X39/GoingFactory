@@ -1,7 +1,7 @@
 #include "UXEntityPlacer.h"
 #include "UXHandler.h"
 #include "ResourceManager.h"
-#include "EntityManager.h"
+#include "entity/EntityManager.h"
 #include "World.h"
 
 #include <cmath>

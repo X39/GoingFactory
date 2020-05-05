@@ -1,5 +1,5 @@
 #pragma once
-#include "../Component.h"
+#include "../entity/Component.h"
 #include "../texture.h"
 
 #include <string>
@@ -8,7 +8,7 @@
 
 namespace x39::goingfactory::actors::render
 {
-	class draw_bitmap : public RenderComponent::RenderActor
+	class draw_bitmap : public entity::RenderComponent::RenderActor
 	{
 	private:
 		std::vector<std::string> m_textures_tmp;
@@ -19,6 +19,6 @@ namespace x39::goingfactory::actors::render
 		draw_bitmap(std::initializer_list<std::string> initializer) : m_textures_tmp(initializer), m_texture_index(0), m_prev_rad(0) {}
 		// Inherited via RenderActor
 		virtual void render_init(GameInstance& game_instance) override;
-		virtual void render(RenderComponent* component, GameInstance& game_instance, vec2 translate) override;
+		virtual void render(entity::RenderComponent* component, GameInstance& game_instance, vec2 translate) override;
 	};
 }

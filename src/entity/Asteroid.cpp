@@ -1,22 +1,24 @@
 #include "Asteroid.h"
-#include "render-actors/healthbar.h"
-#include "simulate-actors/move.h"
-#include "simulate-actors/no_health_remove.h"
-#include "simulate-actors/collision.h"
+#include "../render-actors/healthbar.h"
+#include "../simulate-actors/move.h"
+#include "../simulate-actors/no_health_remove.h"
+#include "../simulate-actors/collision.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include <array>
 #include "EntityManager.h"
-#include "World.h"
+#include "../World.h"
 
-class RenderActorCustom : public x39::goingfactory::RenderComponent::RenderActor
+using namespace x39::goingfactory;
+using namespace x39::goingfactory::entity;
+class RenderActorCustom : public RenderComponent::RenderActor
 {
 public:
 	// Inherited via RenderActor
-	virtual void render(x39::goingfactory::RenderComponent* component, x39::goingfactory::GameInstance& game_instance, x39::goingfactory::vec2 translate)
+	virtual void render(RenderComponent* component, GameInstance& game_instance, x39::goingfactory::vec2 translate)
 	{
 		const float scale = 2.0f;
-		auto positionComponent = component->get_component<x39::goingfactory::PositionComponent>();
+		auto positionComponent = component->get_component<PositionComponent>();
 		if (!positionComponent) { throw std::bad_cast(); }
 
 		auto velocity = positionComponent->velocity();
@@ -44,7 +46,7 @@ public:
 x39::goingfactory::entity::Asteroid::Asteroid() :
 	Entity(),
 	SimulateComponent({
-	new actors::simulate::collision([](CollidableComponent* self, CollidableComponent* other, GameInstance& game_instance, float sim_coef) ->
+	new x39::goingfactory::actors::simulate::collision([](CollidableComponent* self, CollidableComponent* other, GameInstance& game_instance, float sim_coef) ->
 	void {
 			game_instance.entity_manager.pool_destroy(dynamic_cast<Entity*>(self));
 			if (!other) { return; }

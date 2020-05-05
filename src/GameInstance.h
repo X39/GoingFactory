@@ -3,7 +3,10 @@
 
 namespace x39::goingfactory
 {
-	class EntityManager;
+	namespace entity
+	{
+		class EntityManager;
+	}
 	class ResourceManager;
 	class World;
 	namespace ux
@@ -15,7 +18,7 @@ namespace x39::goingfactory
 	private:
 		ThreadPool* m_thread_pool;
 	public:
-		GameInstance(EntityManager& entity_manager, ResourceManager& resource_manager, World& world, ux::UXHandler& uxhandler) :
+		GameInstance(entity::EntityManager& entity_manager, ResourceManager& resource_manager, World& world, ux::UXHandler& uxhandler) :
 			entity_manager(entity_manager),
 			resource_manager(resource_manager),
 			world(world),
@@ -29,7 +32,7 @@ namespace x39::goingfactory
 			delete m_thread_pool;
 		}
 		ux::UXHandler& uxhandler;
-		EntityManager& entity_manager;
+		entity::EntityManager& entity_manager;
 		ResourceManager& resource_manager;
 		World& world;
 		ThreadPool& thread_pool() { return *m_thread_pool; }

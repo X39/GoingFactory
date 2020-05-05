@@ -1,18 +1,20 @@
 #include "Laser.h"
-#include "simulate-actors/move.h"
-#include "simulate-actors/collision.h"
+#include "../simulate-actors/move.h"
+#include "../simulate-actors/collision.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 
 #include "EntityManager.h"
 
-class RenderActorLaserCustom : public x39::goingfactory::RenderComponent::RenderActor
+using namespace x39::goingfactory;
+using namespace x39::goingfactory::entity;
+class RenderActorLaserCustom : public RenderComponent::RenderActor
 {
 public:
 	// Inherited via RenderActor
-	virtual void render(x39::goingfactory::RenderComponent* component, x39::goingfactory::GameInstance& game_instance, x39::goingfactory::vec2 translate)
+	virtual void render(RenderComponent* component, GameInstance& game_instance, vec2 translate)
 	{
-		auto positionComponent = component->get_component<x39::goingfactory::PositionComponent>();
+		auto positionComponent = component->get_component<PositionComponent>();
 		if (!positionComponent) { throw std::bad_cast(); }
 
 		auto pos = positionComponent->position() - translate;
@@ -22,20 +24,20 @@ public:
 		al_draw_line(pos.x, pos.y, pos.x + vel.x, pos.y + vel.y, al_map_rgb(255, 0, 0), 1);
 	}
 };
-class SimulateActorLaserCustom : public x39::goingfactory::SimulateComponent::SimulateActor
+class SimulateActorLaserCustom : public SimulateComponent::SimulateActor
 {
 public:
 	// Inherited via SimulateActor
-	virtual void simulate(x39::goingfactory::SimulateComponent* component, x39::goingfactory::GameInstance& game_instance, float sim_coef) override
+	virtual void simulate(SimulateComponent* component, GameInstance& game_instance, float sim_coef) override
 	{
-		auto laser = static_cast<x39::goingfactory::entity::Laser*>(component);
+		auto laser = static_cast<entity::Laser*>(component);
 		if (--laser->ttl == 0)
 		{
 			game_instance.entity_manager.pool_destroy(laser);
 		}
 	}
 };
-x39::goingfactory::entity::Laser::Laser() :
+entity::Laser::Laser() :
 	Entity(),
 	ttl(200),
 	RenderComponent({ new RenderActorLaserCustom() }),

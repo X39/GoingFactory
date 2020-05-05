@@ -1,7 +1,7 @@
 #pragma once
 #include "GameInstance.h"
 #include "UXElement.h"
-#include "Entity.h"
+#include "entity/Entity.h"
 #include "texture.h"
 
 #include <functional>

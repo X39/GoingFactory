@@ -14,9 +14,9 @@ void x39::goingfactory::actors::render::draw_bitmap::render_init(GameInstance& g
 	m_textures_tmp.clear();
 }
 
-void x39::goingfactory::actors::render::draw_bitmap::render(RenderComponent* component, GameInstance& game_instance, vec2 translate)
+void x39::goingfactory::actors::render::draw_bitmap::render(entity::RenderComponent* component, GameInstance& game_instance, vec2 translate)
 {
-	auto positionComponent = component->get_component<PositionComponent>();
+	auto positionComponent = component->get_component<entity::PositionComponent>();
 	if (!positionComponent) { throw std::bad_cast(); }
 
 	auto velocity = positionComponent->velocity();

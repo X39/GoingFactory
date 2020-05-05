@@ -1,5 +1,5 @@
 #pragma once
-namespace x39::goingfactory
+namespace x39::goingfactory::entity
 {
 	enum class EComponent
 	{

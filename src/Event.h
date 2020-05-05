@@ -4,7 +4,7 @@
 #include <mutex>
 #include <algorithm>
 
-namespace x39::goingfactory
+namespace x39::goingfactory::util
 {
 	struct EventArgs { };
 	struct CancelableEventArgs : public EventArgs {

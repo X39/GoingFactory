@@ -24,12 +24,12 @@
 #include "ThreadPool.h"
 
 #include "ResourceManager.h"
-#include "EntityManager.h"
-#include "Entity.h"
-#include "ScriptedEntity.h"
-#include "Asteroid.h"
-#include "Player.h"
-#include "Marker.h"
+#include "entity/EntityManager.h"
+#include "entity/Entity.h"
+#include "entity/ScriptedEntity.h"
+#include "entity/Asteroid.h"
+#include "entity/Player.h"
+#include "entity/Marker.h"
 #include "EKey.h"
 #include "EModifier.h"
 #include "GameInstance.h"
@@ -40,6 +40,8 @@
 #include "UXPlaceable.h"
 
 #include <crtdbg.h>
+
+using namespace x39::goingfactory;
 
 
 // #define X39_GF_DISABLE_MT
@@ -255,7 +257,7 @@ static inline std::string trim_copy(std::string s) {
 }
 #pragma endregion
 
-static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstance& gameInstance)
+static int LoadYaooslClasses(yaooslhandle runtime, GameInstance& gameInstance)
 {
     std::vector<std::string> classesnames;
     std::vector<std::array<std::string, 2>> files;
@@ -290,9 +292,9 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
             auto classhandle = yaoosl_declare_class(runtime, "GoingFactory.Entity");
             classhandle->callback_data = &gameInstance;
             classhandle->callback_create = [](void* data, struct yaoosl_instance* instance) -> bool {
-                x39::goingfactory::GameInstance* gameInstance = static_cast<x39::goingfactory::GameInstance*>(data);
-                auto entity = new x39::goingfactory::entity::ScriptedEntity();
-                // entity->onDestroy.subscribe([instance](x39::goingfactory::entity::Entity& sender, x39::goingfactory::EventArgs& e) -> void {
+                GameInstance* gameInstance = static_cast<GameInstance*>(data);
+                auto entity = new entity::ScriptedEntity();
+                // entity->onDestroy.subscribe([instance](entity::Entity& sender, EventArgs& e) -> void {
                 //     
                 // });
                 gameInstance->entity_manager.pool_create(entity);
@@ -300,8 +302,8 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 return true;
             };
             classhandle->callback_destroy = [](void* data, struct yaoosl_instance* instance) -> void {
-                x39::goingfactory::GameInstance* gameInstance = static_cast<x39::goingfactory::GameInstance*>(data);
-                auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(instance->additional.ptr);
+                GameInstance* gameInstance = static_cast<GameInstance*>(data);
+                auto entity = static_cast<entity::ScriptedEntity*>(instance->additional.ptr);
                 gameInstance->entity_manager.pool_destroy(entity);
             };
 
@@ -310,7 +312,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto posx_getter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
                         d->additional.d = entity->position().x;
                         yaoosl_instance_inc_ref(d);
@@ -320,7 +322,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto posx_setter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         yaooslinstancehandle d;
                         if (!(d = yaoosl_context_pop_value(context)))
                         {
@@ -343,7 +345,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto posy_getter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
                         d->additional.d = entity->position().y;
                         yaoosl_instance_inc_ref(d);
@@ -353,7 +355,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto posy_setter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         yaooslinstancehandle d;
                         if (!(d = yaoosl_context_pop_value(context)))
                         {
@@ -377,7 +379,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto velx_getter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
                         d->additional.d = entity->velocity().x;
                         yaoosl_instance_inc_ref(d);
@@ -387,7 +389,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto velx_setter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         yaooslinstancehandle d;
                         if (!(d = yaoosl_context_pop_value(context)))
                         {
@@ -410,7 +412,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto vely_getter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
                         d->additional.d = entity->velocity().y;
                         yaoosl_instance_inc_ref(d);
@@ -420,7 +422,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto vely_setter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         yaooslinstancehandle d;
                         if (!(d = yaoosl_context_pop_value(context)))
                         {
@@ -444,7 +446,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto texture_getter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         auto texture = yaoosl_instance_create(yaoosl_declare_class(vm, "GoingFactory.Texture"));
                         texture->additional.uint64 = entity->texture().index();
                         texture->fields[0]->additional.d = entity->texture().width();
@@ -456,8 +458,8 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto texture_setter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        x39::goingfactory::GameInstance* gameInstance = static_cast<x39::goingfactory::GameInstance*>(self->type->callback_data);
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        GameInstance* gameInstance = static_cast<GameInstance*>(self->type->callback_data);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         yaooslinstancehandle texture;
                         if (!(texture = yaoosl_context_pop_value(context)))
                         {
@@ -481,7 +483,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto texturecenterx_getter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
                         d->additional.d = entity->texture_center().x;
                         yaoosl_instance_inc_ref(d);
@@ -491,7 +493,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto texturecenterx_setter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         yaooslinstancehandle d;
                         if (!(d = yaoosl_context_pop_value(context)))
                         {
@@ -514,7 +516,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto texturecenterx_getter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         auto d = yaoosl_instance_create(vm->classes[DOUBLE]);
                         d->additional.d = entity->texture_center().y;
                         yaoosl_instance_inc_ref(d);
@@ -524,7 +526,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto texturecenterx_setter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         yaooslinstancehandle d;
                         if (!(d = yaoosl_context_pop_value(context)))
                         {
@@ -548,7 +550,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto cancollide_getter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         auto flag = yaoosl_instance_create(vm->classes[BOOLEAN]);
                         flag->additional.flag = entity->can_collide();
                         yaoosl_instance_inc_ref(flag);
@@ -558,7 +560,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
                 auto cancollide_setter_code = yaoosl_code_create2(
                     [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                     {
-                        auto entity = static_cast<x39::goingfactory::entity::ScriptedEntity*>(self->additional.ptr);
+                        auto entity = static_cast<entity::ScriptedEntity*>(self->additional.ptr);
                         yaooslinstancehandle flag;
                         if (!(flag = yaoosl_context_pop_value(context)))
                         {
@@ -592,7 +594,7 @@ static int LoadYaooslClasses(yaooslhandle runtime, x39::goingfactory::GameInstan
             auto constructor_string_code = yaoosl_code_create2(
                 [](struct yaoosl* vm, struct yaoosl_context* context, struct yaoosl_method* method, struct yaoosl_instance* self) -> void
                 {
-                    x39::goingfactory::GameInstance* gameInstance = static_cast<x39::goingfactory::GameInstance*>(self->type->callback_data);
+                    GameInstance* gameInstance = static_cast<GameInstance*>(self->type->callback_data);
                     yaooslinstancehandle str;
                     if (!(str = yaoosl_context_pop_value(context)))
                     {
@@ -667,28 +669,28 @@ int main()
         return init_res;
     }
 
-    x39::goingfactory::ResourceManager resources_manager;
-    x39::goingfactory::EntityManager entity_manager;
-    x39::goingfactory::io::KeyboardTarget keyboard_target;
-    x39::goingfactory::World world;
-    x39::goingfactory::ux::UXHandler uxhandler(resources_manager);
+    ResourceManager resources_manager;
+    entity::EntityManager entity_manager;
+    io::KeyboardTarget keyboard_target;
+    World world;
+    ux::UXHandler uxhandler(resources_manager);
     al_set_target_backbuffer(display);
-    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_up, x39::goingfactory::io::EKey::W);
-    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_left, x39::goingfactory::io::EKey::A);
-    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_down, x39::goingfactory::io::EKey::S);
-    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::move_right, x39::goingfactory::io::EKey::D);
-    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_a, x39::goingfactory::io::EKey::LSHIFT);
-    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_b, x39::goingfactory::io::EKey::LCTRL);
-    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_c, x39::goingfactory::io::EKey::RSHIFT);
-    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::mod_d, x39::goingfactory::io::EKey::RCTRL);
-    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::trigger_a, x39::goingfactory::io::EKey::SPACE);
-    keyboard_target.map(x39::goingfactory::io::EPlayerInteraction::trigger_b, x39::goingfactory::io::EKey::ALT);
-    x39::goingfactory::GameInstance game_instance(entity_manager, resources_manager, world, uxhandler);
+    keyboard_target.map(io::EPlayerInteraction::move_up, io::EKey::W);
+    keyboard_target.map(io::EPlayerInteraction::move_left, io::EKey::A);
+    keyboard_target.map(io::EPlayerInteraction::move_down, io::EKey::S);
+    keyboard_target.map(io::EPlayerInteraction::move_right, io::EKey::D);
+    keyboard_target.map(io::EPlayerInteraction::mod_a, io::EKey::LSHIFT);
+    keyboard_target.map(io::EPlayerInteraction::mod_b, io::EKey::LCTRL);
+    keyboard_target.map(io::EPlayerInteraction::mod_c, io::EKey::RSHIFT);
+    keyboard_target.map(io::EPlayerInteraction::mod_d, io::EKey::RCTRL);
+    keyboard_target.map(io::EPlayerInteraction::trigger_a, io::EKey::SPACE);
+    keyboard_target.map(io::EPlayerInteraction::trigger_b, io::EKey::ALT);
+    GameInstance game_instance(entity_manager, resources_manager, world, uxhandler);
     entity_manager.onEntityAdded.subscribe([&game_instance](
-        x39::goingfactory::EntityManager& entity_manager, x39::goingfactory::EntityManager::EntityAddedEventArgs args) -> void {
-            if (args.entity->is_type(x39::goingfactory::EComponent::Render))
+        entity::EntityManager& entity_manager, entity::EntityManager::EntityAddedEventArgs args) -> void {
+            if (args.entity->is_type(entity::EComponent::Render))
             {
-                auto renderComponent = args.entity->get_component<x39::goingfactory::RenderComponent>();
+                auto renderComponent = args.entity->get_component<entity::RenderComponent>();
                 renderComponent->render_init(game_instance);
             }
         });
@@ -714,7 +716,7 @@ int main()
         yaoosl_context_destroy(context);
     }
 
-    auto player = new x39::goingfactory::entity::Player();
+    auto player = new entity::Player();
     world.set_player(player);
     world.set_viewport(1, 1, DISPLAY_WIDTH - 192, DISPLAY_HEIGHT);
     const int level_size = 50000;
@@ -728,11 +730,11 @@ int main()
     bool halt_simulation = true;
 
 
-    auto menu = x39::goingfactory::ux::UXPanel(game_instance, DISPLAY_WIDTH - 192, 0, 192, DISPLAY_HEIGHT);
+    auto menu = ux::UXPanel(game_instance, DISPLAY_WIDTH - 192, 0, 192, DISPLAY_HEIGHT);
     uxhandler.push_back(&menu);
 
 
-    auto build_test = new x39::goingfactory::ux::UXPlaceable(game_instance, menu.x + 4, menu.y + 4, 32, 32);
+    auto build_test = new ux::UXPlaceable(game_instance, menu.x + 4, menu.y + 4, 32, 32);
     menu.push_back(build_test);
     while (true)
     {
@@ -751,7 +753,7 @@ int main()
         }
         else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
         {
-            uxhandler.mouse_button(game_instance, ev.mouse.x, ev.mouse.y, (x39::goingfactory::ux::EMouseButton)ev.mouse.button, true);
+            uxhandler.mouse_button(game_instance, ev.mouse.x, ev.mouse.y, (ux::EMouseButton)ev.mouse.button, true);
         }
         else if (ev.type == ALLEGRO_EVENT_MOUSE_AXES)
         {
@@ -759,22 +761,22 @@ int main()
         }
         else if (ev.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP)
         {
-            uxhandler.mouse_button(game_instance, ev.mouse.x, ev.mouse.y, (x39::goingfactory::ux::EMouseButton)ev.mouse.button, false);
+            uxhandler.mouse_button(game_instance, ev.mouse.x, ev.mouse.y, (ux::EMouseButton)ev.mouse.button, false);
         }
         else if (ev.type == ALLEGRO_EVENT_KEY_DOWN)
         {
-            auto modifier = static_cast<x39::goingfactory::io::EModifier>(ev.keyboard.modifiers);
-            auto key = static_cast<x39::goingfactory::io::EKey>(ev.keyboard.keycode);
-            if (key == x39::goingfactory::io::EKey::PAUSE)
+            auto modifier = static_cast<io::EModifier>(ev.keyboard.modifiers);
+            auto key = static_cast<io::EKey>(ev.keyboard.keycode);
+            if (key == io::EKey::PAUSE)
             {
                 halt_simulation = !halt_simulation;
             }
             for (auto it : entity_manager)
             {
                 if (!it) { continue; }
-                if (it->is_type(x39::goingfactory::EComponent::Keyboard))
+                if (it->is_type(entity::EComponent::Keyboard))
                 {
-                    auto keyboardComponent = it->get_component<x39::goingfactory::KeyboardComponent>();
+                    auto keyboardComponent = it->get_component<entity::KeyboardComponent>();
                     keyboardComponent->key_down(game_instance, key, modifier);
                 }
             }
@@ -784,14 +786,14 @@ int main()
         }
         else if (ev.type == ALLEGRO_EVENT_KEY_UP)
         {
-            auto modifier = static_cast<x39::goingfactory::io::EModifier>(ev.keyboard.modifiers);
-            auto key = static_cast<x39::goingfactory::io::EKey>(ev.keyboard.keycode);
+            auto modifier = static_cast<io::EModifier>(ev.keyboard.modifiers);
+            auto key = static_cast<io::EKey>(ev.keyboard.keycode);
             for (auto it : entity_manager)
             {
                 if (!it) { continue; }
-                if (it->is_type(x39::goingfactory::EComponent::Keyboard))
+                if (it->is_type(entity::EComponent::Keyboard))
                 {
-                    auto keyboardComponent = it->get_component<x39::goingfactory::KeyboardComponent>();
+                    auto keyboardComponent = it->get_component<entity::KeyboardComponent>();
                     keyboardComponent->key_up(game_instance, key, modifier);
                 }
             }
@@ -839,8 +841,8 @@ int main()
                 game_instance.thread_pool().enqueue([&] {
                     std::vector<std::future<void>> results;
 #endif // X39_GF_DISABLE_MT
-                    auto start = entity_manager.begin(x39::goingfactory::EComponent::Simulate);
-                    auto end = entity_manager.end(x39::goingfactory::EComponent::Simulate);
+                    auto start = entity_manager.begin(entity::EComponent::Simulate);
+                    auto end = entity_manager.end(entity::EComponent::Simulate);
                     const size_t handle_amount = 100;
                     size_t range = end - start;
                     size_t tasks = range / handle_amount + (range % handle_amount == 0 ? 0 : 1);
@@ -857,7 +859,7 @@ int main()
                                     for (auto i = range_start; i != range_end && i != range; i++)
                                     {
                                         auto it = start + i;
-                                        auto simulateComponent = (*it)->get_component<x39::goingfactory::SimulateComponent>();
+                                        auto simulateComponent = (*it)->get_component<entity::SimulateComponent>();
                                         simulateComponent->simulate(game_instance, sim_coef);
                                     }
 #ifndef X39_GF_DISABLE_MT
@@ -926,9 +928,9 @@ int main()
             // auto color_out_of_view = al_map_rgb(127, 0, 0);
             // for (auto it : entity_manager)
             // {
-            //     if (it->is_type(x39::goingfactory::EComponent::Position))
+            //     if (it->is_type(EComponent::Position))
             //     {
-            //         auto positionComponent = it->get_component<x39::goingfactory::PositionComponent>();
+            //         auto positionComponent = it->get_component<PositionComponent>();
             //         sstream << it->type_name() << "(" << "): { " << positionComponent->position().x << ", " << positionComponent->position().y << " }";
             //         if (world.is_in_view(positionComponent->position(), -32))
             //         {

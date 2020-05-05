@@ -2,10 +2,11 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 
-void x39::goingfactory::actors::render::healthbar::render(RenderComponent* component, GameInstance& game_instance, vec2 translate)
+using namespace x39::goingfactory;
+void actors::render::healthbar::render(entity::RenderComponent* component, GameInstance& game_instance, vec2 translate)
 {
-	auto positionComponent = component->get_component<x39::goingfactory::PositionComponent>();
-	auto healthComponent = component->get_component<x39::goingfactory::HealthComponent>();
+	auto positionComponent = component->get_component<entity::PositionComponent>();
+	auto healthComponent = component->get_component<entity::HealthComponent>();
 	if (!positionComponent || !healthComponent) { throw std::bad_cast(); }
 
 	auto hp = healthComponent->health();

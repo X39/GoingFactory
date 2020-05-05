@@ -2,10 +2,10 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
-#include "Entity.h"
 #include "Entry.h"
 #include "ResourceManager.h"
-#include "EntityManager.h"
+#include "entity/Entity.h"
+#include "entity/EntityManager.h"
 #include "FastNoise.h"
 #include "UXHandler.h"
 #include "UXPanel.h"
@@ -15,20 +15,23 @@
 #include <sstream>
 #include <unordered_map>
 
-x39::goingfactory::FastNoise generator(12030220512152);
-x39::goingfactory::texture grass1_texture_id = {};
-x39::goingfactory::texture grass1_surroundings_texture_id = {};
-x39::goingfactory::texture grass2_1_texture_id = {};
-x39::goingfactory::texture grass2_2_texture_id = {};
-x39::goingfactory::texture grass2_3_texture_id = {};
-x39::goingfactory::texture tree_texture_id = {};
-x39::goingfactory::texture dirt_texture_id = {};
-x39::goingfactory::texture stonea_texture_id = {};
-x39::goingfactory::texture stoneb_texture_id = {};
+
+using namespace x39::goingfactory;
+
+FastNoise generator(12030220512152);
+texture grass1_texture_id = {};
+texture grass1_surroundings_texture_id = {};
+texture grass2_1_texture_id = {};
+texture grass2_2_texture_id = {};
+texture grass2_3_texture_id = {};
+texture tree_texture_id = {};
+texture dirt_texture_id = {};
+texture stonea_texture_id = {};
+texture stoneb_texture_id = {};
 // Get-/SetFrequency ~= Zoom
 
-x39::goingfactory::vec2 store_a_player_vel;
-x39::goingfactory::vec2 store_a_player_pos;
+vec2 store_a_player_vel;
+vec2 store_a_player_pos;
 
 class RandomFromPerlin
 {
@@ -61,7 +64,7 @@ static enum TextureIndex
     
     __SIZE
 };
-x39::goingfactory::World::Tile x39::goingfactory::World::get_tile(int x, int y)
+World::Tile World::get_tile(int x, int y)
 {
     x = x - x % tile_size;
     y = y - y % tile_size;
@@ -73,7 +76,7 @@ x39::goingfactory::World::Tile x39::goingfactory::World::get_tile(int x, int y)
         floats.push_back(std::fabsf(generator.GetPerlin(x + tile_size - i, y + i)));
     }
     RandomFromPerlin random(floats);
-    x39::goingfactory::World::Tile tile = { 0 };
+    World::Tile tile = { 0 };
     if (random.next_float() > 0.5)
     {
         tile.index = TextureIndex::GrassAnimated;
@@ -125,36 +128,36 @@ x39::goingfactory::World::Tile x39::goingfactory::World::get_tile(int x, int y)
     }
     return tile;
 }
-std::vector<std::array<x39::goingfactory::vec2, 4>> x39::goingfactory::World::get_chunk_world_collision(int x, int y)
+std::vector<std::array<vec2, 4>> World::get_chunk_world_collision(int x, int y)
 {
-    std::vector<std::array<x39::goingfactory::vec2, 4>> vec;
-    for (int i = 0; i <= chunk::chunk_size; i += x39::goingfactory::World::tile_size)
+    std::vector<std::array<vec2, 4>> vec;
+    for (int i = 0; i <= entity::EntityChunk::chunk_size; i += World::tile_size)
     {
-        for (int j = 0; j <= chunk::chunk_size; j += x39::goingfactory::World::tile_size)
+        for (int j = 0; j <= entity::EntityChunk::chunk_size; j += World::tile_size)
         {
             auto tile = get_tile(x + i, y + j);
             if (!tile.is_passable)
             {
-                vec.push_back(std::array<x39::goingfactory::vec2, 4>
+                vec.push_back(std::array<vec2, 4>
                 {
                     vec2
                     {
-                        (float)x + (i + x39::goingfactory::World::tile_size / 2) - x39::goingfactory::World::tile_size / 2,
-                        (float)y + (j + x39::goingfactory::World::tile_size / 2) - x39::goingfactory::World::tile_size / 2
+                        (float)x + (i + World::tile_size / 2) - World::tile_size / 2,
+                        (float)y + (j + World::tile_size / 2) - World::tile_size / 2
                     },
                     vec2
                     {
-                        (float)x + (i + x39::goingfactory::World::tile_size / 2) + x39::goingfactory::World::tile_size / 2,
-                        (float)y + (j + x39::goingfactory::World::tile_size / 2) - x39::goingfactory::World::tile_size / 2
+                        (float)x + (i + World::tile_size / 2) + World::tile_size / 2,
+                        (float)y + (j + World::tile_size / 2) - World::tile_size / 2
                     },
                     vec2
                     {
-                        (float)x + (i + x39::goingfactory::World::tile_size / 2) + x39::goingfactory::World::tile_size / 2,
-                        (float)y + (j + x39::goingfactory::World::tile_size / 2) + x39::goingfactory::World::tile_size / 2
+                        (float)x + (i + World::tile_size / 2) + World::tile_size / 2,
+                        (float)y + (j + World::tile_size / 2) + World::tile_size / 2
                     },
                     vec2{
-                        (float)x + (i + x39::goingfactory::World::tile_size / 2) - x39::goingfactory::World::tile_size / 2,
-                        (float)y + (j + x39::goingfactory::World::tile_size / 2) + x39::goingfactory::World::tile_size / 2
+                        (float)x + (i + World::tile_size / 2) - World::tile_size / 2,
+                        (float)y + (j + World::tile_size / 2) + World::tile_size / 2
                     }
                 });
             }
@@ -163,7 +166,7 @@ std::vector<std::array<x39::goingfactory::vec2, 4>> x39::goingfactory::World::ge
     return vec;
 }
 
-void x39::goingfactory::World::draw_level(GameInstance& game, vec2 top_left_viewport)
+void World::draw_level(GameInstance& game, vec2 top_left_viewport)
 {
     struct texture_spot
     {
@@ -250,7 +253,7 @@ void x39::goingfactory::World::draw_level(GameInstance& game, vec2 top_left_view
         al_hold_bitmap_drawing(false);
     }
 }
-void x39::goingfactory::World::draw_level_simple(GameInstance& game, vec2 top_left_viewport)
+void World::draw_level_simple(GameInstance& game, vec2 top_left_viewport)
 {
     for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % tile_size - tile_size; x < top_left_viewport.x + m_viewport_w; x += tile_size)
     {
@@ -282,12 +285,12 @@ void x39::goingfactory::World::draw_level_simple(GameInstance& game, vec2 top_le
         }
     }
 }
-void x39::goingfactory::World::draw_collision_boxes(GameInstance& game, vec2 top_left_viewport)
+void World::draw_collision_boxes(GameInstance& game, vec2 top_left_viewport)
 {
     auto yellow = al_map_rgb(255, 255, 0);
-    for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % chunk::chunk_size - chunk::chunk_size; x < top_left_viewport.x + m_viewport_w; x += chunk::chunk_size)
+    for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % entity::EntityChunk::chunk_size - entity::EntityChunk::chunk_size; x < top_left_viewport.x + m_viewport_w; x += entity::EntityChunk::chunk_size)
     {
-        for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % chunk::chunk_size - chunk::chunk_size; y < top_left_viewport.y + m_viewport_h; y += chunk::chunk_size)
+        for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % entity::EntityChunk::chunk_size - entity::EntityChunk::chunk_size; y < top_left_viewport.y + m_viewport_h; y += entity::EntityChunk::chunk_size)
         {
             auto points_collection = get_chunk_world_collision(x, y);
             for (auto& points : points_collection)
@@ -306,24 +309,24 @@ void x39::goingfactory::World::draw_collision_boxes(GameInstance& game, vec2 top
         }
     }
 }
-void x39::goingfactory::World::draw_chunks(GameInstance& game, vec2 top_left_viewport)
+void World::draw_chunks(GameInstance& game, vec2 top_left_viewport)
 {
-    if (!m_player || !m_player->is_type(EComponent::Position))
+    if (!m_player || !m_player->is_type(entity::EComponent::Position))
     {
         return;
     }
-    auto playerPositionComponent = m_player->get_component<PositionComponent>();
+    auto playerPositionComponent = m_player->get_component<entity::PositionComponent>();
     auto playerpos = playerPositionComponent->position();
-    auto playerchunk = chunk::to_chunk_coordinate(playerpos);
-    auto playerchunk_x = chunk::to_chunk_coordinate_x(playerpos);
-    auto playerchunk_y = chunk::to_chunk_coordinate_y(playerpos);
+    auto playerchunk = entity::EntityChunk::to_chunk_coordinate(playerpos);
+    auto playerchunk_x = entity::EntityChunk::to_chunk_coordinate_x(playerpos);
+    auto playerchunk_y = entity::EntityChunk::to_chunk_coordinate_y(playerpos);
     auto color_chunk = al_map_rgb(0, 0, 255);
     auto color_active = color_chunk;
     auto color_player = al_map_rgb(255, 255, 255);
     auto color_collission = al_map_rgb(255, 0, 255);
-    for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % chunk::chunk_size - chunk::chunk_size; x < top_left_viewport.x + m_viewport_w; x += chunk::chunk_size)
+    for (int32_t x = ((int32_t)top_left_viewport.x) - ((int32_t)top_left_viewport.x) % entity::EntityChunk::chunk_size - entity::EntityChunk::chunk_size; x < top_left_viewport.x + m_viewport_w; x += entity::EntityChunk::chunk_size)
     {
-        for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % chunk::chunk_size - chunk::chunk_size; y < top_left_viewport.y + m_viewport_h; y += chunk::chunk_size)
+        for (int32_t y = ((int32_t)top_left_viewport.y) - ((int32_t)top_left_viewport.y) % entity::EntityChunk::chunk_size - entity::EntityChunk::chunk_size; y < top_left_viewport.y + m_viewport_h; y += entity::EntityChunk::chunk_size)
         {
             vec2 pos = { x, y };
             auto chunk = game.entity_manager.chunk_at(pos);
@@ -340,7 +343,7 @@ void x39::goingfactory::World::draw_chunks(GameInstance& game, vec2 top_left_vie
                     {
                         for (int y2 = -1; y2 <= 1; y2++)
                         {
-                            if (chunk->coordinate() == chunk::concat_chunk_coordinate(playerchunk_x + x2, playerchunk_y + y2))
+                            if (chunk->coordinate() == entity::EntityChunk::concat_chunk_coordinate(playerchunk_x + x2, playerchunk_y + y2))
                             {
                                 color_active = color_collission;
                                 break;
@@ -352,68 +355,68 @@ void x39::goingfactory::World::draw_chunks(GameInstance& game, vec2 top_left_vie
                 al_draw_line(
                     pos.x,
                     pos.y,
-                    pos.x + chunk::chunk_size,
+                    pos.x + entity::EntityChunk::chunk_size,
                     pos.y,
                     color_active, 1);
                 al_draw_line(
                     pos.x,
                     pos.y,
                     pos.x,
-                    pos.y + chunk::chunk_size,
+                    pos.y + entity::EntityChunk::chunk_size,
                     color_active, 1);
                 al_draw_line(
-                    pos.x + chunk::chunk_size,
+                    pos.x + entity::EntityChunk::chunk_size,
                     pos.y,
-                    pos.x + chunk::chunk_size,
-                    pos.y + chunk::chunk_size,
+                    pos.x + entity::EntityChunk::chunk_size,
+                    pos.y + entity::EntityChunk::chunk_size,
                     color_active, 1);
                 al_draw_line(
                     pos.x,
-                    pos.y + chunk::chunk_size,
-                    pos.x + chunk::chunk_size,
-                    pos.y + chunk::chunk_size,
+                    pos.y + entity::EntityChunk::chunk_size,
+                    pos.x + entity::EntityChunk::chunk_size,
+                    pos.y + entity::EntityChunk::chunk_size,
                     color_active, 1);
                 al_draw_line(
                     pos.x,
                     pos.y,
-                    pos.x + chunk::chunk_size,
-                    pos.y + chunk::chunk_size,
+                    pos.x + entity::EntityChunk::chunk_size,
+                    pos.y + entity::EntityChunk::chunk_size,
                     color_active, 1);
                 al_draw_line(
-                    pos.x + chunk::chunk_size,
+                    pos.x + entity::EntityChunk::chunk_size,
                     pos.y,
                     pos.x,
-                    pos.y + chunk::chunk_size,
+                    pos.y + entity::EntityChunk::chunk_size,
                     color_active, 1);
             }
         }
     }
 }
-void x39::goingfactory::World::draw_entities(GameInstance& game, vec2 top_left_viewport)
+void World::draw_entities(GameInstance& game, vec2 top_left_viewport)
 {
     auto yellow = al_map_rgb(255, 255, 0);
     auto green = al_map_rgb(0, 255, 0);
-    for (auto it = game.entity_manager.begin(EComponent::Render); it != game.entity_manager.end(EComponent::Render); it++)
+    for (auto it = game.entity_manager.begin(entity::EComponent::Render); it != game.entity_manager.end(entity::EComponent::Render); it++)
     {
-        if ((*it)->is_type(EComponent::Position))
+        if ((*it)->is_type(entity::EComponent::Position))
         {
-            auto positionComponent = (*it)->get_component<x39::goingfactory::PositionComponent>();
+            auto positionComponent = (*it)->get_component<entity::PositionComponent>();
             auto position = positionComponent->position() - top_left_viewport;
             if (position.x > m_viewport_x&& position.x < m_viewport_w + m_viewport_x &&
                 position.y > m_viewport_y&& position.y < m_viewport_h + m_viewport_y)
             {
-                auto renderComponent = (*it)->get_component<x39::goingfactory::RenderComponent>();
+                auto renderComponent = (*it)->get_component<entity::RenderComponent>();
                 renderComponent->render(game, top_left_viewport);
             }
         }
         else
         {
-            auto renderComponent = (*it)->get_component<x39::goingfactory::RenderComponent>();
+            auto renderComponent = (*it)->get_component<entity::RenderComponent>();
             renderComponent->render(game, top_left_viewport);
         }
-        if (m_rf_entities_collision_boxes && (*it)->is_type(EComponent::Collidable))
+        if (m_rf_entities_collision_boxes && (*it)->is_type(entity::EComponent::Collidable))
         {
-            auto collidableComponent = (*it)->get_component<CollidableComponent>();
+            auto collidableComponent = (*it)->get_component<entity::CollidableComponent>();
             auto points = collidableComponent->polygon_points();
             for (size_t i = 0; i < points.size(); i++)
             {
@@ -428,7 +431,7 @@ void x39::goingfactory::World::draw_entities(GameInstance& game, vec2 top_left_v
         }
         if (m_rf_entities_positioncomponent)
         {
-            auto positionComponent = (*it)->get_component<PositionComponent>();
+            auto positionComponent = (*it)->get_component<entity::PositionComponent>();
             if (positionComponent)
             {
                 al_draw_line(
@@ -451,7 +454,7 @@ void x39::goingfactory::World::draw_entities(GameInstance& game, vec2 top_left_v
         }
     }
 }
-void x39::goingfactory::World::draw_graph(GameInstance& game, vec2 top_left_viewport)
+void World::draw_graph(GameInstance& game, vec2 top_left_viewport)
 {
     auto white = al_map_rgb(255, 255, 255);
     auto blue = al_map_rgba(127, 127, 255, 255);
@@ -529,7 +532,7 @@ void x39::goingfactory::World::draw_graph(GameInstance& game, vec2 top_left_view
         sstream.str("");
     }
 }
-x39::goingfactory::World::World() :
+World::World() :
     m_player(),
     m_viewport_x(0),
     m_viewport_y(0),
@@ -575,7 +578,7 @@ x39::goingfactory::World::World() :
         generator.SetFrequency(generator.GetFrequency() - 0.003);
     }
 }
-x39::goingfactory::World::~World()
+World::~World()
 {
     std::ofstream f("world.settings");
     if (f.good())
@@ -598,7 +601,7 @@ x39::goingfactory::World::~World()
     }
 }
 
-void x39::goingfactory::World::render(GameInstance& game)
+void World::render(GameInstance& game)
 {
     // if (grass1_texture_id == 0) { grass1_texture_id = game.resource_manager.load_bitmap("Textures/Grass.png"); }
     if (!grass1_surroundings_texture_id.is_valid()) { grass1_surroundings_texture_id = game.resource_manager.load_bitmap("Textures/GrassSurroundings.png"); }
@@ -610,11 +613,11 @@ void x39::goingfactory::World::render(GameInstance& game)
     if (!stoneb_texture_id.is_valid()) { stoneb_texture_id = game.resource_manager.load_bitmap("Textures/StoneB.png"); }
     if (!tree_texture_id.is_valid()) { tree_texture_id = game.resource_manager.load_bitmap("Textures/Tree.png"); }
 
-    if (!m_player || !m_player->is_type(EComponent::Position))
+    if (!m_player || !m_player->is_type(entity::EComponent::Position))
     {
         return;
     }
-    auto playerPositionComponent = m_player->get_component<PositionComponent>();
+    auto playerPositionComponent = m_player->get_component<entity::PositionComponent>();
     vec2 center = { m_viewport_w / 2 + m_viewport_x, m_viewport_h / 2 + m_viewport_y };
     m_top_left =  playerPositionComponent->position() - center;
 
@@ -687,7 +690,7 @@ void x39::goingfactory::World::render(GameInstance& game)
         }
     }
 }
-void x39::goingfactory::World::keydown(io::EKey key)
+void World::keydown(io::EKey key)
 {
     switch (key)
     {
@@ -718,13 +721,13 @@ void x39::goingfactory::World::keydown(io::EKey key)
     }
 }
 
-bool x39::goingfactory::World::is_in_view(vec2 pos, int offset)
+bool World::is_in_view(vec2 pos, int offset)
 {
-    if (!m_player || !m_player->is_type(EComponent::Position))
+    if (!m_player || !m_player->is_type(entity::EComponent::Position))
     {
         return false;
     }
-    auto playerPositionComponent = m_player->get_component<PositionComponent>();
+    auto playerPositionComponent = m_player->get_component<entity::PositionComponent>();
     vec2 center = { m_viewport_w / 2 + m_viewport_x, m_viewport_h / 2 + m_viewport_y };
     auto top_left_viewport = playerPositionComponent->position() - center;
     pos -= top_left_viewport;
