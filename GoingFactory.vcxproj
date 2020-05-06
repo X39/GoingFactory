@@ -223,6 +223,7 @@
     <ClCompile Include="src\UXPanel.cpp" />
     <ClCompile Include="src\UXPlaceable.cpp" />
     <ClCompile Include="src\World.cpp" />
+    <ClCompile Include="src\world\FastNoiseWorldGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -265,6 +266,11 @@
     <ClInclude Include="src\vec2.h" />
     <ClInclude Include="src\ResourceManager.h" />
     <ClInclude Include="src\World.h" />
+    <ClInclude Include="src\world\FastNoiseWorldGenerator.h" />
+    <ClInclude Include="src\world\WorldChunk.h" />
+    <ClInclude Include="src\world\WorldGenerator.h" />
+    <ClInclude Include="src\world\WorldManager.h" />
+    <ClInclude Include="src\world\WorldTile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

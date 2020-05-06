@@ -1,4 +1,25 @@
 #include "Entry.h"
+
+#include "ThreadPool.h"
+
+#include "ResourceManager.h"
+#include "entity/EntityManager.h"
+#include "entity/Entity.h"
+#include "entity/ScriptedEntity.h"
+#include "entity/Asteroid.h"
+#include "entity/Player.h"
+#include "entity/Marker.h"
+#include "EKey.h"
+#include "EModifier.h"
+#include "GameInstance.h"
+#include "World.h"
+#include "KeyboardTarget.h"
+#include "UXPanel.h"
+#include "UXHandler.h"
+#include "UXPlaceable.h"
+#include "world/FastNoiseWorldGenerator.h"
+
+
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
@@ -21,25 +42,8 @@
 #include <yaoosl_context.h>
 #include <chrono>
 
-#include "ThreadPool.h"
-
-#include "ResourceManager.h"
-#include "entity/EntityManager.h"
-#include "entity/Entity.h"
-#include "entity/ScriptedEntity.h"
-#include "entity/Asteroid.h"
-#include "entity/Player.h"
-#include "entity/Marker.h"
-#include "EKey.h"
-#include "EModifier.h"
-#include "GameInstance.h"
-#include "World.h"
-#include "KeyboardTarget.h"
-#include "UXPanel.h"
-#include "UXHandler.h"
-#include "UXPlaceable.h"
-
 #include <crtdbg.h>
+#include <limits>
 
 using namespace x39::goingfactory;
 
@@ -660,6 +664,28 @@ static bool yaoosl_error_handle(struct yaoosl* vm, struct yaoosl_context* contex
 }
 int main()
 {
+    {
+        world::FastNoiseWorldGenerator fnwg;
+        float min = std::numeric_limits<float>::max();
+        float max = std::numeric_limits<float>::min();
+        for (int x = 0; x < 10000; x++)
+        {
+            for (int y = 0; y < 10000; y++)
+            {
+                float gen = fnwg.generate_chunk(x, y);
+                if (gen > max)
+                {
+                    max = gen;
+                }
+                if (gen < min)
+                {
+                    min = gen;
+                }
+                //std::cout << "{ X: " << x << ", Y: " << y << " } => " << gen << std::endl;
+            }
+        }
+        std::cout << "MIN: " << min << "; MAX: " << max << ";" << std::endl;
+    }
     ALLEGRO_DISPLAY* display;
     ALLEGRO_EVENT_QUEUE* event_queue;
     ALLEGRO_TIMER* render_timer;
@@ -809,8 +835,6 @@ int main()
         }
         if (simulate)
         {
-
-
             auto sim_time_new = std::chrono::steady_clock::now();
             auto sim_time_delta = (sim_time_new - sim_time);
             float sim_coef = 1.0 / (std::chrono::seconds(1) / sim_time_delta);
@@ -893,37 +917,37 @@ int main()
 
 
 
-            sstream << "Controls:";
-            al_draw_text(resources_manager.font(), al_map_rgb(0, 127, 0), 1, 1 + 10 * 0, 0, sstream.str().c_str());
-            sstream.str("");
+            // sstream << "Controls:";
+            // al_draw_text(resources_manager.font(), al_map_rgb(0, 127, 0), 1, 1 + 10 * 0, 0, sstream.str().c_str());
+            // sstream.str("");
+            // 
+            // sstream << "Up (W) | Left (A) | Down (S) | Right (D) | Trigger (Space|Alt) | Fast (LShift) | Slow (LCTRL)";
+            // al_draw_text(resources_manager.font(), al_map_rgb(0, 127, 0), 1, 1 + 10 * 1, 0, sstream.str().c_str());
+            // sstream.str("");
+            // 
+            // sstream << "Note that all numpad buttons (but enter) also have a meaning.";
+            // al_draw_text(resources_manager.font(), al_map_rgb(0, 127, 0), 1, 1 + 10 * 2, 0, sstream.str().c_str());
+            // sstream.str("");
+            // 
+            // size_t count = 0;
+            // for (auto it : entity_manager)
+            // {
+            //     if (it) { count++; }
+            // }
+            // sstream << "Entity Manager Info: alive: " << count << "; size: " << entity_manager.size() << "; capacity: " << entity_manager.capacity();
+            // al_draw_text(resources_manager.font(), al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 1, 0, sstream.str().c_str());
+            // sstream.str("");
+            // 
+            // 
+            // sstream << "Player Position: { " << player->position().x << ", " << player->position().y << " }";
+            // al_draw_text(resources_manager.font(), al_map_rgb(255, 255, 0), DISPLAY_WIDTH / 2 + 1, DISPLAY_HEIGHT - 1 - 10 * 3, 0, sstream.str().c_str());
+            // sstream.str("");
+            // 
+            // sstream << "Player Chunk: { " << player->chunk()->index_x() << ", " << player->chunk()->index_y() << "}";
+            // al_draw_text(resources_manager.font(), al_map_rgb(255, 255, 0), DISPLAY_WIDTH / 2 + 1, DISPLAY_HEIGHT - 1 - 10 * 2, 0, sstream.str().c_str());
+            // sstream.str("");
 
-            sstream << "Up (W) | Left (A) | Down (S) | Right (D) | Trigger (Space|Alt) | Fast (LShift) | Slow (LCTRL)";
-            al_draw_text(resources_manager.font(), al_map_rgb(0, 127, 0), 1, 1 + 10 * 1, 0, sstream.str().c_str());
-            sstream.str("");
-
-            sstream << "Note that all numpad buttons (but enter) also have a meaning.";
-            al_draw_text(resources_manager.font(), al_map_rgb(0, 127, 0), 1, 1 + 10 * 2, 0, sstream.str().c_str());
-            sstream.str("");
-
-            size_t count = 0;
-            for (auto it : entity_manager)
-            {
-                if (it) { count++; }
-            }
-            sstream << "Entity Manager Info: alive: " << count << "; size: " << entity_manager.size() << "; capacity: " << entity_manager.capacity();
-            al_draw_text(resources_manager.font(), al_map_rgb(255, 255, 0), 1, DISPLAY_HEIGHT - 1 - 10 * 1, 0, sstream.str().c_str());
-            sstream.str("");
-
-
-            sstream << "Player Position: { " << player->position().x << ", " << player->position().y << " }";
-            al_draw_text(resources_manager.font(), al_map_rgb(255, 255, 0), DISPLAY_WIDTH / 2 + 1, DISPLAY_HEIGHT - 1 - 10 * 3, 0, sstream.str().c_str());
-            sstream.str("");
-
-            sstream << "Player Chunk: { " << player->chunk()->index_x() << ", " << player->chunk()->index_y() << "}";
-            al_draw_text(resources_manager.font(), al_map_rgb(255, 255, 0), DISPLAY_WIDTH / 2 + 1, DISPLAY_HEIGHT - 1 - 10 * 2, 0, sstream.str().c_str());
-            sstream.str("");
-
-            int v_off = 5;
+            // int v_off = 5;
             // auto color_in_view = al_map_rgb(0, 127, 0);
             // auto color_out_of_view = al_map_rgb(127, 0, 0);
             // for (auto it : entity_manager)
